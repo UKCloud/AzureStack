@@ -48,7 +48,7 @@ UKCloud FRN00006 Region is based on the Azure AD deployment type, run the follow
 
   # Get the Active Directory tenantId that is used to by your on-boarded domain on Azure Stack
   $TenantID = Get-AzsDirectoryTenantId `
-    -AADTenantName $AADTenantName
+    -AADTenantName $AADTenantName `
     -EnvironmentName "AzureStackUser"
 
   # Sign in to your environment
