@@ -23,6 +23,7 @@ UKCloud FRN00006 Region is based on the Azure AD deployment type, run the follow
 ### Azure Active Directory (AAD) based deployments
 
   ```powershell
+  # Set Execution Policy
   # Navigate to the downloaded folder for AzureStackTools and import the **Connect** PowerShell module. Example: cd c:\AzureStack-Tools\
   Set-ExecutionPolicy RemoteSigned
   Import-Module .\Connect\AzureStack.Connect.psm1
@@ -60,35 +61,34 @@ UKCloud FRN00006 Region is based on the Azure AD deployment type, run the follow
 ### Azure Active Directory (AAD) based deployments - Streamlined version for ease of use
 
   ```powershell
-  # Navigate to the downloaded folder for AzureStackTools and import the **Connect** PowerShell module. Example: cd c:\AzureStack-Tools\
+  # Set Execution Policy
   Set-ExecutionPolicy RemoteSigned
-  Import-Module .\Connect\AzureStack.Connect.psm1
-
-  # For UKCloud Azure Stack FRN00006 Region, this value is set to https://management.frn00006.azure.ukcloud.com.
-  $ArmEndpoint = "https://management.frn00006.azure.ukcloud.com"
-
-  # For UKCloud Azure Stack FRN00006 Region, this value is set to https://graph.windows.net/.
-  $GraphAudience = "https://graph.windows.net/"
-
-  # Azure Active Directory Domain that you are trying connect to. Examples are: <myDirectoryTenantName>.onmicrosoft.com or just your federated with AAD Domain i.e. ukcloud.com
-  $AADTenantName = "<myDirectoryTenantName>.onmicrosoft.com"
 
   # Register an AzureRM environment that targets your Azure Stack instance
-  Add-AzureRMEnvironment -Name "AzureStackUser" -ArmEndpoint $ArmEndpoint
-
-  # Set the GraphEndpointResourceId value
-  Set-AzureRmEnvironment -Name "AzureStackUser" -GraphAudience $GraphAudience
-
-  # Get the Active Directory tenantId that is used to by your on-boarded domain on Azure Stack
-  $TenantID = Get-AzsDirectoryTenantId -AADTenantName $AADTenantName  -EnvironmentName "AzureStackUser"
+  Add-AzureRMEnvironment -Name "AzureStackUser" -ArmEndpoint "https://management.frn00006.azure.ukcloud.com"
 
   # Sign in to your environment
-  Login-AzureRmAccount -EnvironmentName "AzureStackUser" -TenantId $TenantID
+  Login-AzureRmAccount -EnvironmentName "AzureStackUser"
    ```
 
-### Setting the Environment
+### Azure Active Directory (AAD) based deployments - Embedded Credentials
 
-**IMPORTANT** One you created your AzureStackUser Environment you do not need to run those commands again, your Powershell profile should have it saved and you only need to run the Login part of the script -> *Login-AzureRmAccount*.
+  ```powershell
+  # Set Execution Policy
+  Set-ExecutionPolicy RemoteSigned
+
+  # Register an AzureRM environment that targets your Azure Stack instance
+  Add-AzureRMEnvironment -Name "AzureStackUser" -ArmEndpoint "https://management.frn00006.azure.ukcloud.com"
+
+  # Create your Credentials
+  $AZSusername =  "<username>@<myDirectoryTenantName>.onmicrosoft.com"
+  $AZSpassword = '<your password>'
+    $AZSuserPassword = ConvertTo-SecureString "$AZSpassword" -AsPlainText -Force
+    $AZScred = new-object -typename System.Management.Automation.PSCredential -argumentlist $AZSusername,$AZSuserPassword
+
+  # Sign in to your environment
+  Login-AzureRmAccount -Credential $AZScred -EnvironmentName "AzureStackUser"
+   ```
 
 ## Test the connectivity
 
