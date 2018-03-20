@@ -16,6 +16,25 @@ Run the following prerequisites either from the [development kit](https://github
 * Install [Azure Stack-compatible Azure PowerShell modules](https://github.com/MicrosoftDocs/azure-docs/blob/master/articles/azure-stack/azure-stack-powershell-install.md).  
 * Download the [tools required to work with Azure Stack](https://github.com/MicrosoftDocs/azure-docs/blob/master/articles/azure-stack/azure-stack-powershell-download.md). 
 
+## Install Azure Stack PowerShell
+
+> [!NOTE]
+> The following steps require PowerShell 5.0. To check your version, run $PSVersionTable.PSVersion and compare the "Major" version.
+
+  ```powershell
+  # Set Execution Policy
+  Set-ExecutionPolicy RemoteSigned
+  # PowerShell commands for Azure Stack are installed through the PowerShell gallery. To register the PSGallery repository, open an elevated PowerShell session from the development kit # or  from a Windows-based external client if you are connected through VPN and run the following command:
+  Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted
+  # Uninstall existing versions of PowerShell
+  Get-Module -ListAvailable | where-Object {$_.Name -like “Azure*”} | Uninstall-Module
+  # Install the AzureRM.Bootstrapper module. Select Yes when prompted to install NuGet 
+  Install-Module -Name AzureRm.BootStrapper
+  # Install and import the API Version Profile required by Azure Stack into the current PowerShell session.
+  Use-AzureRmProfile -Profile 2017-03-09-profile -Force
+  Install-Module -Name AzureStack -RequiredVersion 1.2.11
+  ```
+
 ## Configure the user environment and sign in to Azure Stack
 
 UKCloud FRN00006 Region is based on the Azure AD deployment type, run the following scripts to configure PowerShell for Azure Stack (Make sure to replace the AADTenantName, GraphAudience endpoint, and ArmEndpoint values as per your environment configuration):
