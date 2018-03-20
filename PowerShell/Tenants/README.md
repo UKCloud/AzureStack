@@ -23,6 +23,8 @@ UKCloud FRN00006 Region is based on the Azure AD deployment type, run the follow
 ### Azure Active Directory (AAD) based deployments
 
   ```powershell
+  # Set Execution Policy
+
   # Navigate to the downloaded folder for AzureStackTools and import the **Connect** PowerShell module. Example: cd c:\AzureStack-Tools\
   Set-ExecutionPolicy RemoteSigned
   Import-Module .\Connect\AzureStack.Connect.psm1
@@ -60,6 +62,36 @@ UKCloud FRN00006 Region is based on the Azure AD deployment type, run the follow
 ### Azure Active Directory (AAD) based deployments - Streamlined version for ease of use
 
   ```powershell
+  # Set Execution Policy
+  Set-ExecutionPolicy RemoteSigned
+
+  # Register an AzureRM environment that targets your Azure Stack instance
+  Add-AzureRMEnvironment -Name "AzureStackUser" -ArmEndpoint "https://management.frn00006.azure.ukcloud.com"
+
+  # Sign in to your environment
+  Login-AzureRmAccount -EnvironmentName "AzureStackUser"
+   ```
+
+### Azure Active Directory (AAD) based deployments - Embedded Credentials
+
+  ```powershell
+  # Set Execution Policy
+  Set-ExecutionPolicy RemoteSigned
+
+  # Register an AzureRM environment that targets your Azure Stack instance
+  Add-AzureRMEnvironment -Name "AzureStackUser" -ArmEndpoint "https://management.frn00006.azure.ukcloud.com"
+
+  # Create your Credentials
+  $AZSusername =  "<username>@<myDirectoryTenantName>.onmicrosoft.com"
+  $AZSpassword = '<your password>'
+    $AZSuserPassword = ConvertTo-SecureString "$AZSpassword" -AsPlainText -Force
+    $AZScred = new-object -typename System.Management.Automation.PSCredential -argumentlist $AZSusername,$AZSuserPassword
+
+  # Sign in to your environment
+  Login-AzureRmAccount -Credential $AZScred -EnvironmentName "AzureStackUser"
+   ```
+
+=======
   # Navigate to the downloaded folder for AzureStackTools and import the **Connect** PowerShell module. Example: cd c:\AzureStack-Tools\
   Set-ExecutionPolicy RemoteSigned
   Import-Module .\Connect\AzureStack.Connect.psm1
@@ -85,10 +117,6 @@ UKCloud FRN00006 Region is based on the Azure AD deployment type, run the follow
   # Sign in to your environment
   Login-AzureRmAccount -EnvironmentName "AzureStackUser" -TenantId $TenantID
    ```
-
-### Setting the Environment
-
-**IMPORTANT** One you created your AzureStackUser Environment you do not need to run those commands again, your Powershell profile should have it saved and you only need to run the Login part of the script -> *Login-AzureRmAccount*.
 
 ## Test the connectivity
 
