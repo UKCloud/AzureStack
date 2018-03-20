@@ -24,6 +24,7 @@ UKCloud FRN00006 Region is based on the Azure AD deployment type, run the follow
 
   ```powershell
   # Set Execution Policy
+
   # Navigate to the downloaded folder for AzureStackTools and import the **Connect** PowerShell module. Example: cd c:\AzureStack-Tools\
   Set-ExecutionPolicy RemoteSigned
   Import-Module .\Connect\AzureStack.Connect.psm1
@@ -88,6 +89,33 @@ UKCloud FRN00006 Region is based on the Azure AD deployment type, run the follow
 
   # Sign in to your environment
   Login-AzureRmAccount -Credential $AZScred -EnvironmentName "AzureStackUser"
+   ```
+
+=======
+  # Navigate to the downloaded folder for AzureStackTools and import the **Connect** PowerShell module. Example: cd c:\AzureStack-Tools\
+  Set-ExecutionPolicy RemoteSigned
+  Import-Module .\Connect\AzureStack.Connect.psm1
+
+  # For UKCloud Azure Stack FRN00006 Region, this value is set to https://management.frn00006.azure.ukcloud.com.
+  $ArmEndpoint = "https://management.frn00006.azure.ukcloud.com"
+
+  # For UKCloud Azure Stack FRN00006 Region, this value is set to https://graph.windows.net/.
+  $GraphAudience = "https://graph.windows.net/"
+
+  # Azure Active Directory Domain that you are trying connect to. Examples are: <myDirectoryTenantName>.onmicrosoft.com or just your federated with AAD Domain i.e. ukcloud.com
+  $AADTenantName = "<myDirectoryTenantName>.onmicrosoft.com"
+
+  # Register an AzureRM environment that targets your Azure Stack instance
+  Add-AzureRMEnvironment -Name "AzureStackUser" -ArmEndpoint $ArmEndpoint
+
+  # Set the GraphEndpointResourceId value
+  Set-AzureRmEnvironment -Name "AzureStackUser" -GraphAudience $GraphAudience
+
+  # Get the Active Directory tenantId that is used to by your on-boarded domain on Azure Stack
+  $TenantID = Get-AzsDirectoryTenantId -AADTenantName $AADTenantName  -EnvironmentName "AzureStackUser"
+
+  # Sign in to your environment
+  Login-AzureRmAccount -EnvironmentName "AzureStackUser" -TenantId $TenantID
    ```
 
 ## Test the connectivity
