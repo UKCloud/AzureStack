@@ -20,7 +20,7 @@ Run the following prerequisites either from the [development kit](https://github
 
 > [!NOTE]
 > The following steps require PowerShell 5.0. To check your version, run $PSVersionTable.PSVersion and compare the "Major" version.
-> Download the[WMF 5.1](https://docs.microsoft.com/en-us/powershell/wmf/5.1/install-configure)
+> Download the [WMF 5.1](https://docs.microsoft.com/en-us/powershell/wmf/5.1/install-configure)
 
   ```powershell
   # Set Execution Policy
