@@ -83,6 +83,19 @@ Use the following steps to connect to Azure Stack:
         -u <Application Id of the Service Principal> \
         -p <Key generated for the Service Principal>
       ```
+5. Verify that your environment is set correctly to and that AzureStackUser is the active cloud.
+      ```azurecli
+      az cloud list --output table
+      ```
+6. To list command subgroups run:
+
+      ```azurecli
+      az --help
+7. To list commands for specific subgroup run:
+
+      ```azurecli
+      az <subgroupname> --help
+      ```
 
 ## Test the connectivity
 
@@ -97,6 +110,7 @@ If the resource group is created successfully, the previous command outputs the 
 ![Resource group create output](https://docs.microsoft.com/en-us/azure/azure-stack/user/media/azure-stack-connect-cli/image1.png)
 
 ## Known issues
+
 There are some known issues that you must be aware of when using CLI in Azure Stack:
 
 * The CLI interactive mode i.e the `az interactive` command is not yet supported in Azure Stack.
@@ -109,3 +123,6 @@ There are some known issues that you must be aware of when using CLI in Azure St
 [Deploy templates with Azure CLI](https://github.com/MicrosoftDocs/azure-docs/blob/master/articles/azure-stack/user/azure-stack-deploy-template-command-line.md)
 
 [Manage user permissions](https://github.com/MicrosoftDocs/azure-docs/blob/master/articles/azure-stack/user/azure-stack-manage-permissions.md)
+
+## Useful links
+[Azure CLI Command Reference](https://docs.microsoft.com/en-us/cli/azure/reference-index?view=azure-cli-latest)
