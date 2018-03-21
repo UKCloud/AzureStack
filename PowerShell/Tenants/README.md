@@ -13,14 +13,12 @@ As an Azure Stack user, you can configure your Azure Stack Development Kit's Pow
 
 Run the following prerequisites either from the [development kit](https://github.com/MicrosoftDocs/azure-docs/blob/master/articles/azure-stack/azure-stack-connect-azure-stack.md#connect-to-azure-stack-with-remote-desktop), or from a Windows-based external client if you are [connected through VPN](https://github.com/MicrosoftDocs/azure-docs/blob/master/articles/azure-stack/azure-stack-connect-azure-stack.md#connect-to-azure-stack-with-vpn):
 
-* Install [Azure Stack-compatible Azure PowerShell modules](https://github.com/MicrosoftDocs/azure-docs/blob/master/articles/azure-stack/azure-stack-powershell-install.md).  
-* Download the [tools required to work with Azure Stack](https://github.com/MicrosoftDocs/azure-docs/blob/master/articles/azure-stack/azure-stack-powershell-download.md). 
-
-## Install Azure Stack PowerShell
+### Install Azure Stack PowerShell
 
 > [!NOTE]
 > The following steps require PowerShell 5.0. To check your version, run $PSVersionTable.PSVersion and compare the "Major" version.
-> Download the [WMF 5.1](https://docs.microsoft.com/en-us/powershell/wmf/5.1/install-configure)
+> For "legacy" Operating Systems like Windows Server 2008 R2 and Windows 7, or Windows Server 2012 R2, Windows Server 2012, and Windows 8.1
+> Download the [Windows Management Framework 5.1](https://docs.microsoft.com/en-us/powershell/wmf/5.1/install-configure)
 
   ```powershell
   # Set Execution Policy
