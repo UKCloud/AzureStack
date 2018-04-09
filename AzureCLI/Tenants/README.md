@@ -134,7 +134,7 @@ az vm create --resource-group testRG --name testVM --image OpenLogic:CentO
 >
 > Also, you need to create your Resource Group first.
 >
-> admin-username and admin-password are given as examples above - these are thge credentials which must be used to login to the VM once it is created.
+> admin-username and admin-password are given as examples above - these are the credentials which must be used to login to the VM once it is created.
 >
 
 ## Known issues
