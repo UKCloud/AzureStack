@@ -49,16 +49,18 @@ Function Get-AzsMarketplaceImages {
 
         # Get all downloaded images details
         #$GetProducts | Select-Object -Property @{Name = 'DownloadName'; Expression = {(($_.Name) -replace "default/", "")}}, GalleryItemIdentity, DisplayName, publisherDisplayName, @{Name="SizeInMB";Expression={([math]::Round(($_.payloadLength / 1MB),2)) }}, @{Name="SizeInGB";Expression={([math]::Round(($_.payloadLength / 1GB),2)) }}, @{Name="productPropertiesVersion";Expression={$_.productProperties.version}}, provisioningState
-        If ($ListDetails) {
+        <#If ($ListDetails) {
+            Write-Host "Hit1"
             $GetProducts | Select-Object -Property @{Name = 'DownloadName'; Expression = {(($_.Name) -replace "default/", "")}}, GalleryItemIdentity, DisplayName, publisherDisplayName, @{Name = "SizeInMB"; Expression = {([math]::Round(($_.payloadLength / 1MB), 2)) }}, @{Name = "SizeInGB"; Expression = {([math]::Round(($_.payloadLength / 1GB), 2)) }}, @{Name = "productPropertiesVersion"; Expression = {$_.productProperties.version}}, provisioningState
-        }
+        }#>
     }
     end { 
         If ($ListDetails) {
+            #Write-Host "Hit2"
             $GetProducts | Select-Object -Property @{Name = 'DownloadName'; Expression = {(($_.Name) -replace "default/", "")}}, GalleryItemIdentity, DisplayName, publisherDisplayName, @{Name = "SizeInMB"; Expression = {([math]::Round(($_.payloadLength / 1MB), 2)) }}, @{Name = "SizeInGB"; Expression = {([math]::Round(($_.payloadLength / 1GB), 2)) }}, @{Name = "productPropertiesVersion"; Expression = {$_.productProperties.version}}, provisioningState
         }
         Else {
-            return $GetProducts | Select-Object -ExpandProperty DisplayName 
+            return $GetProducts | Select-Object -Property @{Name = 'DownloadName'; Expression = {(($_.Name) -replace "default/", "")}} | Select-Object -ExpandProperty DownloadName
         }
     }
 }
