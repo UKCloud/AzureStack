@@ -1,2 +1,3 @@
-# AzureStack
-AzureStack Repository for Tenants
+# AzureStack Code Repository
+
+AzureStack Code Repository for Users and Operators
