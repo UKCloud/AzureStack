@@ -182,7 +182,7 @@ Function Remove-AzsMarketplaceImages {
         ForEach ($Image in $ImagesToDelete) {
             #Write-Host "Not Pipe 2222222222222222222222222"
             If ($PSCmdlet.ShouldProcess($Image, 'Delete the downloaded product')) {
-                if ($Force -or  $PSCmdlet.ShouldContinue("Are you sure you want to download $($DownloadItemsLatestName.DownloadName)?", $null)) {
+                if ($Force -or  $PSCmdlet.ShouldContinue("Are you sure you want to delete $($DownloadItemsLatestName.DownloadName)?", $null)) {
                     Remove-AzsAzureBridgeDownloadedProduct -Name $Image -ActivationName $ActivationDetails.Name -ResourceGroupName $ActivationRG -AsJob -Force
                 }
             }
