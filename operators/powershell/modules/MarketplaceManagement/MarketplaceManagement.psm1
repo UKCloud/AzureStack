@@ -2,13 +2,13 @@ Function Get-AzsMarketplaceImages {
     <#
     .SYNOPSIS
         Get Existing Marketplace Items
+        
+    .DESCRIPTION
+        Get Existing Marketplace Items
 
     .PARAMETER ListDetails
         List all the details of Existing Marketplace Items
         Note: You cannot use it if you want to pipe the output to Remove-AzsMarketplaceImages
-
-    .DESCRIPTION
-        Get Existing Marketplace Items
 
     .EXAMPLE
         Get-AzsMarketplaceImage
@@ -113,12 +113,12 @@ Function Remove-AzsMarketplaceImages {
     <#
     .SYNOPSIS
         Remove Existing Marketplace Items
-    
-    .PARAMETER ImagesToDelete
-        Provide List of Images to delete manually or via Pipe from Get-AzsMarketplaceItems
-
+        
     .DESCRIPTION
         Remove Existing Marketplace Items
+
+    .PARAMETER ImagesToDelete
+        Provide List of Images to delete manually or via Pipe from Get-AzsMarketplaceItems
 
     .EXAMPLE
         Remove-AzsMarketplaceImages
@@ -199,16 +199,16 @@ Function Download-AzsMarketplaceImages {
     .SYNOPSIS
         Download Marketplace Items
     
-    .PARAMETER ImagesToDownload
-        Provide List of Images to download
-
-    .PARAMETER ListDetails
-        List all the details of Existing Marketplace Items
-        Note: This will not download anything but only list items
-
     .DESCRIPTION
         Download Marketplace Items
 
+    .PARAMETER ImagesToDownload    
+        Provide List of Images to download
+    
+    .PARAMETER ListDetails    
+        List all the details of Existing Marketplace Items
+        Note: This will not download anything but only list items
+    
     .EXAMPLE
         Download-AzsMarketplaceImages -ImagesToDownload "RogueWave.CentOSbased69-ARM."
 
