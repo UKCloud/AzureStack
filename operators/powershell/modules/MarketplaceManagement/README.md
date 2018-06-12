@@ -33,7 +33,7 @@ Prerequisites from a Windows-based external client.
 
 * PowerShell 5.1
 
-* Azure Stack PowerShell Modules 1.3 -> [Azure Stack Modules Install Guide](https://github.com/UKCloud/AzureStack/blob/master/docs/Tenants/PowerShell/ConfigurePowerShellEnvironment.md)
+* Azure Stack PowerShell Modules 1.3 -> [Azure Stack Modules Install Guide](https://github.com/UKCloud/AzureStack/blob/master/operators/powershell/azs-how-ps-configure-powershell-operator.md)
 
 > [!IMPORTANT]
 > You might need to force the latest module by running
