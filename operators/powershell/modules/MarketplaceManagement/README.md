@@ -10,10 +10,10 @@ toc_sub2:
 toc_sub3:
 toc_sub4:
 toc_title: Marketplace Management
-toc_fullpath: Operators/Update Azure Stack/azs-how-ps-marketplace-management.md
+toc_fullpath: Operators/How To/azs-how-ps-marketplace-management.md
 toc_mdlink: azs-how-ps-marketplace-management.md
 ---
-# Azure Stack Update Procedure
+# Azure Stack Marketplace Management Module
 
 This guide is intended to provide a reference on how can we manage Marketplace Images using *PowerShell* **Marketplace Management Module**.
 
@@ -49,7 +49,8 @@ There is a installmodules.ps1 script that will install your modules.
 
 Once it is installed you can just invoke the commands and PowerShell will load them for you.
 
-You need to log in to Azure Stack first before you can execute the commands as they will fail otherwise.
+> [!IMPORTANT]
+> **You need to log in to Azure Stack first before you can execute the commands as they will fail otherwise.**.
 
 > [!NOTE]
 > Module assumes default Resource Group and Activation names as they appear to be fixed in Azure Stack currently, they are being matched *activation* wildcard name.
