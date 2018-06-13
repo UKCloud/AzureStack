@@ -146,7 +146,7 @@ Function New-AzsPublicIpPool {
         # Provision New IP Pool
         If ($PSCmdlet.ShouldProcess($NetworkInfo.NetworkID, 'Create a new Ip Pool')) {
             if ($Force -or $PSCmdlet.ShouldContinue("Are you sure you want to create new IP Pool $($IPPoolName)?", $null)) {
-                New-AzsIpPool -Name $IPPoolName -StartIpAddress $($NetworkInfo.FirstAddress) -EndIpAddress  $($NetworkInfo.Broadcast) -AddressPrefix  $($NetworkInfo.NetworkID) -WhatIf
+                New-AzsIpPool -Name $IPPoolName -StartIpAddress $($NetworkInfo.FirstAddress) -EndIpAddress  $($NetworkInfo.Broadcast) -AddressPrefix  $($NetworkInfo.NetworkID)
             }
         }
     }
