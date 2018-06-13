@@ -152,9 +152,3 @@ Function New-AzsPublicIpPool {
     }
 }
 
-
-
-#Get-NetworkIpPoolInfo -IPAddress "51.179.211.192" -SubnetMask "255.255.255.192"
-
-New-AzsPublicIpPool -IPAddress "51.179.211.192" -SubnetMask "255.255.255.192" -IPPoolName "PublicIpPoolExtension-1" -Confirm:$true -Force -Verbose -WhatIf
-
