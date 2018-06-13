@@ -1,13 +1,13 @@
 ---
-title: Configure the Azure Stack user's PowerShell environment for UKCloud |  based on Microsoft Docs
-description: Configure the Azure Stack user's PowerShell environment
+title: Configure the Azure Stack operator's PowerShell environment for UKCloud |  based on Microsoft Docs
+description: Configure the Azure Stack operator's PowerShell environment
 services: azure-stack
 author: Chris Black
 ---
 
-# Configure the Azure Stack user's PowerShell environment
+# Configure the Azure Stack operator's PowerShell environment
 
-As an Azure Stack user, you can use PowerShell to manage Azure Stack resources such as create virtual machines, deploy Azure Resource Manager templates,  etc. This topic is scoped to use with the user environments only. In order to interact with Azure Stack PowerShell you will need to set up your enviroment. To do so follow the below guide:
+As an Azure Stack operator, you can use PowerShell to manage Azure Stack resources such as create virtual machines, deploy Azure Resource Manager templates,  etc. This topic is scoped to use with the operator environments only. In order to interact with Azure Stack PowerShell you will need to set up your enviroment. To do so follow the below guide:
 
 ## Prerequisites
 
@@ -38,7 +38,7 @@ Prerequisites from a Windows-based external client.
   Install-Module -Name AzureStack -RequiredVersion 1.3.0
   ```
 
-## Configure the user environment and sign in to Azure Stack
+## Configure the operator environment and sign in to Azure Stack
 
 UKCloud FRN00006 Region is based on the Azure AD deployment type, run the following scripts to configure PowerShell for Azure Stack (Make sure to replace the AADTenantName, GraphAudience endpoint, and ArmEndpoint values as per your environment configuration):
 
@@ -62,7 +62,7 @@ UKCloud FRN00006 Region is based on the Azure AD deployment type, run the follow
   Set-ExecutionPolicy RemoteSigned
 
   # Register an AzureRM environment that targets your Azure Stack instance
-  Add-AzureRMEnvironment -Name "AzureStackUser" -ArmEndpoint "https://adminmanagement.frn00006.azure.ukcloud.com"
+  Add-AzureRMEnvironment -Name "AzureStackAdmin" -ArmEndpoint "https://adminmanagement.frn00006.azure.ukcloud.com"
 
   # Create your Credentials
   $AZSusername =  "<username>@<myDirectoryTenantName>.onmicrosoft.com"
