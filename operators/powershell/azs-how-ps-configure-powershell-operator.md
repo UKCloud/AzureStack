@@ -11,14 +11,18 @@ As an Azure Stack user, you can use PowerShell to manage Azure Stack resources s
 
 ## Prerequisites
 
-Run the following prerequisites from a Windows-based external client.
+Prerequisites from a Windows-based external client.
+
+- PowerShell 5.1
+
+    > [!NOTE]
+    > To check your version, run $PSVersionTable.PSVersion and compare the "Major" version.
+    >
+    > For "legacy" Operating Systems like Windows Server 2008 R2 and Windows 7, or Windows Server 2012 R2, Windows Server 2012, and Windows 8.1
+    >
+    > Download the [Windows Management Framework 5.1](https://docs.microsoft.com/en-us/powershell/wmf/5.1/install-configure)
 
 ### Install Azure Stack PowerShell
-
-> [!NOTE]
-> The following steps require PowerShell 5.0. To check your version, run $PSVersionTable.PSVersion and compare the "Major" version.
-> For "legacy" Operating Systems like Windows Server 2008 R2 and Windows 7, or Windows Server 2012 R2, Windows Server 2012, and Windows 8.1
-> Download the [Windows Management Framework 5.1](https://docs.microsoft.com/en-us/powershell/wmf/5.1/install-configure)
 
   ```powershell
   # Set Execution Policy
