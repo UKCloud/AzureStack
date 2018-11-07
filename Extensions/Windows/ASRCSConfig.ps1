@@ -214,6 +214,7 @@ while (!$ASRFabrics -and $RetryASRFabric -lt 20) {
     Start-Sleep -Seconds 5
     $RetryASRFabric ++
 }
+
 $ProtectionContainer = Get-AzureRmRecoveryServicesAsrProtectionContainer -Fabric $ASRFabrics[0]
 # Assign policies to configuration server
 Write-Host "Assigning policies to configuration server"
@@ -270,9 +271,38 @@ While ($ProtectedItems.count -ne $VMInfo.Count -and $RetryProtectedItems -lt 60)
     $RetryProtectedItems ++
 }
 
-$SRRG = Get-AzureRmResourceGroup -Name $ProtectedItems[0].ID.split("/")[4]
-$StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $SRRG.ResourceGroupName
-$VirtualNetwork = Get-AzureRmVirtualNetwork -ResourceGroupName $SRRG.ResourceGroupName
+$retryresourcegroup = 0
+while (!$SRRG.ResourceId -and $retryresourcegroup -lt 10) {
+    $SRRG = Get-AzureRmResourceGroup -Name $ProtectedItems[0].ID.split("/")[4]
+    Start-Sleep -Seconds 20
+    $retryresourcegroup ++
+}
+
+$retrystorageaccount = 0
+while (!$StorageAccount.Id -and $retrystorageaccount -lt 10) {
+    $StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $SRRG.ResourceGroupName
+    Start-Sleep -Seconds 20
+    $retrystorageaccount ++
+}
+
+$retryvirtualnetwork = 0
+while (!$VirtualNetwork.Id -and $retryvirtualnetwork -lt 10) {
+    $VirtualNetwork = Get-AzureRmVirtualNetwork -ResourceGroupName $SRRG.ResourceGroupName
+    Start-Sleep -Seconds 20
+    $retryvirtualnetwork ++
+}
+
+if ($retryresourcegroup -eq 10) {
+    Write-Host "Can't retrieve resource group"
+}
+
+if ($retrystorageaccount -eq 10) {
+    Write-Host "Can't retrieve storage account"
+}
+
+if ($retryvirtualnetwork -eq 10) {
+    Write-Host "Can't retrieve virtual network"
+}
 
 # Update Fabric Object
 $ASRFabrics = Get-AzureRmRecoveryServicesAsrFabric
