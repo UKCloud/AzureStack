@@ -321,12 +321,21 @@ $RunAsAccounts = $ASRFabrics[0].FabricSpecificDetails.RunAsAccounts
 Write-Host "Setting VMs to be protected"
 $ContainerMapping = Get-ASRProtectionContainerMapping -ProtectionContainer $ProtectionContainer | Where-Object PolicyFriendlyName -eq $ReplicationPolicyName
 ForEach ($Item in $ProtectedItems) {
-    if ($Item.OS -eq "LINUX") {
-        $LinuxAccount = $RunAsAccounts | Where-Object {$_.accountName -like "LinuxAccount"}
-        $Job_EnableRepicationLinux = New-AzureRmRecoveryServicesAsrReplicationProtectedItem -VMwareToAzure -ProtectableItem $Item -Name $Item.FriendlyName -ProtectionContainerMapping $ContainerMapping -RecoveryAzureStorageAccountId $StorageAccount.Id -LogStorageAccountId $StorageAccount.Id -ProcessServer $ProcessServer -Account $LinuxAccount -RecoveryResourceGroupId $SRRG.ResourceId -RecoveryAzureNetworkId $VirtualNetwork.Id -RecoveryAzureSubnetName "default" 
+    # Remove Azure Stack Temporary Disk
+    [string[]]$Disks = @()
+    $DiskNum = 0
+    ForEach ($DiskName in $Item.Disks) {
+        if ($DiskNum -ne 1) {
+            $Disks += $($DiskName.Id)
+        }
+        $DiskNum ++
     }
-    elseif ($Item.OS -eq "WINDOWS") {
+    if ($Item.OS -like "*LINUX*") {
+        $LinuxAccount = $RunAsAccounts | Where-Object {$_.accountName -like "LinuxAccount"}
+        $Job_EnableReplicationLinux = New-AzureRmRecoveryServicesAsrReplicationProtectedItem -VMwareToAzure -ProtectableItem $Item -Name $Item.FriendlyName -RecoveryVmName $Item.FriendlyName -ProtectionContainerMapping $ContainerMapping -IncludeDiskId $Disks -RecoveryAzureStorageAccountId $StorageAccount.Id -ProcessServer $ProcessServer -Account $LinuxAccount -RecoveryResourceGroupId $SRRG.ResourceId -RecoveryAzureNetworkId $VirtualNetwork.Id -RecoveryAzureSubnetName "default"
+    }
+    elseif ($Item.OS -like "*WINDOWS*") {
         $WindowsAccount = $RunAsAccounts | Where-Object {$_.accountName -like "WindowsAccount"}
-        $Job_EnableRepicationWin = New-AzureRmRecoveryServicesAsrReplicationProtectedItem -VMwareToAzure -ProtectableItem $Item -Name $Item.FriendlyName -ProtectionContainerMapping $ContainerMapping -RecoveryAzureStorageAccountId $StorageAccount.Id -LogStorageAccountId $StorageAccount.Id -ProcessServer $ProcessServer -Account $WindowsAccount -RecoveryResourceGroupId $SRRG.ResourceId -RecoveryAzureNetworkId $VirtualNetwork.Id -RecoveryAzureSubnetName "default" 
+        $Job_EnableReplicationWin = New-AzureRmRecoveryServicesAsrReplicationProtectedItem -VMwareToAzure -ProtectableItem $Item -Name $Item.FriendlyName -RecoveryVmName $Item.FriendlyName -ProtectionContainerMapping $ContainerMapping -IncludeDiskId $Disks -RecoveryAzureStorageAccountId $StorageAccount.Id -ProcessServer $ProcessServer -Account $WindowsAccount -RecoveryResourceGroupId $SRRG.ResourceId -RecoveryAzureNetworkId $VirtualNetwork.Id -RecoveryAzureSubnetName "default"
     }
 }
