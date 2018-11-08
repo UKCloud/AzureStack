@@ -70,7 +70,14 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.We
 $env:ChocolateyInstall = Convert-Path "$((Get-Command choco).path)\..\.."
 Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
 # Install SysInternals
-choco install -y sysinternals
+$CheckSysinternalsInstall = $false
+$retry = 0
+while (!$CheckSysinternalsInstall -and $retry -lt 10) {
+    choco install -y sysinternals
+    Start-Sleep 10
+    $CheckSysinternalsInstall = choco list -lo | where {$_ -like "*sysinternals*"}
+    $retry ++
+}
 refreshenv
 Get-Module -Name "Azure*" | Remove-Module -Force
 
@@ -186,7 +193,15 @@ Install-WindowsFeature Net-Framework-Core
 
 # Download and install MySQL .Net connector
 Write-Host "Downloading MySQL .Net connector"
-choco install mysql-connector -y --force
+$CheckMySQLInstall = $false
+$retry = 0
+while (!$CheckMySQLInstall -and $retry -lt 10) {
+    choco install mysql-connector -y --force
+    Start-Sleep 15
+    $CheckMySQLInstall = choco list -lo | where {$_ -like "*mysql-connector*"}
+    $retry ++
+}
+
 Write-Host "Successfully installed MySQL .Net connector"
 
 # Declare Variables
