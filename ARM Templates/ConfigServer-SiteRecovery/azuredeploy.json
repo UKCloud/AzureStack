@@ -1,0 +1,349 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "apiProfile": "2018-03-01-hybrid",
+    "parameters": {
+        "AADUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "Your AAD Username"
+            },
+            "defaultValue": "example@example.com"
+        },
+        "AADPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Your AAD Password"
+            },
+            "defaultValue": ""
+        },
+        "StackArmEndpoint": {
+            "type": "string",
+            "metadata": {
+                "description": "The ARM endpoint for Azure Stack"
+            },
+            "defaultValue": "https://management.frn00006.azure.ukcloud.com"
+        },
+        "ConfigurationServerName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the configuration server VM"
+            },
+            "defaultValue": "SRConfigServer"
+        },
+        "TempFilesPath": {
+            "type": "string",
+            "metadata": {
+                "description": "Location on configuration server where setup files will be stored"
+            },
+            "defaultValue": "C:\\TempASR\\"
+        },
+        "ExtractionPath": {
+            "type": "string",
+            "metadata": {
+                "description": "Folder within the TempFilesPath where the unified setup will be extracted to"
+            },
+            "defaultValue": "Extracted"
+        },
+        "MySQLRootPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The root password for the MySQL server created on the Configuration Server"
+            },
+            "defaultValue": "Password123!"
+        },
+        "MySQLUserPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The user password for the MySQL server created on the Configuration Server"
+            },
+            "defaultValue": "Password123!"
+        },
+        "AzureVNetName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the virtual network to be created on public Azure"
+            },
+            "defaultValue": "SiteRecoveryVNet"
+        },
+        "StackVNetName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the existing virtual network to connect the configuration server to on Azure Stack"
+            },
+            "defaultValue": "SiteRecoveryVNet"
+        },
+        "StackSubnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the existing virtual network subnet to connect the configuration server to on Azure Stack"
+            },
+            "defaultValue": "default"
+        },
+        "AzureStorageAccount": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the storage account to be created on public Azure"
+            },
+            "defaultValue": "stacksiterecoverysa"
+        },
+        "StackStorageAccount": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the storage account to be created on Azure Stack"
+            },
+            "defaultValue": "siterecoverycssa"
+        },
+        "AzureSubnetRange": {
+            "type": "string",
+            "metadata": {
+                "description": "The subnet range of the virtual network to be created on public Azure"
+            },
+            "defaultValue": "192.168.1.0/24"
+        },
+        "AzureVNetRange": {
+            "type": "string",
+            "metadata": {
+                "description": "The address space of the virtual network to be created on public Azure"
+            },
+            "defaultValue": "192.168.0.0/16"
+        },
+        "AzureLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "The location of the recovery services vault on public Azure"
+            },
+            "defaultValue": "UK West"
+        },
+        "ReplicationPolicyName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the site recovery replication policy to be created in the recovery services vault"
+            },
+            "defaultValue": "ReplicationPolicy"
+        },
+        "AzureResourceGroup": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the resource group to be created on public Azure"
+            },
+            "defaultValue": "SiteRecoveryTestRG"
+        },
+        "VaultName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the recovery services vault to be created on public Azure"
+            },
+            "defaultValue": "AzureStackVault"
+        },
+        "ConfigServerUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "The username for the configuration server"
+            },
+            "defaultValue": "ConfigAdmin"
+        },
+        "ConfigServerPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The password for the configuration server"
+            },
+            "defaultValue": ""
+        },
+        "EncryptionKey": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The encryption key for the MySQL database on the configuration server"
+            },
+            "defaultValue": "ExampleEncryptionKey"
+        },
+        "WindowsUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "The username of an administrator account on the Windows VMs to be protected"
+            },
+            "defaultValue": "Administrator"
+        },
+        "WindowsPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The password of an administrator account on the Windows VMs to be protected"
+            },
+            "defaultValue": ""
+        },
+        "LinuxRootPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The password of the root account on the Linux VMs to be protected"
+            },
+            "defaultValue": ""
+        }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "ResourceGroupName": "[resourceGroup().name]",
+        "imagePublisher": "MicrosoftWindowsServer",
+        "imageOffer": "WindowsServer",
+        "imageSKU" : "2016-Datacenter",
+        "OSDiskName": "osdisk",
+        "nicName": "CSNIC",
+        "NSGName": "SiteRecoveryNSG",
+        "storageAccountType": "Standard_LRS",
+        "vmStorageAccountContainerName": "asrconfigservervhds",
+        "publicIPAddressName": "SiteRecoveryCSIP",
+        "vmSize": "Standard_A8_v2",
+        "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', parameters('StackVNetName'))]",
+        "subnetRef": "[concat(variables('vnetID'),'/subnets/',parameters('StackSubnetName'))]",
+        "ddisk1name": "ProcessServerCacheDisk",
+        "ddisk2name": "RetentionDisk",
+        "scriptFile": "https://raw.githubusercontent.com/UKCloud/AzureStack/master/Extensions/Windows/ASRCSConfig.ps1"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('NSGName')]",
+            "location": "[variables('location')]",
+            "tags": {
+                "displayName": "[variables('NSGName')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPAddressName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "publicIPAddressVersion": "IPv4"
+            }
+          },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[toLower(parameters('StackStorageAccount'))]",
+            "location": "[variables('location')]",
+            "properties": {
+                "accountType": "[variables('storageAccountType')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('nicName')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]",
+                "[concat('Microsoft.Network/networkSecurityGroups/', variables('NSGName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
+                            },
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('NSGName'))]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[parameters('ConfigurationServerName')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/', toLower(parameters('StackStorageAccount')))]",
+                "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[parameters('ConfigurationServerName')]",
+                    "adminUsername": "[parameters('ConfigServerUsername')]",
+                    "adminPassword": "[parameters('ConfigServerPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('imagePublisher')]",
+                        "offer": "[variables('imageOffer')]",
+                        "sku": "[variables('imageSKU')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "osdisk",
+                        "vhd": {
+                            "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', parameters('StackStorageAccount')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
+                        },
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    },
+                    "dataDisks": [
+                        {
+                          "diskSizeGB": 605,
+                          "lun": 0,
+                          "createOption": "Empty",
+                          "name": "[variables('ddisk1name')]",
+                          "vhd" : {
+                              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', parameters('StackStorageAccount')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, variables('vmStorageAccountContainerName'),'/',variables('ddisk1name'),'.vhd')]"
+                          }
+                        },
+                        {
+                          "diskSizeGB": 605,
+                          "lun": 1,
+                          "createOption": "Empty",
+                          "name": "[variables('ddisk2name')]",
+                          "vhd" : {
+                            "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', parameters('StackStorageAccount')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, variables('vmStorageAccountContainerName'),'/',variables('ddisk2name'),'.vhd')]"
+                        }
+                        }
+                      ]
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": "true",
+                        "storageUri": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('StackStorageAccount')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob]"
+                    }
+                }
+            },
+            "resources": [
+                {
+                  "name": "SRSetup",
+                  "type": "extensions",
+                  "location": "[resourceGroup().location]",
+                  "dependsOn": [
+                    "[concat('Microsoft.Compute/virtualMachines/', parameters('ConfigurationServerName'))]"
+                  ],
+                  "tags": {
+                    "displayName": "SRSetup"
+                  },
+                  "properties": {
+                    "publisher": "Microsoft.Compute",
+                    "type": "CustomScriptExtension",
+                    "typeHandlerVersion": "1.9",
+                    "autoUpgradeMinorVersion": true,
+                    "settings": {
+                        "fileUris": [ "[variables('scriptFile')]" ]
+                    },
+                    "protectedSettings": {
+                        "commandToExecute" : "[concat('powershell -ExecutionPolicy Unrestricted -File ASRCSConfig.ps1 -Username ',parameters('AADUsername'),' -Password ',parameters('AADPassword'),' -ArmEndpoint ',parameters('StackArmEndpoint'),' -MySQLRootPassword ',parameters('MySQLRootPassword'),' -MySQLUserPassword ',parameters('MySQLUserPassword'),' -AzureStorageAccount ',parameters('AzureStorageAccount'),' -AzureResourceGroup ',parameters('AzureResourceGroup'),' -VaultName ',parameters('VaultName'),' -ConfigServerUsername ',parameters('ConfigServerUsername'),' -ConfigServerPassword ',parameters('ConfigServerPassword'),' -EncryptionKey ',parameters('EncryptionKey'),' -WindowsUsername ',parameters('WindowsUsername'),' -WindowsPassword ',parameters('WindowsPassword'),' -LinuxRootPassword ',parameters('LinuxRootPassword'),' -StackResourceGroup ',variables('ResourceGroupName'))]"
+                    }
+                  }
+                }
+            ]
+        }
+    ]
+}
