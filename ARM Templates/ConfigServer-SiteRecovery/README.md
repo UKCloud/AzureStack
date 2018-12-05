@@ -4,6 +4,51 @@
     <img src="http://armviz.io/visualizebutton.png"/>
 </a>
 
-This template allows you to deploy a Configuration Server for Azure Site Recovery. This template requires a virtual network to already be created for the server to be deployed on.
+This template allows you to deploy a configuration server for Azure Site Recovery. This template requires a virtual network to already be created for the server to be deployed on.
 
 The configuration server that is deployed creates all necessary resources on public Azure for Azure Site Recovery and if this template is deployed into a resource group with VMs, these VMs will be automatically be protected.
+
+## High Level Overview of the Deployment Process
+
+1. Ensure a virtual network is already available within the resource group you wish to deploy the configuration server to.
+
+2. The ARM template deploys pre requisite resources (NIC, Public IP, NSG, etc.) for the configuration server.
+
+3. The configuration server is deployed with a custom script extension.
+
+4. The custom script extension performs the following steps:
+    1. Installs all prerequisites on the configuration server.
+    2. Creates a resource group, recovery services vault, storage account and virtual network on public Azure.
+    3. Installs the configuration server service.
+    4. Configures the recovery services vault.
+    5. Protects any VMs in the same resource group as the configuration server.
+
+## ARM Template parameters
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| AADUsername | Your Azure Active Directory Username (the email address you use to login to public Azure and Azure Stack) | example\@example.com |
+| AADPassword | Your Azure Active Directory Password | |
+| StackArmEndpoint | The Azure Resource Manager endpoint for Azure Stack | https://management.frn00006.azure.ukcloud.com |
+| ConfigurationServerName | The name of the configuration server VM | SRConfigServer |
+| TempFilesPath | Location on configuration server where setup files will be stored | C:\TempASR\ |
+| ExtractionPath | The name of the folder within the TempFilesPath where the configuration server unified setup will be extracted to | Extracted |
+| MySQLRootPassword | The root password for the MySQL server created on the Configuration Server | |
+| MySQLUserPassword | The user password for the MySQL server created on the Configuration Server | |
+| AzureVNetName | The name of the virtual network to be created on public Azure | SiteRecoveryVNet |
+| StackVNetName | The name of the existing virtual network to connect the configuration server to on Azure Stack | SiteRecoveryVNet |
+| StackSubnetName | The name of the existing virtual network subnet to connect the configuration server to on Azure Stack | default |
+| AzureStorageAccount | The name of the storage account to be created on public Azure (Must be unique across public Azure)  | stacksiterecoverysa |
+| StackStorageAccount | The name of the storage account to be created on Azure Stack (Must be unique across Azure Stack)  | siterecoverycssa |
+| AzureSubnetRange | The subnet range of the virtual network to be created on public Azure (In CIDR notation)  | 192.168.1.0/24 |
+| AzureVNetRange | The address space of the virtual network to be created on public Azure (In CIDR notation)  | 192.168.0.0/16 |
+| AzureLocation | The location of the recovery services vault on public Azure  | UK West |
+| ReplicationPolicyName | The name of the site recovery replication policy to be created in the recovery services vault  | ReplicationPolicy |
+| AzureResourceGroup | The name of the resource group to be created on public Azure  | SiteRecoveryTestRG |
+| VaultName | The name of the recovery services vault to be created on public Azure  | AzureStackVault |
+| ConfigServerUsername | The username for the configuration server  | ConfigAdmin |
+| ConfigServerPassword | The password for the configuration server | |
+| EncryptionKey | The encryption key for the MySQL database on the configuration server  | ExampleEncryptionKey |
+| WindowsUsername | The username of an administrator account on the Windows VMs to be protected  | Administrator |
+| WindowsPassword | The password of an administrator account on the Windows VMs to be protected | |
+| LinuxRootPassword | The password of the root account on the Linux VMs to be protected | |
