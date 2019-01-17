@@ -194,7 +194,7 @@ function az-aks-upgrade {
         [parameter(Mandatory=$false)][String]$Location = "frn00006",
         [parameter(Mandatory=$true)][String]$ServicePrincipal,
         [parameter(Mandatory=$true)][String]$ClientSecret,
-        [parameter(Mandatory=$true)][ValidateSet("1.7", "1.8", "1.9", "1.10", "1.11")][String]$KubernetesAzureCloudProviderVersion
+        [parameter(Mandatory=$true)][String]$KubernetesUpgradeVersion
     )
 
     $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | where {$_.Name -notlike "*k8s*"}
