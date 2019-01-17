@@ -85,7 +85,7 @@ function az-aks-list {
         $PoolVMs = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | where {$_.Name -like "*k8s*" -and $_.Name -notlike "*master*"}
         $PoolName = (($PoolVMs[0].Name).Split("-"))[1]
         $MasterVMs = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | where {$_.Name -like "*k8s*" -and $_.Name -like "*master*"}
-        $CreationVM = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | where {$_.Name -notlike "*k8s*"}
+        $CreationVM = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | where {$_.Name -like "vmd*"}
         $KubernetesDeployment = Get-AzureRmResourceGroupDeployment -ResourceGroupName $ResourceGroup | where {$_.TemplateLink}
         $KubernetesCluster = [PSCustomObject]@{
             "Resource group" = $VM.ResourceGroupName
@@ -132,7 +132,7 @@ function az-aks-scale {
     $CreationVM | Set-AzureRmResource -Tag $tags -Force | Out-Null
     $MasterFQDN = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "*master*"}).DnsSettings.Fqdn
     $Username = $CreationVM.OSProfile.AdminUsername
-    $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where {$_.Name -notlike "*k8s*"}).IpAddress
+    $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "vmd*"}).IpAddress
     $ScaleCommand = "/var/lib/waagent/custom-script/download/0/acs-engine/bin/acs-engine scale"
     $SubscriptionID = (Get-AzureRmContext).Subscription.Id
     $DeploymentDirectory = "/var/lib/waagent/custom-script/download/0/acs-engine/_output/" + $MasterFQDN.Split(".")[0]
@@ -143,7 +143,6 @@ function az-aks-scale {
     } -ArgumentList $PrivateKeyLocation,$Username,$IPAddress,$ScaleCommand,$ResourceGroupName,$Location,$ServicePrincipal,$ClientSecret,$SubscriptionID,$NewNodeCount,$DeploymentDirectory,$MasterFQDN,$PoolName
 
     # Actual clean-up as the command (sometimes, completely at random) can't do it
-
     $PoolVMs = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | where {$_.Name -like "*$PoolName*"}
     $PoolNICs = Get-AzureRmNetworkInterface -ResourceGroupName $ResourceGroupName | where {$_.Name -like "*$PoolName*"}
     if (!!$PoolVMs[0].StorageProfile.OsDisk.ManagedDisk) {
@@ -197,7 +196,7 @@ function az-aks-upgrade {
         [parameter(Mandatory=$true)][String]$KubernetesUpgradeVersion
     )
 
-    $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | where {$_.Name -notlike "*k8s*"}
+    $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | where {$_.Name -like "vmd*"}
     $resourceNameSuffix = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName | where {$_.Name -like "*k8s*" -and $_.Name -notlike "*master*"})[0].Tags["resourceNameSuffix"]
     $tags = $CreationVM.Tags
     if (!$tags["poolName"]) {
@@ -210,7 +209,7 @@ function az-aks-upgrade {
     $CreationVM | Set-AzureRmResource -Tag $tags -Force | Out-Null
     $MasterFQDN = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "*master*"}).DnsSettings.Fqdn
     $Username = $CreationVM.OSProfile.AdminUsername
-    $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where {$_.Name -notlike "*k8s*"}).IpAddress
+    $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "vmd*"}).IpAddress
     $ScaleCommand = "/var/lib/waagent/custom-script/download/0/acs-engine/bin/acs-engine upgrade"
     $SubscriptionID = (Get-AzureRmContext).Subscription.Id
     $DeploymentDirectory = "/var/lib/waagent/custom-script/download/0/acs-engine/_output/" + $MasterFQDN.Split(".")[0]
@@ -219,4 +218,25 @@ function az-aks-upgrade {
         ssh -i $PrivateKeyLocation $Username@$IPAddress sudo $ScaleCommand --resource-group $ResourceGroupName --auth-method client_secret --azure-env AzureStackCloud --location $Location --client-id $ServicePrincipal `
         --client-secret $ClientSecret --subscription-id $SubscriptionID --deployment-dir $DeploymentDirectory --master-FQDN $MasterFQDN --upgrade-version $KubernetesAzureCloudProviderVersion
     } -ArgumentList $PrivateKeyLocation,$Username,$IPAddress,$ScaleCommand,$ResourceGroupName,$Location,$ServicePrincipal,$ClientSecret,$SubscriptionID,$DeploymentDirectory,$MasterFQDN,$KubernetesAzureCloudProviderVersion
+    
+}
+
+function az-aks-Get-upgrades {
+    param(
+        [parameter(Mandatory=$true)][String]$ResourceGroupName,
+        [parameter(Mandatory=$true)][String]$PrivateKeyLocation,
+        [parameter(Mandatory=$false)][String]$Location = "frn00006"
+    )
+
+    $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | where {$_.Name -like "vmd*"}
+    $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "vmd*"}).IpAddress
+    $Username = $CreationVM.OSProfile.AdminUsername
+    $FirstMasterVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | where {$_.Name -like "k8s-master*" -and $_.Name -like "*0"}
+    $CurrentVersion = $FirstMasterVM.Tags["orchestrator"].Split(":")[1]
+    $Command = "/var/lib/waagent/custom-script/download/0/acs-engine/bin/acs-engine orchestrators"
+    Write-Host "Current Kubernetes version is: $CurrentVersion" -ForegroundColor Green
+    Invoke-Command -ScriptBlock {
+        param($PrivateKeyLocation, $Username, $IPAddress, $Command, $CurrentVersion) 
+        ssh -i $PrivateKeyLocation $Username@$IPAddress sudo $Command --orchestrator kubernetes --version $CurrentVersion
+    } -ArgumentList $PrivateKeyLocation,$Username,$IPAddress,$Command,$CurrentVersion
 }
