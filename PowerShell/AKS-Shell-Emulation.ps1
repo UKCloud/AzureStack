@@ -196,8 +196,8 @@ function az-aks-upgrade {
         [parameter(Mandatory=$true)][String]$KubernetesUpgradeVersion
     )
 
-    $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | where {$_.Name -like "vmd*"}
-    $resourceNameSuffix = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName | where {$_.Name -like "*k8s*" -and $_.Name -notlike "*master*"})[0].Tags["resourceNameSuffix"]
+    $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "vmd*"}
+    $resourceNameSuffix = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "*k8s*" -and $_.Name -notlike "*master*"})[0].Tags["resourceNameSuffix"]
     $tags = $CreationVM.Tags
     if (!$tags["poolName"]) {
         $tags += @{poolName="CreationVM"}
@@ -213,12 +213,17 @@ function az-aks-upgrade {
     $ScaleCommand = "/var/lib/waagent/custom-script/download/0/acs-engine/bin/acs-engine upgrade"
     $SubscriptionID = (Get-AzureRmContext).Subscription.Id
     $DeploymentDirectory = "/var/lib/waagent/custom-script/download/0/acs-engine/_output/" + $MasterFQDN.Split(".")[0]
-    Invoke-Command -ScriptBlock {
-        param($PrivateKeyLocation, $Username, $IPAddress, $ScaleCommand, $ResourceGroupName, $Location, $ServicePrincipal, $ClientSecret, $SubscriptionID, $DeploymentDirectory, $MasterFQDN, $KubernetesAzureCloudProviderVersion) 
-        ssh -i $PrivateKeyLocation $Username@$IPAddress sudo $ScaleCommand --resource-group $ResourceGroupName --auth-method client_secret --azure-env AzureStackCloud --location $Location --client-id $ServicePrincipal `
-        --client-secret $ClientSecret --subscription-id $SubscriptionID --deployment-dir $DeploymentDirectory --master-FQDN $MasterFQDN --upgrade-version $KubernetesAzureCloudProviderVersion
-    } -ArgumentList $PrivateKeyLocation,$Username,$IPAddress,$ScaleCommand,$ResourceGroupName,$Location,$ServicePrincipal,$ClientSecret,$SubscriptionID,$DeploymentDirectory,$MasterFQDN,$KubernetesAzureCloudProviderVersion
-    
+    $CurrentVersion = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "*k8s*" -and $_.Name -like "*master*"})[0].Tags["orchestrator"].Split(":")[1]
+    if ($CurrentVersion -eq $KubernetesUpgradeVersion) {
+        Write-Host "Can't upgrade Kubernetes version - Cluster is already running version $CurrentVersion" -ForegroundColor Red
+    }
+    else {
+        Invoke-Command -ScriptBlock {
+            param($PrivateKeyLocation, $Username, $IPAddress, $ScaleCommand, $ResourceGroupName, $Location, $ServicePrincipal, $ClientSecret, $SubscriptionID, $DeploymentDirectory, $MasterFQDN, $KubernetesAzureCloudProviderVersion) 
+            ssh -i $PrivateKeyLocation $Username@$IPAddress sudo $ScaleCommand --resource-group $ResourceGroupName --auth-method client_secret --azure-env AzureStackCloud --location $Location --client-id $ServicePrincipal `
+            --client-secret $ClientSecret --subscription-id $SubscriptionID --deployment-dir $DeploymentDirectory --master-FQDN $MasterFQDN --upgrade-version $KubernetesAzureCloudProviderVersion
+        } -ArgumentList $PrivateKeyLocation,$Username,$IPAddress,$ScaleCommand,$ResourceGroupName,$Location,$ServicePrincipal,$ClientSecret,$SubscriptionID,$DeploymentDirectory,$MasterFQDN,$KubernetesAzureCloudProviderVersion
+    }
 }
 
 function az-aks-Get-upgrades {
