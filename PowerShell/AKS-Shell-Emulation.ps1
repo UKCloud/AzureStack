@@ -9,8 +9,8 @@ function Start-az-aks {
         Write-Host "Not executing as administrator, unable to check if OpenSSH is installed" -ForegroundColor Red
     }    
     $Cred = Get-Credential
-    Add-AzureRMEnvironment -Name 'AzureStack' -ArmEndpoint 'https://management.frn00006.azure.ukcloud.com'
-    Login-AzureRmAccount -EnvironmentName 'AzureStack' -Credential $Cred
+    Add-AzureRmEnvironment -Name "AzureStackUser" -ArmEndpoint 'https://management.frn00006.azure.ukcloud.com'
+    Login-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $Cred
 }
 
 
