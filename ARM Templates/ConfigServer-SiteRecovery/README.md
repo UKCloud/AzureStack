@@ -74,4 +74,8 @@ The configuration server that is deployed creates all necessary resources on pub
 
 ## Notes
 
-This ARM template and accompanying scripts were created following the process found in the [Azure Stack Site Recovery documentation](https://docs.microsoft.com/en-us/azure/site-recovery/azure-stack-site-recovery#step-1-prepare-azure-stack-vms). 
+This ARM template and accompanying scripts were created following the process found in the [Azure Stack Site Recovery documentation](https://docs.microsoft.com/en-us/azure/site-recovery/azure-stack-site-recovery#step-1-prepare-azure-stack-vms).
+
+## See Also
+
+PowerShell scripts for fail over and fail back can be found here: [Azure Site Recovery PowerShell Scripts](https://github.com/UKCloud/AzureStack/tree/master/PowerShell/Azure%20Site%20Recovery)
