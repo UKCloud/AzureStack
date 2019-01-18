@@ -1,5 +1,37 @@
 function Test-AzureSiteRecoveryFailOver {
+    <#
+    .SYNOPSIS
+        Performs a test failover of your protected VMs to Azure.
+
+    .DESCRIPTION
+        Performs a test failover of all protected VMs in a single vault to Azure. Will test failover protected VMs asynchronously, then
+        perform clean-up asynchronously.
+
+    .PARAMETER VaultName
+        The name of the site recovery vault in public Azure. Example: "AzureStackRecoveryVault"
+
+    .PARAMETER Username
+        Your Azure AD username. Used for logging into public Azure. Example: "exampleuser@contoso.onmicrosoft.com"
     
+    .PARAMETER Password
+        Your Azure AD password as a SecureString. Used for logging into public Azure. If not specified then an input prompt will appear for this.
+
+    .PARAMETER Confirmation
+        Switch to specify whether to prompt the user to continue if the failover doesn't complete successfully
+
+    .EXAMPLE
+        Test-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault" -Username "exampleuser@contoso.onmicrosoft.com"
+
+    .EXAMPLE
+        Test-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault" -Username "exampleuser@contoso.onmicrosoft.com" -Password $SecurePass
+    
+    .EXAMPLE
+        Test-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault" -Username "exampleuser@contoso.onmicrosoft.com" -Password $SecurePass -Confirmation
+    
+    .NOTES
+        As this command performs a test failover, no production VMs will be affected.
+    #>
+
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
@@ -7,12 +39,21 @@ function Test-AzureSiteRecoveryFailOver {
         [Parameter(Mandatory = $true)]
         [string]$Username,
         [Parameter(Mandatory = $false)]
-        [SecureString]$Password = $(Read-Host "Input password" -AsSecureString -Force)
+        [SecureString]$Password = $(Read-Host "Input password" -AsSecureString -Force),
+        [Parameter(Mandatory = $false)]
+        [switch]$Confirmation
     )
 
     begin {
-        $Credentials = New-Object System.Management.Automation.PSCredential ($Username, $Password) 
-        Login-AzureRmAccount -Credential $Credentials
+        try {
+            $Credentials = New-Object System.Management.Automation.PSCredential ($Username, $Password) 
+            Login-AzureRmAccount -Credential $Credentials
+        }
+        catch {
+            Write-Host "Failed to login to public Azure. Exiting...." -ForegroundColor Red
+            $Error[-1]
+            break
+        }
     }
 
     process {
@@ -104,39 +145,51 @@ function Test-AzureSiteRecoveryFailOver {
                 Start-Sleep -Seconds 30
             }
         }
-
-        # Ask user if they want to continue if one or more test failover jobs fail
-        $valid = $false
-        while ($valid -eq $false -and $FailureTest -eq $true) {
-            if ($FailureTest -eq $true) {
-                $YesNo = Read-Host -Prompt "One or more of the VMs failed during test failover. Are you sure you want to proceed? (y/n)"
-                if ($YesNo -like "*n*") {
-                    Write-Host "Exiting..."
-                    return $false
-                } elseif ($YesNo -notlike "*y*") {
-                    Write-Host ""
-                    Write-Host "Please enter a valid option (E.G. y or n)"
-                } else {
-                    Write-Host "Proceeding..."
-                    $Valid = $true   
+        if ($Confirmation -eq $true) {
+            # Ask user if they want to continue if one or more test failover jobs fail
+            $Valid = $false
+            while ($Valid -eq $false -and $FailureTest -eq $true) {
+                if ($FailureTest -eq $true) {
+                    $YesNo = Read-Host -Prompt "One or more of the VMs failed during test failover. Are you sure you want to proceed? (y/n)"
+                    if ($YesNo -like "*n*") {
+                        Write-Host "Exiting..."
+                        return $false
+                    } elseif ($YesNo -notlike "*y*") {
+                        Write-Host ""
+                        Write-Host "Please enter a valid option (E.G. y or n)"
+                    } else {
+                        Write-Host "Proceeding..."
+                        $Valid = $true   
+                    }
                 }
             }
-        }
-        # Ask user if they want to continue if one or more cleanup jobs fail
-        $Valid = $false
-        while ($Valid -eq $false -and $CleanupFailureTest -eq $true) {
-            if ($CleanupFailureTest -eq $true) {
-                $YesNo = Read-Host -Prompt "One or more of the VMs failed during test failover clean-up. Are you sure you want to proceed? (y/n)"
-                if ($YesNo -like "*n*") {
-                    Write-Host "Exiting..."
-                    return $false
-                } elseif ($YesNo -notlike "*y*") {
-                    Write-Host ""
-                    Write-Host "Please enter a valid option (E.G. y or n)"
-                } else {
-                    Write-Host "Proceeding..."
-                    $Valid = $true   
+
+            # Ask user if they want to continue if one or more cleanup jobs fail
+            $Valid = $false
+            while ($Valid -eq $false -and $CleanupFailureTest -eq $true) {
+                if ($CleanupFailureTest -eq $true) {
+                    $YesNo = Read-Host -Prompt "One or more of the VMs failed during test failover clean-up. Are you sure you want to proceed? (y/n)"
+                    if ($YesNo -like "*n*") {
+                        Write-Host "Exiting..."
+                        return $false
+                    } elseif ($YesNo -notlike "*y*") {
+                        Write-Host ""
+                        Write-Host "Please enter a valid option (E.G. y or n)"
+                    } else {
+                        Write-Host "Proceeding..."
+                        $Valid = $true   
+                    }
                 }
+            }
+        } else {
+            $Valid = $true
+            if ($FailureTest -eq $true) {
+                Write-Host "One or more of the VMs failed during test failover." -ForegroundColor Red
+                $Valid = $false
+            }
+            if ($CleanupFailureTest -eq $true) {
+                Write-Host "One or more of the VMs failed during test failover clean-up." -ForegroundColor Red
+                $Valid = $false
             }
         }
         return $Valid
@@ -145,6 +198,32 @@ function Test-AzureSiteRecoveryFailOver {
 
 
 function Start-AzureSiteRecoveryFailOver {
+    <#
+    .SYNOPSIS
+        Performs a failover of your protected VMs to Azure.
+
+    .DESCRIPTION
+        Performs a failover of all protected VMs in a single vault to Azure. Will failover protected VMs asynchronously, then
+        commit them to public Azure.
+
+    .PARAMETER VaultName
+        The name of the site recovery vault in public Azure. Example: "AzureStackRecoveryVault"
+
+    .PARAMETER Username
+        Your Azure AD username. Used for logging into public Azure. Example: "exampleuser@contoso.onmicrosoft.com"
+    
+    .PARAMETER Password
+        Your Azure AD password as a SecureString. Used for logging into public Azure. If not specified then an input prompt will appear for this.
+
+    .EXAMPLE
+        Start-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault" -Username "exampleuser@contoso.onmicrosoft.com"
+
+    .EXAMPLE
+        Start-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault" -Username "exampleuser@contoso.onmicrosoft.com" -Password $SecurePass
+    
+    .NOTES
+        This command performs a full failover of your production VMs. As part of this process your VMs may be shut down. Proceed at your own risk.
+    #>
 
     [CmdletBinding()]
     param (
@@ -157,17 +236,23 @@ function Start-AzureSiteRecoveryFailOver {
     )
 
     begin {
-        $Credentials = New-Object System.Management.Automation.PSCredential ($Username, $Password) 
-        Login-AzureRmAccount -Credential $Credentials
+        try {
+            $Credentials = New-Object System.Management.Automation.PSCredential ($Username, $Password) 
+            Login-AzureRmAccount -Credential $Credentials
+        }
+        catch {
+            Write-Host "Failed to login to public Azure. Exiting...." -ForegroundColor Red
+            $Error[-1]
+            break
+        }
     }
 
     process {
-        $TestSuccessful = Test-AzureSiteRecoveryFailover -VaultName $VaultName -Username $Username -Password $Password
+        $TestSuccessful = Test-AzureSiteRecoveryFailover -VaultName $VaultName -Username $Username -Password $Password -Confirmation
 
         if ($TestSuccessful -eq $false) {
             break
-        } 
-        elseif ($TestSuccessful -eq $true) {
+        } elseif ($TestSuccessful -eq $true) {
 
             # Start actual failover
             Write-Host "Starting failover..."
@@ -283,6 +368,63 @@ function Start-AzureSiteRecoveryFailOver {
 
 
 function Start-AzureSiteRecoveryFailBack {
+    <#
+    .SYNOPSIS
+        Performs a fail back of all VMs in an Azure resource group to Azure Stack.
+
+    .DESCRIPTION
+        Performs a failover of all protected VMs in a single vault to Azure. Will failover protected VMs asynchronously, then
+        commit them to public Azure.
+
+    .PARAMETER AzureResourceGroup
+        The name of the resource group in public Azure. Example: "SiteRecovery-RG"
+
+    .PARAMETER Username
+        Your Azure AD username. Used for logging into public Azure. Example: "exampleuser@contoso.onmicrosoft.com"
+    
+    .PARAMETER Password
+        Your Azure AD password as a SecureString. Used for logging into public Azure. If not specified then an input prompt will appear for this.
+    
+    .PARAMETER ArmEndpoint
+        The ARM endpoint for the Azure Stack endpoint you are failing back to. Defaults to: "https://management.frn00006.azure.ukcloud.com"
+
+    .PARAMETER StackResourceGroup
+        The name of the resource group to be created in Azure Stack that the VMs will be failed back to. Example: "FailBack-RG"
+
+    .PARAMETER StackStorageAccount
+        The name of the storage account to be created in Azure Stack that the VMs will be failed back to. Example "FailBackSA"
+
+    .PARAMETER StackStorageContainer
+        The name of the storage container to be created in the created storage account. Example "FailBackContainer"
+    
+    .PARAMETER VNetName
+        The name of the virtual network to place the VMs on after being failed back. Defaults to: "myVNetwork"
+    
+    .PARAMETER SubnetName
+        The name of the subnet to be created in the created virtual network. Defaults to: "default"
+
+    .PARAMETER VNetRange
+        The range of the created virtual network in CIDR notation. Defaults to: "192.168.0.0/16"
+
+    .PARAMETER SubnetRange
+        The range of the created subnet in CIDR notation. Defaults to: "192.168.1.0/24"
+
+    .PARAMETER NSGName
+        The name of the network security group to place the VMs on after being failed back. Defaults to: "myNSG"
+
+    .EXAMPLE
+        Start-AzureSiteRecoveryFailOver -AzureResourceGroup "SiteRecovery-RG" -Username "exampleuser@contoso.onmicrosoft.com" -StackResourceGroup "FailBack-RG" -StackStorageAccount "FailBackSA" `
+            -StackStorageContainer "FailBackContainer"
+
+    .EXAMPLE
+        Start-AzureSiteRecoveryFailOver -AzureResourceGroup "SiteRecovery-RG" -Username "exampleuser@contoso.onmicrosoft.com" -Password $SecurePassword -ArmEndpoint "https://management.frn00006.azure.ukcloud.com" `
+            -StackResourceGroup "FailBack-RG" -StackStorageAccount "FailBackSA" -StackStorageContainer "FailBackContainer" -VNetName "myVNetwork" -SubnetName "default" -VNetRange "192.168.0.0/16" `
+            -SubnetRange "192.168.1.0/24" -NSGName "myNSG"
+    
+    .NOTES
+        This command does not clear the VMs from public Azure. Once you have confirmed that the fail back process has completed successfully, these can be removed with Remove-AzureRmResourceGroup -Name $AzureResourceGroup
+    #>
+
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
@@ -302,17 +444,24 @@ function Start-AzureSiteRecoveryFailBack {
         [Parameter(Mandatory = $false)]
         [String]$VNetName = "myVNetwork",
         [Parameter(Mandatory = $false)]
-        [String]$SubnetName = 'default',
+        [String]$SubnetName = "default",
         [Parameter(Mandatory = $false)]
-        [String]$SubnetRange = '192.168.1.0/24',
+        [String]$VNetRange = "192.168.0.0/16",
         [Parameter(Mandatory = $false)]
-        [String]$VNetRange = '192.168.0.0/16',
+        [String]$SubnetRange = "192.168.1.0/24",
         [Parameter(Mandatory = $false)]
-        [String]$NSGName = 'myNSG'
+        [String]$NSGName = "myNSG"
     )
     begin {
-        $Credentials = New-Object System.Management.Automation.PSCredential ($Username, $Password) 
-        Login-AzureRmAccount -Credential $Credentials
+        try {
+            $Credentials = New-Object System.Management.Automation.PSCredential ($Username, $Password) 
+            Login-AzureRmAccount -Credential $Credentials
+        }
+        catch {
+            Write-Host "Failed to login to public Azure. Exiting...." -ForegroundColor Red
+            $Error[-1]
+            break
+        }
     }
     process {
         $RGName = Get-AzureRmResourceGroup -Name $AzureResourceGroup
