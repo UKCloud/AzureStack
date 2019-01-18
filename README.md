@@ -1,3 +1,3 @@
-# AzureStack Code Repository
+# Azure Stack Code Repository
 
-AzureStack Code Repository for Users and Operators
+Azure Stack Code Repository for Users and Operators
