@@ -10,15 +10,23 @@ The configuration server that is deployed creates all necessary resources on pub
 
 ## Prerequisites
 
-- Ensure a virtual network is already available within the resource group you wish to deploy the configuration server to.
+- Ensure a virtual network is already available within the resource group you wish to deploy the configuration server to, with any VMs that you wish to be protected residing on this network.
 
-- For any VMs which you wish to be protected, be sure to add the relevant custom script extension. The URLs for these are as follows:
+- A public Azure subscription on the same domain as an Azure Stack subscription.
+
+- For any VMs which you wish to be protected, be sure to add the relevant custom script extension. These are required as specified in the [Azure Stack Site Recovery documentation](https://docs.microsoft.com/en-us/azure/site-recovery/azure-stack-site-recovery#step-1-prepare-azure-stack-vms). The URLs for these custom scripts are as follows:
   - Windows: https://raw.githubusercontent.com/UKCloud/AzureStack/master/Extensions/Windows/VMSetupForSR.ps1
+  
+    This extension disables Remote User Access control and allows WMI and File and Printer sharing on the firewall.
+  
   - Linux: https://raw.githubusercontent.com/UKCloud/AzureStack/master/Extensions/Linux/SetRootPassword.sh
+
+    This extension sets the root password to the input parameter, as root access is required for Azure Site Recovery.
 
     > [!Note]
     > For the Linux extension, use the following command syntax: `sh ChangePassword.sh <password>`
-    > The Windows extension does not require any parameters to be specified
+    >
+    > The Windows extension does not require any parameters to be specified.
 
 ## High Level Overview of the Deployment Process
 
@@ -62,3 +70,7 @@ The configuration server that is deployed creates all necessary resources on pub
 | WindowsUsername | The username of an administrator account on the Windows VMs to be protected  | Administrator |
 | WindowsPassword | The password of an administrator account on the Windows VMs to be protected | |
 | LinuxRootPassword | The password of the root account on the Linux VMs to be protected | |
+
+## Notes
+
+This ARM template and accompanying scripts were created following the process found in the [Azure Stack Site Recovery documentation](https://docs.microsoft.com/en-us/azure/site-recovery/azure-stack-site-recovery#step-1-prepare-azure-stack-vms). 
