@@ -23,7 +23,8 @@ The configuration server that is deployed creates all necessary resources on pub
 
     This extension sets the root password to the input parameter, as root access is required for Azure Site Recovery.
 
-    > [!Note]
+    > ### **Note**
+    >
     > For the Linux extension, use the following command syntax: `sh ChangePassword.sh <password>`
     >
     > The Windows extension does not require any parameters to be specified.
