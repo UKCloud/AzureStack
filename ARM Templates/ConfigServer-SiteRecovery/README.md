@@ -8,20 +8,30 @@ This template allows you to deploy a configuration server for Azure Site Recover
 
 The configuration server that is deployed creates all necessary resources on public Azure for Azure Site Recovery and if this template is deployed into a resource group with VMs, these VMs will be automatically be protected.
 
+## Prerequisites
+
+- Ensure a virtual network is already available within the resource group you wish to deploy the configuration server to.
+
+- For any VMs which you wish to be protected, be sure to add the relevant custom script extension. The URLs for these are as follows:
+  - Windows: https://raw.githubusercontent.com/UKCloud/AzureStack/master/Extensions/Windows/VMSetupForSR.ps1
+  - Linux: https://raw.githubusercontent.com/UKCloud/AzureStack/master/Extensions/Linux/SetRootPassword.sh
+
+    > [!Note]
+    > For the Linux extension, use the following command syntax: `sh ChangePassword.sh <password>`
+    > The Windows extension does not require any parameters to be specified
+
 ## High Level Overview of the Deployment Process
 
-1. Ensure a virtual network is already available within the resource group you wish to deploy the configuration server to.
+1. The ARM template deploys pre requisite resources (NIC, Public IP, NSG, etc.) for the configuration server.
 
-2. The ARM template deploys pre requisite resources (NIC, Public IP, NSG, etc.) for the configuration server.
+2. The configuration server is deployed with a custom script extension.
 
-3. The configuration server is deployed with a custom script extension.
-
-4. The custom script extension performs the following steps:
+3. The custom script extension performs the following steps:
     1. Installs all prerequisites on the configuration server.
     2. Creates a resource group, recovery services vault, storage account and virtual network on public Azure.
     3. Installs the configuration server service.
     4. Configures the recovery services vault.
-    5. Protects any VMs in the same resource group as the configuration server.
+    5. Protects any VMs on the same virtual network as the configuration server.
 
 ## ARM Template parameters
 
