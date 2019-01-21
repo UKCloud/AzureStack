@@ -399,11 +399,11 @@ function Start-AzureSiteRecoveryFailBack {
         The name of the network security group to place the VMs on after being failed back. Defaults to: "myNSG"
 
     .EXAMPLE
-        Start-AzureSiteRecoveryFailOver -AzureResourceGroup "SiteRecovery-RG" -Username "exampleuser@contoso.onmicrosoft.com" -StackResourceGroup "FailBack-RG" -StackStorageAccount "FailBackSA" `
+        Start-AzureSiteRecoveryFailBack -AzureResourceGroup "SiteRecovery-RG" -Username "exampleuser@contoso.onmicrosoft.com" -StackResourceGroup "FailBack-RG" -StackStorageAccount "FailBackSA" `
             -StackStorageContainer "FailBackContainer"
 
     .EXAMPLE
-        Start-AzureSiteRecoveryFailOver -AzureResourceGroup "SiteRecovery-RG" -Username "exampleuser@contoso.onmicrosoft.com" -Password $SecurePassword -ArmEndpoint "https://management.frn00006.azure.ukcloud.com" `
+        Start-AzureSiteRecoveryFailBack -AzureResourceGroup "SiteRecovery-RG" -Username "exampleuser@contoso.onmicrosoft.com" -Password $SecurePassword -ArmEndpoint "https://management.frn00006.azure.ukcloud.com" `
             -StackResourceGroup "FailBack-RG" -StackStorageAccount "FailBackSA" -StackStorageContainer "FailBackContainer" -VNetName "myVNetwork" -SubnetName "default" -VNetRange "192.168.0.0/16" `
             -SubnetRange "192.168.1.0/24" -NSGName "myNSG"
     

@@ -44,7 +44,7 @@ Once it is installed you can just invoke the commands and PowerShell will load t
 * Perform a fail back of all VMs in an Azure resource group to Azure Stack:
 
     ```powershell
-    Start-AzureSiteRecoveryFailOver -AzureResourceGroup "SiteRecovery-RG" -Username "exampleuser@contoso.onmicrosoft.com" `
+    Start-AzureSiteRecoveryFailBack -AzureResourceGroup "SiteRecovery-RG" -Username "exampleuser@contoso.onmicrosoft.com" `
         -StackResourceGroup "FailBack-RG" -StackStorageAccount "FailBackSA" -StackStorageContainer "FailBackContainer"
     ```
 
