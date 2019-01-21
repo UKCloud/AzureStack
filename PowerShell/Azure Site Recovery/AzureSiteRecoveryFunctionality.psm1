@@ -10,49 +10,42 @@ function Test-AzureSiteRecoveryFailOver {
     .PARAMETER VaultName
         The name of the site recovery vault in public Azure. Example: "AzureStackRecoveryVault"
 
-    .PARAMETER Username
-        Your Azure AD username. Used for logging into public Azure. Example: "exampleuser@contoso.onmicrosoft.com"
-    
-    .PARAMETER Password
-        Your Azure AD password as a SecureString. Used for logging into public Azure. If not specified then an input prompt will appear for this.
-
     .PARAMETER Confirmation
         Switch to specify whether to prompt the user to continue if the failover doesn't complete successfully
 
     .EXAMPLE
-        Test-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault" -Username "exampleuser@contoso.onmicrosoft.com"
-
-    .EXAMPLE
-        Test-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault" -Username "exampleuser@contoso.onmicrosoft.com" -Password $SecurePass
+        Test-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault"
     
     .EXAMPLE
-        Test-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault" -Username "exampleuser@contoso.onmicrosoft.com" -Password $SecurePass -Confirmation
+        Test-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault" -Confirmation
     
     .NOTES
         As this command performs a test failover, no production VMs will be affected.
+        This command requires you to be logged into public Azure to run successfully.
     #>
 
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [string]$VaultName,
-        [Parameter(Mandatory = $true)]
-        [string]$Username,
-        [Parameter(Mandatory = $false)]
-        [SecureString]$Password = $(Read-Host "Input password" -AsSecureString -Force),
         [Parameter(Mandatory = $false)]
         [switch]$Confirmation
     )
 
     begin {
         try {
-            $Credentials = New-Object System.Management.Automation.PSCredential ($Username, $Password) 
-            Login-AzureRmAccount -Credential $Credentials
+            # Azure Powershell way
+            [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
+            if ($Context.Environment.ResourceManagerUrl -notlike "*https://management.azure.com*") {
+                Write-Error -Message 'You are currently logged into Azure Stack. Please login to public azure to continue.' -ErrorId 'AzureRmContextError'
+                Break
+            }
         }
         catch {
-            Write-Host "Failed to login to public Azure. Exiting...." -ForegroundColor Red
-            $Error[-1]
-            break
+            if (-not $Context -or -not $Context.Account) {
+                Write-Error -Message 'Run Login-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
+                Break
+            }
         }
     }
 
@@ -209,41 +202,34 @@ function Start-AzureSiteRecoveryFailOver {
     .PARAMETER VaultName
         The name of the site recovery vault in public Azure. Example: "AzureStackRecoveryVault"
 
-    .PARAMETER Username
-        Your Azure AD username. Used for logging into public Azure. Example: "exampleuser@contoso.onmicrosoft.com"
-    
-    .PARAMETER Password
-        Your Azure AD password as a SecureString. Used for logging into public Azure. If not specified then an input prompt will appear for this.
-
     .EXAMPLE
-        Start-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault" -Username "exampleuser@contoso.onmicrosoft.com"
+        Start-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault"
 
-    .EXAMPLE
-        Start-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault" -Username "exampleuser@contoso.onmicrosoft.com" -Password $SecurePass
-    
     .NOTES
         This command performs a full failover of your production VMs. As part of this process your VMs may be shut down. Proceed at your own risk.
+        This command requires you to be logged into public Azure to run successfully.
     #>
 
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [string]$VaultName,
-        [Parameter(Mandatory = $true)]
-        [string]$Username,
-        [Parameter(Mandatory = $false)]
-        [SecureString]$Password = $(Read-Host "Input password" -AsSecureString -Force)
     )
 
     begin {
         try {
-            $Credentials = New-Object System.Management.Automation.PSCredential ($Username, $Password) 
-            Login-AzureRmAccount -Credential $Credentials
+            # Azure Powershell way
+            [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
+            if ($Context.Environment.ResourceManagerUrl -notlike "*https://management.azure.com*") {
+                Write-Error -Message 'You are currently logged into Azure Stack. Please login to public azure to continue.' -ErrorId 'AzureRmContextError'
+                Break
+            }
         }
         catch {
-            Write-Host "Failed to login to public Azure. Exiting...." -ForegroundColor Red
-            $Error[-1]
-            break
+            if (-not $Context -or -not $Context.Account) {
+                Write-Error -Message 'Run Login-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
+                Break
+            }
         }
     }
 
@@ -380,10 +366,10 @@ function Start-AzureSiteRecoveryFailBack {
         The name of the resource group in public Azure. Example: "SiteRecovery-RG"
 
     .PARAMETER Username
-        Your Azure AD username. Used for logging into public Azure. Example: "exampleuser@contoso.onmicrosoft.com"
+        Your Azure AD username. Used for logging into public Azure / Azure Stack. Example: "exampleuser@contoso.onmicrosoft.com"
     
     .PARAMETER Password
-        Your Azure AD password as a SecureString. Used for logging into public Azure. If not specified then an input prompt will appear for this.
+        Your Azure AD password as a SecureString. Used for logging into public Azure / Azure Stack. If not specified then an input prompt will appear for this.
     
     .PARAMETER ArmEndpoint
         The ARM endpoint for the Azure Stack endpoint you are failing back to. Defaults to: "https://management.frn00006.azure.ukcloud.com"
@@ -454,14 +440,34 @@ function Start-AzureSiteRecoveryFailBack {
     )
     begin {
         try {
-            $Credentials = New-Object System.Management.Automation.PSCredential ($Username, $Password) 
-            Login-AzureRmAccount -Credential $Credentials
+            # Azure Powershell way
+            [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
+            if ($Context.Environment.ResourceManagerUrl -notlike "*https://management.azure.com*") {
+                try {
+                    $Credentials = New-Object System.Management.Automation.PSCredential ($Username, $Password) 
+                    Login-AzureRmAccount -Credential $Credentials
+                }
+                catch {
+                    Write-Host "Failed to login to public Azure. Exiting...." -ForegroundColor Red
+                    $Error[-1]
+                    break
+                }
+            }
         }
         catch {
-            Write-Host "Failed to login to public Azure. Exiting...." -ForegroundColor Red
-            $Error[-1]
-            break
+            if (-not $Context -or -not $Context.Account) {
+                try {
+                    $Credentials = New-Object System.Management.Automation.PSCredential ($Username, $Password) 
+                    Login-AzureRmAccount -Credential $Credentials
+                }
+                catch {
+                    Write-Host "Failed to login to public Azure. Exiting...." -ForegroundColor Red
+                    $Error[-1]
+                    break
+                }
+            }
         }
+        
     }
     process {
         $RGName = Get-AzureRmResourceGroup -Name $AzureResourceGroup

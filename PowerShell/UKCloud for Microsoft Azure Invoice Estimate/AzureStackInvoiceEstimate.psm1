@@ -36,6 +36,7 @@ function Get-AzureStackInvoiceEstimate {
     
     .NOTES
         This cmdlet retrieves data directly from Azure Stack. The invoice estimate provided may not be 100% accurate.
+        This command requires you to be logged into Azure Stack to run successfully.
     #>
 
     [CmdletBinding()]
@@ -53,10 +54,15 @@ function Get-AzureStackInvoiceEstimate {
         $Location = "frn00006"
     )
     begin {
-        Try {
+        try {
             # Azure Powershell way
             [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
-        } Catch {
+            if ($Context.Environment.ResourceManagerUrl -like "*https://management.azure.com*") {
+                Write-Error -Message 'You are currently logged into public Azure. Please login to Azure Stack to continue.' -ErrorId 'AzureRmContextError'
+                Break
+            }
+        } 
+        catch {
             if (-not $Context -or -not $Context.Account) {
                 Write-Error -Message 'Run Login-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
                 Break

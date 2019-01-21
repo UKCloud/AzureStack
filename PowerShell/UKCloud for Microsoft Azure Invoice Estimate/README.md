@@ -22,6 +22,9 @@ There is a installmodules.ps1 script that will install your modules.
 
 Once it is installed you can just invoke the commands and PowerShell will load them for you.
 
+> [!IMPORTANT]
+> **You need to log in to Azure Stack first before you can execute the commands as they will fail otherwise.**.
+
 ### Examples
 
 * Return an estimate of your Azure Stack Invoice for December 2018 based on Azure Stack API metrics:

@@ -24,24 +24,21 @@ There is a installmodules.ps1 script that will install your modules.
 
 Once it is installed you can just invoke the commands and PowerShell will load them for you.
 
+> [!IMPORTANT]
+> **You need to log in to public Azure first before you can execute the commands as they will fail otherwise.**.
+
 ### Examples
 
 * Perform a test failover of your protected VMs to Azure:
 
     ```powershell
-    Test-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault" -Username "exampleuser@contoso.onmicrosoft.com"
-    ```
-
-* Perform a test failover of your protected VMs to Azure with stored password:
-
-    ```powershell
-    Test-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault" -Username "exampleuser@contoso.onmicrosoft.com" -Password $SecurePass
+    Test-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault"
     ```
 
 * Perform a failover of your protected VMs to Azure:
 
     ```powershell
-    Start-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault" -Username "exampleuser@contoso.onmicrosoft.com"
+    Start-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault"
     ```
 
 * Perform a fail back of all VMs in an Azure resource group to Azure Stack:
