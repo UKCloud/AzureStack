@@ -1,24 +1,68 @@
 function Start-az-aks {
-    try {
-        $CheckForSSH = Get-WindowsCapability -Online | Where-Object {$_.Name -like '*OpenSSH*' -and $_.Name -like "*Client*"}
-        if ($CheckForSSH.State -notlike "*Installed*"){
-            Add-WindowsCapability -Online -Name $CheckForSSH.Name
+    <#
+    .SYNOPSIS
+        Performs pre-requisite checks for using the module.
+
+    .DESCRIPTION
+        Check whether OpenSSH Client (Required for this module to interact with the Kubernetes Cluster) is installed and if not will install it.
+        Also checks if the user is logged into Azure Stack and will log them in if not.
+
+    .PARAMETER ArmEndpoint
+        The ARM endpoint for the Azure Stack endpoint you are logging into. Defaults to: "https://management.frn00006.azure.ukcloud.com"
+
+    .EXAMPLE
+        Start-az-aks
+    
+    .EXAMPLE
+        Start-az-aks -ArmEndpoint "https://management.frn00006.azure.ukcloud.com"
+    
+    .NOTES
+        This command requires administrator privileges to check for/install OpenSSH Client. Without these privileges this step will be skipped.
+    #>
+
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $false)]
+        [string]$ArmEndpoint = "https://management.frn00006.azure.ukcloud.com"
+    )
+    process {
+        try {
+            $CheckForSSH = Get-WindowsCapability -Online | Where-Object {$_.Name -like '*OpenSSH*' -and $_.Name -like "*Client*"}
+            if ($CheckForSSH.State -notlike "*Installed*"){
+                Add-WindowsCapability -Online -Name $CheckForSSH.Name
+            }
+        } 
+        catch {
+            Write-Host "Not executing as administrator, unable to check if OpenSSH is installed" -ForegroundColor Red
+        }   
+        try {
+            # Azure Powershell way
+            [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
+            if ($Context.Environment.ResourceManagerUrl -like "*https://management.azure.com*") {
+                Write-Error -Message 'You are currently logged into public Azure. Please login to Azure Stack to continue.' -ErrorId 'AzureRmContextError'
+                Break
+            }
+        } 
+        catch {
+            if (-not $Context -or -not $Context.Account) {
+                $UserCredentials = Get-Credential
+                Add-AzureRmEnvironment -Name "AzureStackUser" -ArmEndpoint $ArmEndpoint
+                Login-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $UserCredentials
+            }
         }
-    } 
-    catch {
-        Write-Host "Not executing as administrator, unable to check if OpenSSH is installed" -ForegroundColor Red
-    }    
-    $Cred = Get-Credential
-    Add-AzureRmEnvironment -Name "AzureStackUser" -ArmEndpoint 'https://management.frn00006.azure.ukcloud.com'
-    Login-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $Cred
+    }
 }
 
 
 function az-aks-Get-Credentials {
+
     param(
-        [parameter(Mandatory=$true)][String]$PrivateKeyLocation,
-        [parameter(Mandatory=$true)][String]$ResourceGroupName,
-        [parameter(Mandatory=$false)][String]$OutFile = "config"
+        [parameter(Mandatory=$true)]
+        [String]$PrivateKeyLocation,
+        [parameter(Mandatory=$true)]
+        [String]$ResourceGroupName,
+        [parameter(Mandatory=$false)]
+        [String]$OutFile = "config"
     )
     $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "*master*"}).IpAddress
     $MasterNodes = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "*master*"}
