@@ -36,7 +36,7 @@ function Get-AzureStackInvoiceEstimate {
     
     .NOTES
         This cmdlet retrieves data directly from Azure Stack. The invoice estimate provided may not be 100% accurate.
-        This command requires you to be logged into Azure Stack to run successfully.
+        This cmdlet requires you to be logged into Azure Stack to run successfully.
     #>
 
     [CmdletBinding()]

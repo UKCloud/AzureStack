@@ -20,8 +20,8 @@ function Test-AzureSiteRecoveryFailOver {
         Test-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault" -Confirmation
     
     .NOTES
-        As this command performs a test failover, no production VMs will be affected.
-        This command requires you to be logged into public Azure to run successfully.
+        As this cmdlet performs a test failover, no production VMs will be affected.
+        This cmdlet requires you to be logged into public Azure to run successfully.
     #>
 
     [CmdletBinding()]
@@ -206,8 +206,8 @@ function Start-AzureSiteRecoveryFailOver {
         Start-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault"
 
     .NOTES
-        This command performs a full failover of your production VMs. As part of this process your VMs may be shut down. Proceed at your own risk.
-        This command requires you to be logged into public Azure to run successfully.
+        This cmdlet performs a full failover of your production VMs. As part of this process your VMs may be shut down. Proceed at your own risk.
+        This cmdlet requires you to be logged into public Azure to run successfully.
     #>
 
     [CmdletBinding()]
@@ -408,7 +408,7 @@ function Start-AzureSiteRecoveryFailBack {
             -SubnetRange "192.168.1.0/24" -NSGName "myNSG"
     
     .NOTES
-        This command does not clear the VMs from public Azure. Once you have confirmed that the fail back process has completed successfully, these can be removed with Remove-AzureRmResourceGroup -Name $AzureResourceGroup
+        This cmdlet does not clear the VMs from public Azure. Once you have confirmed that the fail back process has completed successfully, these can be removed with Remove-AzureRmResourceGroup -Name $AzureResourceGroup
     #>
 
     [CmdletBinding()]
