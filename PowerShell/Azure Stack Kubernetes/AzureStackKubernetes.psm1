@@ -1,4 +1,4 @@
-function Start-az-aks {
+function Start-AzsAks {
     <#
     .SYNOPSIS
         Performs pre-requisite checks for using the module.
@@ -11,10 +11,10 @@ function Start-az-aks {
         The ARM endpoint for the Azure Stack endpoint you are logging into. Defaults to: "https://management.frn00006.azure.ukcloud.com"
 
     .EXAMPLE
-        Start-az-aks
+        Start-AzsAks
     
     .EXAMPLE
-        Start-az-aks -ArmEndpoint "https://management.frn00006.azure.ukcloud.com"
+        Start-AzsAks -ArmEndpoint "https://management.frn00006.azure.ukcloud.com"
     
     .NOTES
         This command requires administrator privileges to check for/install OpenSSH Client. Without these privileges this step will be skipped.
@@ -52,7 +52,7 @@ function Start-az-aks {
 }
 
 
-function az-aks-Get-Credentials {
+function Get-AzsAksCredentials {
     <#
     .SYNOPSIS
         Gets access credentials for a Kubernetes cluster.
@@ -70,10 +70,10 @@ function az-aks-Get-Credentials {
         The output file to save the access credential information to. Defaults to "Config"
     
     .EXAMPLE
-        az-aks-Get-Credentials -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -ResourceGroupName "AKS-RG"
+        Get-AzsAksCredentials -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -ResourceGroupName "AKS-RG"
     
     .EXAMPLE
-        az-aks-Get-Credentials -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -ResourceGroupName "AKS-RG" -OutFile "Config"
+        Get-AzsAksCredentials -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -ResourceGroupName "AKS-RG" -OutFile "Config"
     
     .NOTES
         This cmdlet requires you to be logged into Azure Stack to run successfully.
@@ -117,7 +117,7 @@ function az-aks-Get-Credentials {
 }
 
 
-function az-aks-create {
+function New-AzsAks {
     <#
     .SYNOPSIS
         Create a new Kubernetes cluster.
@@ -165,10 +165,10 @@ function az-aks-create {
         The type of storage to use. Can be either "blobdisk" for storage accounts, or "manageddisk" for managed disks. Defaults to "manageddisk"
     
     .PARAMETER KubernetesAzureCloudProviderVersion
-        The version of kubernetes to use for creating the cluster. Run az-aks-Get-Versions to list available versions. Defaults to the latest version
+        The version of kubernetes to use for creating the cluster. Run Get-AzsAksVersions to list available versions. Defaults to the latest version
 
     .EXAMPLE
-        az-aks-create -ResourceGroupName "AKS-RG" -SSHKeyPath "C:\AzureStack\KuberenetesKey.pub" `
+        New-AzsAks -ResourceGroupName "AKS-RG" -SSHKeyPath "C:\AzureStack\KuberenetesKey.pub" `
             -ServicePrincipal "00000000-0000-0000-0000-000000000000" -ClientSecret "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]=" `
             -storageProfile "blobdisk"
     
@@ -250,7 +250,7 @@ function az-aks-create {
 }
 
 
-function az-aks-delete {
+function Remove-AzsAks {
     <#
     .SYNOPSIS
         Deletes a Kubernetes cluster.
@@ -262,7 +262,7 @@ function az-aks-delete {
         The name of the resource group which the Kubernetes cluster is in. Example: "AKS-RG"
     
     .EXAMPLE
-        az-aks-delete -ResourceGroupName "AKS-RG"
+        Remove-AzsAks -ResourceGroupName "AKS-RG"
     
     .NOTES
         This cmdlet requires you to be logged into Azure Stack to run successfully.
@@ -301,7 +301,7 @@ function az-aks-delete {
 }
 
 
-function az-aks-list {
+function Get-AzsAks {
     <#
     .SYNOPSIS
         Lists all Kubernetes clusters in the current subscription.
@@ -313,10 +313,10 @@ function az-aks-list {
         The name of the resource group which the Kubernetes cluster is in. Used when looking for a specific cluster. Example: "AKS-RG"
     
     .EXAMPLE
-        az-aks-list
+        Get-AzsAks
 
     .EXAMPLE
-        az-aks-list -ResourceGroupName "AKS-RG"
+        Get-AzsAks -ResourceGroupName "AKS-RG"
     
     .NOTES
         This cmdlet requires you to be logged into Azure Stack to run successfully.
@@ -383,7 +383,7 @@ function az-aks-list {
 }
 
 
-function az-aks-scale {
+function Start-AzsAksScale {
     <#
     .SYNOPSIS
         Scales the node pool of a Kubernetes cluster horizontally.
@@ -413,11 +413,11 @@ function az-aks-scale {
         The name of the node pool to scale. Defaults to "linuxpool2"
 
     .EXAMPLE
-        az-aks-scale -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -ServicePrincipal "00000000-0000-0000-0000-000000000000" `
+        Start-AzsAksScale -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -ServicePrincipal "00000000-0000-0000-0000-000000000000" `
             -ClientSecret "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]=" -NewNodeCount 5
     
     .EXAMPLE
-        az-aks-scale -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -Location "frn00006" -ServicePrincipal "00000000-0000-0000-0000-000000000000" `
+        Start-AzsAksScale -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -Location "frn00006" -ServicePrincipal "00000000-0000-0000-0000-000000000000" `
             -ClientSecret "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]=" -NewNodeCount 5 -PoolName "linuxpool2"
     
     .NOTES
@@ -505,7 +505,7 @@ function az-aks-scale {
 }
 
 
-function az-aks-show {
+function Show-AzsAks {
     <#
     .SYNOPSIS
         Shows the details for a specific Kubernetes cluster.
@@ -517,7 +517,7 @@ function az-aks-show {
         The name of the resource group which the Kubernetes cluster is in. Example: "AKS-RG"
 
     .EXAMPLE
-        az-aks-show -ResourceGroupName "AKS-RG"
+        Show-AzsAks -ResourceGroupName "AKS-RG"
     
     .NOTES
         This cmdlet requires you to be logged into Azure Stack to run successfully.
@@ -533,12 +533,12 @@ function az-aks-show {
     )
 
     process {
-        az-aks-list -ResourceGroupName $ResourceGroupName
+        Get-AzsAks -ResourceGroupName $ResourceGroupName
     }
 }
 
 
-function az-aks-Get-Versions {
+function Get-AzsAksVersions {
     <#
     .SYNOPSIS
         Get the versions available for creating a Kubernetes cluster. 
@@ -547,7 +547,7 @@ function az-aks-Get-Versions {
         Get the versions available for creating a Kubernetes cluster. Mimics the Azure CLI command: az aks get-versions
 
     .EXAMPLE
-        az-aks-Get-Versions
+        Get-AzsAksVersions
     
     .NOTES
         This cmdlet can only be run a limited amount of times per hour, due to GitHub Rate Limits. See links for details.
@@ -577,7 +577,7 @@ function az-aks-Get-Versions {
 }
 
 
-function az-aks-upgrade {
+function Start-AzsAksUpgrade {
     <#
     .SYNOPSIS
         Upgrade a Kubernetes cluster to a newer version.
@@ -601,14 +601,14 @@ function az-aks-upgrade {
         A secret of the service principal specified in the ServicePrincipal variable. Example: "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
 
     .PARAMETER KubernetesUpgradeVersion
-        The version of Kubernetes to upgrade the cluster to. Available versions can be found using az-aks-Get-upgrades. Example: "1.11.2"
+        The version of Kubernetes to upgrade the cluster to. Available versions can be found using Get-AzsAksUpgradeVersions. Example: "1.11.2"
 
     .EXAMPLE
-        az-aks-upgrade -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -ServicePrincipal "00000000-0000-0000-0000-000000000000" `
+        Start-AzsAksUpgrade -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -ServicePrincipal "00000000-0000-0000-0000-000000000000" `
             -ClientSecret "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]=" -KubernetesUpgradeVersion "1.11.2"
     
     .EXAMPLE
-        az-aks-upgrade -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -Location "frn00006" -ServicePrincipal "00000000-0000-0000-0000-000000000000" `
+        Start-AzsAksUpgrade -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -Location "frn00006" -ServicePrincipal "00000000-0000-0000-0000-000000000000" `
             -ClientSecret "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]=" -KubernetesUpgradeVersion "1.11.2"
     
     .NOTES
@@ -682,7 +682,7 @@ function az-aks-upgrade {
 }
 
 
-function az-aks-Get-upgrades {
+function Get-AzsAksUpgradeVersions {
     <#
     .SYNOPSIS
         Get the upgrade versions available for a Kubernetes cluster.
@@ -700,10 +700,10 @@ function az-aks-Get-upgrades {
         The location which the Kubernetes cluster is in. Defaults to: "frn00006"
 
     .EXAMPLE
-        az-aks-Get-upgrades -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk"
+        Get-AzsAksUpgradeVersions -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk"
     
     .EXAMPLE
-        az-aks-Get-upgrades -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -Location "frn00006"
+        Get-AzsAksUpgradeVersions -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -Location "frn00006"
     
     .NOTES
         This cmdlet requires you to be logged into Azure Stack to run successfully.
