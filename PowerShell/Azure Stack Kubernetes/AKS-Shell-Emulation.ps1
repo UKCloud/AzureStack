@@ -532,6 +532,108 @@ function az-aks-show {
         [String]$ResourceGroupName
     )
 
+    process {
+        az-aks-list -ResourceGroupName $ResourceGroupName
+    }
+}
+
+
+function az-aks-Get-Versions {
+    <#
+    .SYNOPSIS
+        Get the versions available for creating a Kubernetes cluster. 
+
+    .DESCRIPTION
+        Get the versions available for creating a Kubernetes cluster. Mimics the Azure CLI command: az aks get-versions
+
+    .EXAMPLE
+        az-aks-Get-Versions
+    
+    .NOTES
+        This cmdlet can only be run a limited amount of times per hour, due to GitHub Rate Limits. See links for details.
+    
+    .LINK
+        https://docs.microsoft.com/en-us/cli/azure/aks?view=azure-cli-latest#az-aks-get-versions
+
+    .Link
+        https://developer.github.com/apps/building-github-apps/understanding-rate-limits-for-github-apps/
+    #>
+
+    process {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        $URL = "https://api.github.com/repos/msazurestackworkloads/acs-engine/contents/examples/azurestack"
+        $Branch = @{"ref" = "acs-engine-v0209-1809"}
+        $GitHubFiles = (Invoke-WebRequest -URI $URL -Body $Branch -Method GET -UseBasicParsing | ConvertFrom-Json).name | Where {$_ -like "*kubernetes*"}
+        $Versions = @()
+        ForEach ($Filename in $GitHubFiles) {
+            $VersionNum = [PSCustomObject] @{
+                VersionNumber = $Filename.Replace(".json", "").Replace("azurestack-kubernetes", "")
+            }
+            $Versions += $VersionNum
+        }
+        $Versions = $Versions | Sort-Object -Property @{Expression = {[convert]::ToInt32(($_.VersionNumber -split "\.")[-1])}} 
+        $Versions
+    }
+}
+
+
+function az-aks-upgrade {
+    <#
+    .SYNOPSIS
+        Upgrade a Kubernetes cluster to a newer version.
+
+    .DESCRIPTION
+        Upgrade a Kubernetes cluster to a newer version. Mimics the Azure CLI command: az aks upgrade
+
+    .PARAMETER ResourceGroupName
+        The name of the resource group which the Kubernetes cluster is in. Example: "AKS-RG"
+
+    .PARAMETER PrivateKeyLocation
+        The local file path to the private SSH key for the Kubernetes cluster. Example: "C:\AzureStack\KuberenetesKey.ppk"
+
+    .PARAMETER Location
+        The location which the Kubernetes cluster is in. Defaults to: "frn00006"
+
+    .PARAMETER ServicePrincipal
+        The application ID of a service principal with contributor permissions on Azure Stack. Example: "00000000-0000-0000-0000-000000000000"
+    
+    .PARAMETER ClientSecret
+        A secret of the service principal specified in the ServicePrincipal variable. Example: "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
+
+    .PARAMETER KubernetesUpgradeVersion
+        The version of Kubernetes to upgrade the cluster to. Available versions can be found using az-aks-Get-upgrades. Example: "1.11.2"
+
+    .EXAMPLE
+        az-aks-upgrade -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -ServicePrincipal "00000000-0000-0000-0000-000000000000" `
+            -ClientSecret "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]=" -KubernetesUpgradeVersion "1.11.2"
+    
+    .EXAMPLE
+        az-aks-upgrade -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -Location "frn00006" -ServicePrincipal "00000000-0000-0000-0000-000000000000" `
+            -ClientSecret "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]=" -KubernetesUpgradeVersion "1.11.2"
+    
+    .NOTES
+        This cmdlet requires you to be logged into Azure Stack to run successfully.
+    
+    .LINK
+        https://docs.microsoft.com/en-us/cli/azure/aks?view=azure-cli-latest#az-aks-upgrade
+    #>
+
+    [CmdletBinding()]
+    param(
+        [parameter(Mandatory = $true)]
+        [String]$ResourceGroupName,
+        [parameter(Mandatory = $true)]
+        [String]$PrivateKeyLocation,
+        [parameter(Mandatory = $false)]
+        [String]$Location = "frn00006",
+        [parameter(Mandatory = $true)]
+        [String]$ServicePrincipal,
+        [parameter(Mandatory = $true)]
+        [String]$ClientSecret,
+        [parameter(Mandatory = $true)]
+        [String]$KubernetesUpgradeVersion
+    )
+
     begin {
         try {
             # Azure Powershell way
@@ -549,84 +651,88 @@ function az-aks-show {
     }
 
     process {
-        az-aks-list -ResourceGroupName $ResourceGroupName
-    }
-}
-
-
-function az-aks-Get-Versions {
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    $URL = "https://api.github.com/repos/msazurestackworkloads/acs-engine/contents/examples/azurestack"
-    $Branch = @{"ref" = "acs-engine-v0209-1809"}
-    $GitHubFiles = (Invoke-WebRequest -URI $URL -Body $Branch -Method GET -UseBasicParsing | ConvertFrom-Json).name | Where {$_ -like "*kubernetes*"}
-    $Versions = @()
-    ForEach ($Filename in $GitHubFiles) {
-        $VersionNum = [PSCustomObject] @{
-            VersionNumber = $Filename.Replace(".json", "").Replace("azurestack-kubernetes", "")
+        $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "vmd*"}
+        $resourceNameSuffix = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "*k8s*" -and $_.Name -notlike "*master*"})[0].Tags["resourceNameSuffix"]
+        $tags = $CreationVM.Tags
+        if (!$tags["poolName"]) {
+            $tags += @{poolName = "CreationVM"}
         }
-        $Versions += $VersionNum
-    }
-    $Versions = $Versions | Sort-Object -Property @{Expression = {[convert]::ToInt32(($_.VersionNumber -split "\.")[-1])}} 
-    $Versions
-}
-
-
-function az-aks-upgrade {
-    param(
-        [parameter(Mandatory = $true)][String]$ResourceGroupName,
-        [parameter(Mandatory = $true)][String]$PrivateKeyLocation,
-        [parameter(Mandatory = $false)][String]$Location = "frn00006",
-        [parameter(Mandatory = $true)][String]$ServicePrincipal,
-        [parameter(Mandatory = $true)][String]$ClientSecret,
-        [parameter(Mandatory = $true)][String]$KubernetesUpgradeVersion
-    )
-
-    $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "vmd*"}
-    $resourceNameSuffix = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "*k8s*" -and $_.Name -notlike "*master*"})[0].Tags["resourceNameSuffix"]
-    $tags = $CreationVM.Tags
-    if (!$tags["poolName"]) {
-        $tags += @{poolName = "CreationVM"}
-    }
-    if (!$tags["resourceNameSuffix"]) {
-        $tags += @{resourceNameSuffix = $resourceNameSuffix} 
-    }
-    $CreationVM.Plan = @{"name" = " "}
-    $CreationVM | Set-AzureRmResource -Tag $tags -Force | Out-Null
-    $MasterFQDN = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "*master*"}).DnsSettings.Fqdn
-    $Username = $CreationVM.OSProfile.AdminUsername
-    $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "vmd*"}).IpAddress
-    $ScaleCommand = "/var/lib/waagent/custom-script/download/0/acs-engine/bin/acs-engine upgrade"
-    $SubscriptionID = (Get-AzureRmContext).Subscription.Id
-    $DeploymentDirectory = "/var/lib/waagent/custom-script/download/0/acs-engine/_output/" + $MasterFQDN.Split(".")[0]
-    $CurrentVersion = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "*k8s*" -and $_.Name -like "*master*"})[0].Tags["orchestrator"].Split(":")[1]
-    if ($CurrentVersion -eq $KubernetesUpgradeVersion) {
-        Write-Host "Can't upgrade Kubernetes version - Cluster is already running version $CurrentVersion" -ForegroundColor Red
-    } else {
-        Invoke-Command -ScriptBlock {
-            param($PrivateKeyLocation, $Username, $IPAddress, $ScaleCommand, $ResourceGroupName, $Location, $ServicePrincipal, $ClientSecret, $SubscriptionID, $DeploymentDirectory, $MasterFQDN, $KubernetesAzureCloudProviderVersion) 
-            ssh -i $PrivateKeyLocation $Username@$IPAddress sudo $ScaleCommand --resource-group $ResourceGroupName --auth-method client_secret --azure-env AzureStackCloud --location $Location --client-id $ServicePrincipal `
-                --client-secret $ClientSecret --subscription-id $SubscriptionID --deployment-dir $DeploymentDirectory --master-FQDN $MasterFQDN --upgrade-version $KubernetesAzureCloudProviderVersion
-        } -ArgumentList $PrivateKeyLocation, $Username, $IPAddress, $ScaleCommand, $ResourceGroupName, $Location, $ServicePrincipal, $ClientSecret, $SubscriptionID, $DeploymentDirectory, $MasterFQDN, $KubernetesAzureCloudProviderVersion
+        if (!$tags["resourceNameSuffix"]) {
+            $tags += @{resourceNameSuffix = $resourceNameSuffix} 
+        }
+        $CreationVM.Plan = @{"name" = " "}
+        $CreationVM | Set-AzureRmResource -Tag $tags -Force | Out-Null
+        $MasterFQDN = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "*master*"}).DnsSettings.Fqdn
+        $Username = $CreationVM.OSProfile.AdminUsername
+        $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "vmd*"}).IpAddress
+        $ScaleCommand = "/var/lib/waagent/custom-script/download/0/acs-engine/bin/acs-engine upgrade"
+        $SubscriptionID = (Get-AzureRmContext).Subscription.Id
+        $DeploymentDirectory = "/var/lib/waagent/custom-script/download/0/acs-engine/_output/" + $MasterFQDN.Split(".")[0]
+        $CurrentVersion = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "*k8s*" -and $_.Name -like "*master*"})[0].Tags["orchestrator"].Split(":")[1]
+        if ($CurrentVersion -eq $KubernetesUpgradeVersion) {
+            Write-Host "Can't upgrade Kubernetes version - Cluster is already running version $CurrentVersion" -ForegroundColor Red
+        } else {
+            Invoke-Command -ScriptBlock {
+                param($PrivateKeyLocation, $Username, $IPAddress, $ScaleCommand, $ResourceGroupName, $Location, $ServicePrincipal, $ClientSecret, $SubscriptionID, $DeploymentDirectory, $MasterFQDN, $KubernetesAzureCloudProviderVersion) 
+                ssh -i $PrivateKeyLocation $Username@$IPAddress sudo $ScaleCommand --resource-group $ResourceGroupName --auth-method client_secret --azure-env AzureStackCloud --location $Location --client-id $ServicePrincipal `
+                    --client-secret $ClientSecret --subscription-id $SubscriptionID --deployment-dir $DeploymentDirectory --master-FQDN $MasterFQDN --upgrade-version $KubernetesAzureCloudProviderVersion
+            } -ArgumentList $PrivateKeyLocation, $Username, $IPAddress, $ScaleCommand, $ResourceGroupName, $Location, $ServicePrincipal, $ClientSecret, $SubscriptionID, $DeploymentDirectory, $MasterFQDN, $KubernetesAzureCloudProviderVersion
+        }
     }
 }
 
 
 function az-aks-Get-upgrades {
+    <#
+    .SYNOPSIS
+        Get the upgrade versions available for a Kubernetes cluster.
+
+    .DESCRIPTION
+        Get the upgrade versions available for a Kubernetes cluster. Mimics the Azure CLI command: az aks get-upgrades
+
+    .PARAMETER ResourceGroupName
+        The name of the resource group which the Kubernetes cluster is in. Example: "AKS-RG"
+
+    .PARAMETER PrivateKeyLocation
+        The local file path to the private SSH key for the Kubernetes cluster. Example: "C:\AzureStack\KuberenetesKey.ppk"
+
+    .PARAMETER Location
+        The location which the Kubernetes cluster is in. Defaults to: "frn00006"
+
+    .EXAMPLE
+        az-aks-Get-upgrades -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk"
+    
+    .EXAMPLE
+        az-aks-Get-upgrades -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -Location "frn00006"
+    
+    .NOTES
+        This cmdlet requires you to be logged into Azure Stack to run successfully.
+    
+    .LINK
+        https://docs.microsoft.com/en-us/cli/azure/aks?view=azure-cli-latest#az-aks-get-upgrades
+    #>
+
+    [CmdletBinding()]
     param(
-        [parameter(Mandatory = $true)][String]$ResourceGroupName,
-        [parameter(Mandatory = $true)][String]$PrivateKeyLocation,
-        [parameter(Mandatory = $false)][String]$Location = "frn00006"
+        [parameter(Mandatory = $true)]
+        [String]$ResourceGroupName,
+        [parameter(Mandatory = $true)]
+        [String]$PrivateKeyLocation,
+        [parameter(Mandatory = $false)]
+        [String]$Location = "frn00006"
     )
 
-    $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | where {$_.Name -like "vmd*"}
-    $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "vmd*"}).IpAddress
-    $Username = $CreationVM.OSProfile.AdminUsername
-    $FirstMasterVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | where {$_.Name -like "k8s-master*" -and $_.Name -like "*0"}
-    $CurrentVersion = $FirstMasterVM.Tags["orchestrator"].Split(":")[1]
-    $Command = "/var/lib/waagent/custom-script/download/0/acs-engine/bin/acs-engine orchestrators"
-    Write-Host "Current Kubernetes version is: $CurrentVersion" -ForegroundColor Green
-    Invoke-Command -ScriptBlock {
-        param($PrivateKeyLocation, $Username, $IPAddress, $Command, $CurrentVersion) 
-        ssh -i $PrivateKeyLocation $Username@$IPAddress sudo $Command --orchestrator kubernetes --version $CurrentVersion
-    } -ArgumentList $PrivateKeyLocation, $Username, $IPAddress, $Command, $CurrentVersion
+    process {
+        $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | where {$_.Name -like "vmd*"}
+        $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "vmd*"}).IpAddress
+        $Username = $CreationVM.OSProfile.AdminUsername
+        $FirstMasterVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | where {$_.Name -like "k8s-master*" -and $_.Name -like "*0"}
+        $CurrentVersion = $FirstMasterVM.Tags["orchestrator"].Split(":")[1]
+        $Command = "/var/lib/waagent/custom-script/download/0/acs-engine/bin/acs-engine orchestrators"
+        Write-Host "Current Kubernetes version is: $CurrentVersion" -ForegroundColor Green
+        Invoke-Command -ScriptBlock {
+            param($PrivateKeyLocation, $Username, $IPAddress, $Command, $CurrentVersion) 
+            ssh -i $PrivateKeyLocation $Username@$IPAddress sudo $Command --orchestrator kubernetes --version $CurrentVersion
+        } -ArgumentList $PrivateKeyLocation, $Username, $IPAddress, $Command, $CurrentVersion
+    }
 }
