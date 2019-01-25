@@ -17,10 +17,10 @@ function Get-AzureStackInvoiceEstimate {
         Destination file name. Defaults to "AzureStack-Invoice.csv"
     
     .PARAMETER StartDate
-        The start of the time period to retrieve billing info for in american format. Example: 12/01/2018 (1st December 2018)
+        The start of the time period to retrieve billing info for in american format. Example: "12/01/2018" (1st December 2018)
 
     .PARAMETER EndDate
-        The end of the time period to retrieve billing info for in american format.  Example: 01/01/2019 (1st January 2018)
+        The end of the time period to retrieve billing info for in american format.  Example: "01/01/2019" (1st January 2018)
         
     .PARAMETER Location
         The Azure Stack region. Defaults to: "frn00006"
@@ -29,10 +29,10 @@ function Get-AzureStackInvoiceEstimate {
         Get-AzureStackInvoiceEstimate -StartDate 12/01/2018 -EndDate 01/01/2019
 
     .EXAMPLE
-        Get-AzureStackInvoiceEstimate -StartDate 12/01/2018 -EndDate 01/01/2019 -Destination "C:\AzureStack-Invoice-December-2018"
+        Get-AzureStackInvoiceEstimate -StartDate "12/01/2018" -EndDate "01/01/2019" -Destination "C:\AzureStack-Invoice-December-2018"
     
     .EXAMPLE
-        Get-AzureStackInvoiceEstimate -StartDate 12/01/2018 -EndDate 01/01/2019 -Destination "C:\AzureStack-Invoice-December-2018" -FileName "AzureStack-Invoice.csv" -Location "frn00006"
+        Get-AzureStackInvoiceEstimate -StartDate "12/01/2018" -EndDate "01/01/2019" -Destination "C:\AzureStack-Invoice-December-2018" -FileName "AzureStack-Invoice.csv" -Location "frn00006"
     
     .NOTES
         This cmdlet retrieves data directly from Azure Stack. The invoice estimate provided may not be 100% accurate.
@@ -42,7 +42,7 @@ function Get-AzureStackInvoiceEstimate {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
-        [ValidateScript( {If (!(Test-Path $_)) { New-item -ItemType Directory -Path $_ -Force -Verbose} else {Test-Path $_ -Verbose }})]
+        [ValidateScript( {if (!(Test-Path $_)) { New-item -ItemType Directory -Path $_ -Force -Verbose} else {Test-Path $_ -Verbose }})]
         [String]$Destination,
         [Parameter(Mandatory = $false)]
         [String]$FileName = "AzureStack-Invoice.csv",
@@ -59,13 +59,13 @@ function Get-AzureStackInvoiceEstimate {
             [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
             if ($Context.Environment.ResourceManagerUrl -like "*https://management.azure.com*") {
                 Write-Error -Message 'You are currently logged into public Azure. Please login to Azure Stack to continue.' -ErrorId 'AzureRmContextError'
-                Break
+                break
             }
         } 
         catch {
             if (-not $Context -or -not $Context.Account) {
                 Write-Error -Message 'Run Login-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
-                Break
+                break
             }
         }
     }
@@ -167,19 +167,18 @@ function Get-AzureStackInvoiceEstimate {
         }
 
         # Create a list of sizes to compare against 
-        $VmSizes = Get-AzureRmVMSize -Location $Location
-        $VmSizes = $VmSizes | Select-Object -Property Name, NumberOfCores, @{Name = 'MemoryInGB'; Expression = {( $_.MemoryInMB / 1024)}}
+        $VMSizes = Get-AzureRmVMSize -Location $Location | Select-Object -Property Name, NumberOfCores, @{Name = 'MemoryInGB'; Expression = {( $_.MemoryInMB / 1024)}}
 
         # Retrieve usage data from Azure Stack
         $Start = $true
         $UsageSummary = @()
         while ($Result.ContinuationToken -or $Start -eq $true ) {
             $Start = $false
-            $Result = Get-UsageAggregates -ReportedStartTime $StartTime -ReportedEndTime $EndTime -ContinuationToken $Result.ContinuationToken
+            $Result = Get-UsageAggregates -ReportedStartTime $StartDate -ReportedEndTime $EndDate -ContinuationToken $Result.ContinuationToken
             $Result.UsageAggregations.Properties  | ForEach-Object {
                 $Record = New-Object -TypeName System.Object
                 $ResourceInfo = ($_.InstanceData | ConvertFrom-Json).'Microsoft.Resources'
-                $ResourceText = $ResourceInfo.resourceUri
+                $ResourceText = $ResourceInfo.ResourceUri
                 $Subscription = $ResourceText.Split('/')[2]
                 $ResourceType = $ResourceText.Split('/')[7]
                 $ResourceGroup = $ResourceText.Split('/')[4]
@@ -198,11 +197,11 @@ function Get-AzureStackInvoiceEstimate {
                 $record | Add-Member -Name Subscription -MemberType NoteProperty -Value $Subscription
                 $record | Add-Member -Name ResourceUri -MemberType NoteProperty -Value $ResourceText
                 if ($Record.ResourceType -like "*virtualmachine*") {
-                    $Record | Add-Member -Name VMSize -MemberType NoteProperty  -Value (($Record.AdditionalInfo.Split('"'))[3])
-                    ForEach ($VMSize in $VmSizes) {
+                    $Record | Add-Member -Name VMSize -MemberType NoteProperty -Value (($Record.AdditionalInfo.Split('"'))[3])
+                    foreach ($VMSize in $VMSizes) {
                         if ($VMSize.Name -eq $Record.VMSize) {
-                            $Record | Add-Member -Name RAMinGB -MemberType NoteProperty  -Value ($VMSize.MemoryInGB)
-                            $Record | Add-Member -Name RAMinGBHours -MemberType NoteProperty  -Value (($Record.RAMInGB * $Record.Quantity) / $VMSize.NumberOfCores)
+                            $Record | Add-Member -Name RAMinGB -MemberType NoteProperty -Value ($VMSize.MemoryInGB)
+                            $Record | Add-Member -Name RAMinGBHours -MemberType NoteProperty -Value (($Record.RAMInGB * $Record.Quantity) / $VMSize.NumberOfCores)
                         }
                     }
                 }
@@ -212,7 +211,7 @@ function Get-AzureStackInvoiceEstimate {
 
         # Summate usage from individual objects
         $WinVMCount, $LinuxVMCount, $RamCount, $StorageCount = 0, 0, 0, 0
-        ForEach ($Usage in $UsageSummary) {
+        foreach ($Usage in $UsageSummary) {
             if ($Usage.MeterName -like "Windows VM Size Hours") {
                 $WinVMCount += $Usage.Quantity
                 $RamCount += $Usage.RAMinGBHours
@@ -235,11 +234,11 @@ function Get-AzureStackInvoiceEstimate {
         Write-Host ""
 
         # Calculate cost from usage and UKCloud Pricing
-        $StorageCost = [math]::Round(($StorageCount * $UKCloudPricing.'Additional-Storage-(All variants)-£/GiB/month' / 24 / (365 / 12)), 2)
-        $VirtualCpuCost = [math]::Round((($WinVMCount + $LinuxVMCount) * $UKCloudPricing.'£/vCPU/hour'), 2)
-        $WindowsLicenceCost = [math]::Round(($WinVMCount * $UKCloudPricing.'Microsoft-WindowsOSServer-£/vCPU/hour'), 2)
-        $RamCost = [math]::Round(($RamCount * $UKCloudPricing.'£/RAM/hour'), 2)
-        $TotalCost = [math]::Round(($RamCost + $VirtualCpuCost + $StorageCost + $WindowsLicenceCost), 2)
+        $StorageCost = [Math]::Round(($StorageCount * $UKCloudPricing.'Additional-Storage-(All variants)-£/GiB/month' / 24 / (365 / 12)), 2)
+        $VirtualCpuCost = [Math]::Round((($WinVMCount + $LinuxVMCount) * $UKCloudPricing.'£/vCPU/hour'), 2)
+        $WindowsLicenceCost = [Math]::Round(($WinVMCount * $UKCloudPricing.'Microsoft-WindowsOSServer-£/vCPU/hour'), 2)
+        $RamCost = [Math]::Round(($RamCount * $UKCloudPricing.'£/RAM/hour'), 2)
+        $TotalCost = [Math]::Round(($RamCost + $VirtualCpuCost + $StorageCost + $WindowsLicenceCost), 2)
 
         # Output the cost
         Write-Host "COST:"
@@ -257,11 +256,11 @@ function Get-AzureStackInvoiceEstimate {
                 'Total-Linux-vCPU-usage(Core/Hour)'   = $LinuxVMCount
                 'Total-RAM-usage(GB/Hour)'            = $RamCount
                 'Total-Storage-usage(GB/hour)'        = $StorageCount
-                'Total-vCPU-cost(£)'                  = $([math]::Round($VirtualCpuCost, 2))
-                'Total-RAM-cost(£)'                   = $([math]::Round($RamCost, 2))
-                'Total-Storage-cost(£)'               = $([math]::Round($StorageCost, 2))
-                'Total-Windows-Licence-cost(£)'       = $([math]::Round($WindowsLicenceCost, 2))
-                'Invoice-Total(£)'                    = $([math]::Round($TotalCost, 2))
+                'Total-vCPU-cost(£)'                  = $VirtualCpuCost
+                'Total-RAM-cost(£)'                   = $RamCost
+                'Total-Storage-cost(£)'               = $StorageCost
+                'Total-Windows-Licence-cost(£)'       = $WindowsLicenceCost
+                'Invoice-Total(£)'                    = $TotalCost
             }
             $InvoiceObject | Export-Csv -Path (Join-Path $Destination $FileName) -NoTypeInformation -Force -Encoding Default
             Write-Host "CSV file saved to $(Join-Path $Destination $FileName)" -ForegroundColor Green

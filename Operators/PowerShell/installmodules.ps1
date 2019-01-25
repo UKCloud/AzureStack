@@ -25,7 +25,7 @@ function Install-CustomModule {
     )
     
     # Set Local Repository Path to be current path's parent directory
-    If (!$LocalRepoPath) {
+    if (!$LocalRepoPath) {
         $LocalRepoPath = "..\"
     }
 
@@ -41,17 +41,17 @@ function Install-CustomModule {
     $GetModuleFolders = $GetModuleDirectory | Get-ChildItem -Directory -Recurse 
     $GetModuleFolders
        
-       ForEach ($ModuleFolder in $GetModuleFolders) {
+       foreach ($ModuleFolder in $GetModuleFolders) {
            # Declare variables
            $PSMFile = $ModuleFolder | Get-ChildItem -Recurse -Filter "*.psm1"
 
            # Check if psm1 file exist
-           If(!$PSMFile) {
+           if(!$PSMFile) {
                Write-Host -ForegroundColor Red "Your psm1 file does not exist in folder $($ModuleFolder.FullName)"
                Write-Error -Message "Your module will not be installed correctly" -ErrorAction Continue
                $ModulesNotInstalled += $ModuleFolder.Name
            }
-           Else {
+           else {
                # Copy module folder to PSModule Path directory so it can be imported
                $DestinationFolder = ($env:PSModulePath-split [System.io.path]::PathSeparator)[2]
                Copy-Item $ModuleFolder.FullName  -Destination $DestinationFolder -Force -Recurse
@@ -59,11 +59,11 @@ function Install-CustomModule {
                # Check if module can be imported
                $CheckModule = Get-Module -ListAvailable $ModuleFolder.Name
 
-                   If ([string]::IsNullOrWhiteSpace($CheckModule)) {
+                   if ([string]::IsNullOrWhiteSpace($CheckModule)) {
                        Write-Error -Message "Your module: $($ModuleFolder.Name) was not installed correctly" -ErrorAction Continue
                        $ModulesNotInstalled += $ModuleFolder.Name
                    }
-                   Else {
+                   else {
                        $ModulesInstalled += $CheckModule.Name
                    }
            }

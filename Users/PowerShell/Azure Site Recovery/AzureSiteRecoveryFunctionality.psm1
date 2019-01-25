@@ -38,13 +38,13 @@ function Test-AzureSiteRecoveryFailOver {
             [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
             if ($Context.Environment.ResourceManagerUrl -notlike "*https://management.azure.com*") {
                 Write-Error -Message 'You are currently logged into Azure Stack. Please login to public azure to continue.' -ErrorId 'AzureRmContextError'
-                Break
+                break
             }
         }
         catch {
             if (-not $Context -or -not $Context.Account) {
                 Write-Error -Message 'Run Login-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
-                Break
+                break
             }
         }
     }
@@ -80,7 +80,7 @@ function Test-AzureSiteRecoveryFailOver {
             }
             Write-Host ""
             Write-Host "$(Get-Date -DisplayHint Time)"
-            ($FailoverStatii | Format-Table | Out-String).split("`n")[1..2]
+            ($FailoverStatii | Format-Table | Out-String).Split("`n")[1..2]
             $FailoverStatii | Out-String -Stream | ForEach-Object {
                 if ($_ -clike "* Succeeded*") {
                     Write-Host "$($_)" -ForegroundColor Green
@@ -121,7 +121,7 @@ function Test-AzureSiteRecoveryFailOver {
             }
             Write-Host ""
             Write-Host "$(Get-Date -DisplayHint Time)"
-            ($CleanupStatii | Format-Table | Out-String).split("`n")[1..2]
+            ($CleanupStatii | Format-Table | Out-String).Split("`n")[1..2]
             $CleanupStatii | Out-String -Stream | ForEach-Object {
                 if ($_ -clike "* Succeeded*") {
                     Write-Host "$($_)" -ForegroundColor Green
@@ -213,7 +213,7 @@ function Start-AzureSiteRecoveryFailOver {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [string]$VaultName,
+        [string]$VaultName
     )
 
     begin {
@@ -222,13 +222,13 @@ function Start-AzureSiteRecoveryFailOver {
             [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
             if ($Context.Environment.ResourceManagerUrl -notlike "*https://management.azure.com*") {
                 Write-Error -Message 'You are currently logged into Azure Stack. Please login to public azure to continue.' -ErrorId 'AzureRmContextError'
-                Break
+                break
             }
         }
         catch {
             if (-not $Context -or -not $Context.Account) {
                 Write-Error -Message 'Run Login-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
-                Break
+                break
             }
         }
     }
@@ -238,8 +238,8 @@ function Start-AzureSiteRecoveryFailOver {
 
         if ($TestSuccessful -eq $false) {
             break
-        } elseif ($TestSuccessful -eq $true) {
-
+        }
+        elseif ($TestSuccessful -eq $true) {
             # Start actual failover
             Write-Host "Starting failover..."
             $FailoverJobs = @()
@@ -271,7 +271,7 @@ function Start-AzureSiteRecoveryFailOver {
                 }
                 Write-Host ""
                 Write-Host "$(Get-Date -DisplayHint Time)"
-                ($FailoverStatii | Format-Table | Out-String).split("`n")[1..2]
+                (($FailoverStatii | Format-Table | Out-String) -split "`n")[1..2]
                 $FailoverStatii | Out-String -Stream | ForEach-Object {
                     if ($_ -clike "* Succeeded*") {
                         Write-Host "$($_)" -ForegroundColor Green
@@ -324,7 +324,7 @@ function Start-AzureSiteRecoveryFailOver {
                 }
                 Write-Host ""
                 Write-Host "$(Get-Date -DisplayHint Time)"
-                ($CommitStatii | Format-Table | Out-String).split("`n")[1..2]
+                (($CommitStatii | Format-Table | Out-String) -split "`n")[1..2]
                 $CommitStatii | Out-String -Stream | ForEach-Object {
                     if ($_ -clike "* Succeeded*") {
                         Write-Host "$($_)" -ForegroundColor Green
@@ -474,7 +474,7 @@ function Start-AzureSiteRecoveryFailBack {
         Write-Host "Retrieving VMs from $($RGName.ResourceGroupName) resource group"
         $VMsinRG = Get-AzureRmVM -ResourceGroupName $($RGName.ResourceGroupName)
         $VMNames = @()
-        Foreach ($VM in $VMsinRG) {
+        foreach ($VM in $VMsinRG) {
             $VMNames += $($VM.Name)
         }
 
@@ -487,7 +487,7 @@ function Start-AzureSiteRecoveryFailBack {
 
         ### Get disk URIs
         Write-Host "Retrieving Disk URIs"
-        ForEach ($VMName in $VMNames) {
+        foreach ($VMName in $VMNames) {
             $VMObj = Get-AzureRmVM -ResourceGroupName $($RGName.ResourceGroupName) -Name $VMName
             $FailbackVMs += $VMObj
             Write-Host "Stopping virtual machine $($VMObj.Name)"
@@ -505,7 +505,7 @@ function Start-AzureSiteRecoveryFailBack {
             $AzureDisk | Add-Member -Name DiskURI -MemberType NoteProperty -Value $VHDUri
             $AzureDisks += $AzureDisk
             if ($VMObj.StorageProfile.DataDisks) {
-                ForEach ($Disk in $VMObj.StorageProfile.DataDisks) {
+                foreach ($Disk in $VMObj.StorageProfile.DataDisks) {
                     $ManagedDisk = Get-AzureRmDisk -ResourceGroupName $($RGName.ResourceGroupName) -DiskName $($Disk.Name)
                     $VHDUri = $ManagedDisk | Grant-AzureRmDiskAccess -DurationInSecond 7200 -Access Read
                     $AzureDisk = New-Object -TypeName System.Object
@@ -519,11 +519,11 @@ function Start-AzureSiteRecoveryFailBack {
         }
 
         # Login Azure Stack 
-        $StackEnvironment = Add-AzureRMEnvironment -Name "AzureStackUser" -ArmEndpoint $ArmEndpoint
+        $StackEnvironment = Add-AzureRmEnvironment -Name "AzureStackUser" -ArmEndpoint $ArmEndpoint
         Login-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $Credentials
 
-        # Create storage account in Azure Stack
-        $Location = $StackEnvironment.GalleryURL.split(".")[1]
+        # Create base resources in Azure Stack
+        $Location = $StackEnvironment.StorageEndpointSuffix.split(".")[0]
 
         Write-Host "Creating resource group, storage account and container"
         $RG = New-AzureRmResourceGroup -Name $StackResourceGroup -Location $Location -Force
@@ -531,7 +531,7 @@ function Start-AzureSiteRecoveryFailBack {
         $ImagesContainer = New-AzureStorageContainer -Name $StackStorageContainer -Permission Blob -Context $StorageAccount.Context
 
         Write-Host "Starting copy operation from public Azure to Azure Stack"
-        Foreach ($VHD in $AzureDisks) {
+        foreach ($VHD in $AzureDisks) {
             Start-AzureStorageBlobCopy -AbsoluteUri $VHD.DiskURI.AccessSAS -DestContainer $ImagesContainer.Name -DestBlob $VHD.DiskName -DestContext $StorageAccount.Context
         }
 
@@ -577,13 +577,13 @@ function Start-AzureSiteRecoveryFailBack {
         Write-Host "Creating network security group"
         $NetworkSG = New-AzureRmNetworkSecurityGroup -ResourceGroupName $RG.ResourceGroupName -Location $Location -Name $NSGName
 
-        ForEach ($Vm in $FailbackVMs) {
+        foreach ($Vm in $FailbackVMs) {
             Write-Host "Creating VM: $($VM.Name)"
     
             $PublicIPName = "$($VM.Name)IP"
-            $NICName = ($Vm.NetworkProfile.NetworkInterfaces.id).split("/")[8]
-            $VMName = ($VM.Name)
-            $VMSize = $Vm.HardwareProfile.VmSize
+            $NICName = ($VM.NetworkProfile.NetworkInterfaces.id -split "/")[-1]
+            $VMName = $VM.Name
+            $VMSize = $VM.HardwareProfile.VMSize
     
             # Create a public IP address
             $PublicIP = New-AzureRmPublicIpAddress -ResourceGroupName $RG.ResourceGroupName -Location $Location -AllocationMethod 'Dynamic' -Name $PublicIPName
@@ -598,7 +598,7 @@ function Start-AzureSiteRecoveryFailBack {
             $VirtualMachine = Add-AzureRmVMNetworkInterface -Id $NetworkInterface.Id -VM $VirtualMachine
     
             # Applies the OS disk properties to the virtual machine.
-            $OSDisk = Get-AzureRMDisk -ResourceGroupName $RG.ResourceGroupName -Name $Vm.StorageProfile.OsDisk.Name
+            $OSDisk = Get-AzureRmDisk -ResourceGroupName $RG.ResourceGroupName -Name $VM.StorageProfile.OsDisk.Name
             if ($OSDisk.OsType -like "Linux") {
                 $VirtualMachine = Set-AzureRmVMOSDisk -VM $VirtualMachine -ManagedDiskId $($OSDisk.Id) -StorageAccountType "StandardLRS" -CreateOption Attach -Linux
             } elseif ($OSDisk.OsType -like "Windows") {
@@ -607,8 +607,8 @@ function Start-AzureSiteRecoveryFailBack {
     
     
             $LunNumber = 0
-            ForEach ($DataDisk in $Vm.StorageProfile.DataDisks) {
-                $DDisk = Get-AzureRMDisk -ResourceGroupName $RG.ResourceGroupName -Name $DataDisk.Name
+            foreach ($DataDisk in $VM.StorageProfile.DataDisks) {
+                $DDisk = Get-AzureRmDisk -ResourceGroupName $RG.ResourceGroupName -Name $DataDisk.Name
                 $VirtualMachine = Add-AzureRmVMDataDisk -CreateOption Attach -Lun $LunNumber -VM $VirtualMachine -ManagedDiskId $DDisk.Id
                 $LunNumber ++
             }
@@ -616,7 +616,6 @@ function Start-AzureSiteRecoveryFailBack {
             # Create the virtual machine.
             $NewVM = New-AzureRmVM -ResourceGroupName $RG.ResourceGroupName -Location $Location -VM $VirtualMachine
             $NewVM
-    
         }
     }
 }
