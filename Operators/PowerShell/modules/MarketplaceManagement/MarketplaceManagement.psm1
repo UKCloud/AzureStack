@@ -32,7 +32,7 @@ Function Get-AzsMarketplaceImages {
             Write-Verbose -Message "Checking if user is logged in to Azure Stack"
         }
         Catch {
-            Write-Error "Run Login-AzureRmAccount to login before running this command." 
+            Write-Error "Run Connect-AzureRmAccount to login before running this command." 
             break 
         }
     }
@@ -88,7 +88,7 @@ Function Remove-AzsMarketplaceImagesAll {
             Write-Verbose -Message "Checking if user is logged in to Azure Stack"
         }
         Catch {
-            Write-Error "Run Login-AzureRmAccount to login before running this command." 
+            Write-Error "Run Connect-AzureRmAccount to login before running this command." 
             break 
         }
     }
@@ -156,7 +156,7 @@ Function Remove-AzsMarketplaceImages {
             Write-Verbose -Message "Checking if user is logged in to Azure Stack"
         }
         Catch {
-            Write-Error "Run Login-AzureRmAccount to login before running this command." 
+            Write-Error "Run Connect-AzureRmAccount to login before running this command." 
             break 
         }
     }
@@ -270,7 +270,7 @@ Function Download-AzsMarketplaceImages {
             Write-Verbose -Message "Checking if user is logged in to Azure Stack"
         }
         Catch {
-            Write-Error "Run Login-AzureRmAccount to login before running this command." 
+            Write-Error "Run Connect-AzureRmAccount to login before running this command." 
             break 
         }
     }

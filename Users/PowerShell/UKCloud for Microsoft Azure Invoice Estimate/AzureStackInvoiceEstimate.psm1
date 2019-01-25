@@ -64,7 +64,7 @@ function Get-AzureStackInvoiceEstimate {
         } 
         catch {
             if (-not $Context -or -not $Context.Account) {
-                Write-Error -Message 'Run Login-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
+                Write-Error -Message 'Run Connect-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
                 break
             }
         }

@@ -43,7 +43,7 @@ function Test-AzureSiteRecoveryFailOver {
         }
         catch {
             if (-not $Context -or -not $Context.Account) {
-                Write-Error -Message 'Run Login-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
+                Write-Error -Message 'Run Connect-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
                 break
             }
         }
@@ -227,7 +227,7 @@ function Start-AzureSiteRecoveryFailOver {
         }
         catch {
             if (-not $Context -or -not $Context.Account) {
-                Write-Error -Message 'Run Login-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
+                Write-Error -Message 'Run Connect-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
                 break
             }
         }
@@ -445,7 +445,7 @@ function Start-AzureSiteRecoveryFailBack {
             if ($Context.Environment.ResourceManagerUrl -notlike "*https://management.azure.com*") {
                 try {
                     $Credentials = New-Object System.Management.Automation.PSCredential ($Username, $Password) 
-                    Login-AzureRmAccount -Credential $Credentials
+                    Connect-AzureRmAccount -Credential $Credentials
                 }
                 catch {
                     Write-Host "Failed to login to public Azure. Exiting...." -ForegroundColor Red
@@ -458,7 +458,7 @@ function Start-AzureSiteRecoveryFailBack {
             if (-not $Context -or -not $Context.Account) {
                 try {
                     $Credentials = New-Object System.Management.Automation.PSCredential ($Username, $Password) 
-                    Login-AzureRmAccount -Credential $Credentials
+                    Connect-AzureRmAccount -Credential $Credentials
                 }
                 catch {
                     Write-Host "Failed to login to public Azure. Exiting...." -ForegroundColor Red
@@ -520,7 +520,7 @@ function Start-AzureSiteRecoveryFailBack {
 
         # Login Azure Stack 
         $StackEnvironment = Add-AzureRmEnvironment -Name "AzureStackUser" -ArmEndpoint $ArmEndpoint
-        Login-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $Credentials
+        Connect-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $Credentials
 
         # Create base resources in Azure Stack
         $Location = $StackEnvironment.StorageEndpointSuffix.split(".")[0]
@@ -543,16 +543,19 @@ function Start-AzureSiteRecoveryFailBack {
                 if ($CurrentCopy.Status -like "Success") {
                     try {
                         $TestIfDiskExists = Get-AzureRmDisk -DiskName $VHD.DiskName -ResourceGroupName $RG.ResourceGroupName
-                    } catch {
+                    }
+                    catch {
                         $TestIfDiskExists = $null
                     }
                     if (!$TestIfDiskExists) {
                         $UploadedVHD = "$($StorageAccount.PrimaryEndpoints.Blob)$($StorageContainer)/$($VHD.DiskName)"
                         if ($VHD.DiskType -like "Linux") {
                             $diskConfig = New-AzureRmDiskConfig -AccountType "StandardLRS" -Location $Location -CreateOption Import -SourceUri $UploadedVHD -OsType "Linux"
-                        } elseif ($VHD.DiskType -like "Windows") {
+                        }
+                        elseif ($VHD.DiskType -like "Windows") {
                             $diskConfig = New-AzureRmDiskConfig -AccountType "StandardLRS" -Location $Location -CreateOption Import -SourceUri $UploadedVHD -OsType "Windows"
-                        } elseif ($VHD.DiskType -like "DataDisk") {
+                        }
+                        elseif ($VHD.DiskType -like "DataDisk") {
                             $diskConfig = New-AzureRmDiskConfig -AccountType "StandardLRS" -Location $Location -CreateOption Import -SourceUri $UploadedVHD
                         }
                         $disk = New-AzureRmDisk -Disk $diskConfig -ResourceGroupName $RG.ResourceGroupName -DiskName $VHD.DiskName -Verbose

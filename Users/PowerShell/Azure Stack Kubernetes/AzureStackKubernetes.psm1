@@ -45,7 +45,7 @@ function Start-AzsAks {
             if (-not $Context -or -not $Context.Account) {
                 $UserCredentials = Get-Credential
                 Add-AzureRmEnvironment -Name "AzureStackUser" -ArmEndpoint $ArmEndpoint
-                Login-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $UserCredentials
+                Connect-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $UserCredentials
             }
         }
     }
@@ -102,7 +102,7 @@ function Get-AzsAksCredentials {
             }
         } catch {
             if (-not $Context -or -not $Context.Account) {
-                Write-Error -Message 'Run Login-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
+                Write-Error -Message 'Run Connect-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
                 break
             }
         }
@@ -226,7 +226,7 @@ function New-AzsAks {
             }
         } catch {
             if (-not $Context -or -not $Context.Account) {
-                Write-Error -Message 'Run Login-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
+                Write-Error -Message 'Run Connect-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
                 break
             }
         }
@@ -288,7 +288,7 @@ function Remove-AzsAks {
             }
         } catch {
             if (-not $Context -or -not $Context.Account) {
-                Write-Error -Message 'Run Login-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
+                Write-Error -Message 'Run Connect-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
                 break
             }
         }
@@ -341,7 +341,7 @@ function Get-AzsAks {
             }
         } catch {
             if (-not $Context -or -not $Context.Account) {
-                Write-Error -Message 'Run Login-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
+                Write-Error -Message 'Run Connect-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
                 break
             }
         }
@@ -455,7 +455,7 @@ function Start-AzsAksScale {
             }
         } catch {
             if (-not $Context -or -not $Context.Account) {
-                Write-Error -Message 'Run Login-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
+                Write-Error -Message 'Run Connect-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
                 break
             }
         }
@@ -644,7 +644,7 @@ function Start-AzsAksUpgrade {
             }
         } catch {
             if (-not $Context -or -not $Context.Account) {
-                Write-Error -Message 'Run Login-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
+                Write-Error -Message 'Run Connect-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
                 break
             }
         }

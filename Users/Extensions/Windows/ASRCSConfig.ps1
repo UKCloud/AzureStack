@@ -241,7 +241,7 @@ $Job_AssociateFailbackPolicy = New-AzureRmRecoveryServicesAsrProtectionContainer
 # Login to Azure Stack
 Write-Host "Logging into Azure Stack"
 $StackEnvironment = Add-AzureRmEnvironment -Name "AzureStack" -ArmEndpoint $ArmEndpoint
-Login-AzureRmAccount -EnvironmentName "AzureStack" -Credential $Credentials
+Connect-AzureRmAccount -EnvironmentName "AzureStack" -Credential $Credentials
 
 # Get info for protected items
 Write-Host "Retrieving VM info from resource group"

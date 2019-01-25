@@ -52,7 +52,7 @@ UKCloud FRN00006 Region is based on the Azure AD deployment type, run the follow
   Add-AzureRmEnvironment -Name "AzureStackAdmin" -ArmEndpoint "https://adminmanagement.frn00006.azure.ukcloud.com"
 
   # Sign in to your environment
-  Login-AzureRmAccount -EnvironmentName "AzureStackAdmin"
+  Connect-AzureRmAccount -EnvironmentName "AzureStackAdmin"
    ```
 
 ### Azure Active Directory (AAD) based deployments - Embedded Credentials
@@ -71,7 +71,7 @@ UKCloud FRN00006 Region is based on the Azure AD deployment type, run the follow
     $AZScred = new-object -typename System.Management.Automation.PSCredential -argumentlist $AZSusername,$AZSuserPassword
 
   # Sign in to your environment
-  Login-AzureRmAccount -Credential $AZScred -EnvironmentName "AzureStackAdmin"
+  Connect-AzureRmAccount -Credential $AZScred -EnvironmentName "AzureStackAdmin"
    ```
 
 ## Test the connectivity
