@@ -33,7 +33,7 @@ Function Get-AzsMarketplaceImages {
         }
         Catch {
             Write-Error "Run Login-AzureRmAccount to login before running this command." 
-            Break 
+            break 
         }
     }
     process {
@@ -49,17 +49,17 @@ Function Get-AzsMarketplaceImages {
 
         # Get all downloaded images details
         #$GetProducts | Select-Object -Property @{Name = 'DownloadName'; Expression = {(($_.Name) -replace "default/", "")}}, GalleryItemIdentity, DisplayName, publisherDisplayName, @{Name="SizeInMB";Expression={([math]::Round(($_.payloadLength / 1MB),2)) }}, @{Name="SizeInGB";Expression={([math]::Round(($_.payloadLength / 1GB),2)) }}, @{Name="productPropertiesVersion";Expression={$_.productProperties.version}}, provisioningState
-        <#If ($ListDetails) {
+        <#if ($ListDetails) {
             Write-Host "Hit1"
             $GetProducts | Select-Object -Property @{Name = 'DownloadName'; Expression = {(($_.Name) -replace "default/", "")}}, GalleryItemIdentity, DisplayName, publisherDisplayName, @{Name = "SizeInMB"; Expression = {([math]::Round(($_.payloadLength / 1MB), 2)) }}, @{Name = "SizeInGB"; Expression = {([math]::Round(($_.payloadLength / 1GB), 2)) }}, @{Name = "productPropertiesVersion"; Expression = {$_.productProperties.version}}, provisioningState
         }#>
     }
     end { 
-        If ($ListDetails) {
+        if ($ListDetails) {
             #Write-Host "Hit2"
             $GetProducts | Select-Object -Property @{Name = 'DownloadName'; Expression = {(($_.Name) -replace "default/", "")}}, GalleryItemIdentity, DisplayName, publisherDisplayName, @{Name = "SizeInMB"; Expression = {([math]::Round(($_.payloadLength / 1MB), 2)) }}, @{Name = "SizeInGB"; Expression = {([math]::Round(($_.payloadLength / 1GB), 2)) }}, @{Name = "productPropertiesVersion"; Expression = {$_.productProperties.version}}, provisioningState
         }
-        Else {
+        else {
             return $GetProducts | Select-Object -Property @{Name = 'DownloadName'; Expression = {(($_.Name) -replace "default/", "")}} | Select-Object -ExpandProperty DownloadName
         }
     }
@@ -89,7 +89,7 @@ Function Remove-AzsMarketplaceImagesAll {
         }
         Catch {
             Write-Error "Run Login-AzureRmAccount to login before running this command." 
-            Break 
+            break 
         }
     }
     process {
@@ -157,7 +157,7 @@ Function Remove-AzsMarketplaceImages {
         }
         Catch {
             Write-Error "Run Login-AzureRmAccount to login before running this command." 
-            Break 
+            break 
         }
     }
     process {
@@ -168,10 +168,10 @@ Function Remove-AzsMarketplaceImages {
         # Find Activation Details
         $ActivationDetails = Get-AzsAzureBridgeActivation -ResourceGroupName $ActivationRG
 
-        # If no images are specified delete all images
-        If ([string]::IsNullOrEmpty(($ImagesToDelete))) {
+        # if no images are specified delete all images
+        if ([string]::IsNullOrEmpty(($ImagesToDelete))) {
             #Write-Host "Not Pipe 111111111111111111"
-            If ($PSCmdlet.ShouldProcess($GetProducts.Name, 'Delete the downloaded product')) {
+            if ($PSCmdlet.ShouldProcess($GetProducts.Name, 'Delete the downloaded product')) {
                 #Write-Host "Not Pipe"
                 # Find all downloaded images
                 $GetProducts = Get-AzsAzureBridgeDownloadedProduct -ActivationName $ActivationDetails.Name -ResourceGroupName $ActivationRG
@@ -181,9 +181,9 @@ Function Remove-AzsMarketplaceImages {
         }
         # Delete all downloaded images from pipe
         #$ImagesToDelete
-        ForEach ($Image in $ImagesToDelete) {
+        foreach ($Image in $ImagesToDelete) {
             #Write-Host "Not Pipe 2222222222222222222222222"
-            If ($PSCmdlet.ShouldProcess($Image, 'Delete the downloaded product')) {
+            if ($PSCmdlet.ShouldProcess($Image, 'Delete the downloaded product')) {
                 if ($Force -or  $PSCmdlet.ShouldContinue("Are you sure you want to delete $($DownloadItemsLatestName.DownloadName)?", $null)) {
                     Remove-AzsAzureBridgeDownloadedProduct -Name $Image -ActivationName $ActivationDetails.Name -ResourceGroupName $ActivationRG -AsJob -Force
                 }
@@ -271,7 +271,7 @@ Function Download-AzsMarketplaceImages {
         }
         Catch {
             Write-Error "Run Login-AzureRmAccount to login before running this command." 
-            Break 
+            break 
         }
     }
     process {
@@ -288,7 +288,7 @@ Function Download-AzsMarketplaceImages {
         $ArrayOfDownloadItemsLatestNames = @()
 
         # Iterate through Array of Names to find the latest Image
-        ForEach ($DownloadItem in $ImagesToDownload) {
+        foreach ($DownloadItem in $ImagesToDownload) {
             $LatestImage = Get-AzsAzureBridgeProduct -ActivationName $ActivationDetails.Name -ResourceGroupName $ActivationRG | Where-Object {$_.Name -like "*$DownloadItem*"} | Select-Object -First 1
             # Create Custom Object to populate $ArrayOfDownloadItemsArray so we can pass it to Download Function
             $ourObject = [PSCustomObject]@{
@@ -303,13 +303,13 @@ Function Download-AzsMarketplaceImages {
             }
             $ArrayOfDownloadItemsLatestNames += $ourObject
         }
-        If ($ListDetails) {
+        if ($ListDetails) {
             return $ArrayOfDownloadItemsLatestNames
         }
-        Else {
+        else {
             # Iterate through Latest Image names and download the image
-            ForEach ($DownloadItemsLatestName in $ArrayOfDownloadItemsLatestNames) {
-                If ($PSCmdlet.ShouldProcess($DownloadItemsLatestName.DownloadName, 'Start product download')) {
+            foreach ($DownloadItemsLatestName in $ArrayOfDownloadItemsLatestNames) {
+                if ($PSCmdlet.ShouldProcess($DownloadItemsLatestName.DownloadName, 'Start product download')) {
                     # Determine whether to continue with the command. Only continue if...
                     if ($Force -or  $PSCmdlet.ShouldContinue("Are you sure you want to download $($DownloadItemsLatestName.DownloadName)?", $null)) {
                         Invoke-AzsAzureBridgeProductDownload -ActivationName $ActivationDetails.Name -ResourceGroupName $ActivationRG -Name $($DownloadItemsLatestName.DownloadName) -AsJob  -Force #-Confirm:$false #-WhatIf

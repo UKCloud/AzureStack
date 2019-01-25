@@ -25,7 +25,7 @@ param (
     
 ## Declare MySQL function
 Function Invoke-MySQLQuery {
-    Param(
+    param(
         [Parameter(
             Mandatory = $true,
             ParameterSetName = "",
@@ -240,7 +240,7 @@ $Job_AssociateFailbackPolicy = New-AzureRmRecoveryServicesAsrProtectionContainer
 
 # Login to Azure Stack
 Write-Host "Logging into Azure Stack"
-$StackEnvironment = Add-AzureRMEnvironment -Name "AzureStack" -ArmEndpoint $ArmEndpoint
+$StackEnvironment = Add-AzureRmEnvironment -Name "AzureStack" -ArmEndpoint $ArmEndpoint
 Login-AzureRmAccount -EnvironmentName "AzureStack" -Credential $Credentials
 
 # Get info for protected items
@@ -275,7 +275,7 @@ Connect-AzureRmAccount -Credential $Credentials
 # Add protected items to vault
 Write-Host "Adding VMs to public Azure as protectable items"
 Set-AzureRmRecoveryServicesAsrVaultContext -Vault $SRVault
-ForEach ($VM in $VMInfo) {
+foreach ($VM in $VMInfo) {
     New-AzureRmRecoveryServicesAsrProtectableItem -ProtectionContainer $ProtectionContainer -FriendlyName $VM.FriendlyName -IPAddress $VM.IPAddress -OSType $VM.OSType
 }
 
@@ -335,11 +335,11 @@ $RunAsAccounts = $ASRFabrics[0].FabricSpecificDetails.RunAsAccounts
 # Set replicated items
 Write-Host "Setting VMs to be protected"
 $ContainerMapping = Get-ASRProtectionContainerMapping -ProtectionContainer $ProtectionContainer | Where-Object PolicyFriendlyName -eq $ReplicationPolicyName
-ForEach ($Item in $ProtectedItems) {
+foreach ($Item in $ProtectedItems) {
     # Remove Azure Stack Temporary Disk
     [string[]]$Disks = @()
     $DiskNum = 0
-    ForEach ($DiskName in $Item.Disks) {
+    foreach ($DiskName in $Item.Disks) {
         if ($DiskNum -ne 1) {
             $Disks += $($DiskName.Id)
         }

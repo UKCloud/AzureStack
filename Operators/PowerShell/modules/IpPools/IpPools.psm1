@@ -131,7 +131,7 @@ Function New-AzsPublicIpPool {
         }
         Catch {
             Write-Error "Run Login-AzureRmAccount to login before running this command." 
-            Break 
+            break 
         }
     }
     process {
@@ -144,7 +144,7 @@ Function New-AzsPublicIpPool {
         
 
         # Provision New IP Pool
-        If ($PSCmdlet.ShouldProcess($NetworkInfo.NetworkID, 'Create a new Ip Pool')) {
+        if ($PSCmdlet.ShouldProcess($NetworkInfo.NetworkID, 'Create a new Ip Pool')) {
             if ($Force -or $PSCmdlet.ShouldContinue("Are you sure you want to create new IP Pool $($IPPoolName)?", $null)) {
                 New-AzsIpPool -Name $IPPoolName -StartIpAddress $($NetworkInfo.FirstAddress) -EndIpAddress  $($NetworkInfo.Broadcast) -AddressPrefix  $($NetworkInfo.NetworkID)
             }

@@ -39,7 +39,7 @@ function Start-AzsAks {
             [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
             if ($Context.Environment.ResourceManagerUrl -like "*https://management.azure.com*") {
                 Write-Error -Message 'You are currently logged into public Azure. Please login to Azure Stack to continue.' -ErrorId 'AzureRmContextError'
-                Break
+                break
             }
         } catch {
             if (-not $Context -or -not $Context.Account) {
@@ -98,19 +98,19 @@ function Get-AzsAksCredentials {
             [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
             if ($Context.Environment.ResourceManagerUrl -like "*https://management.azure.com*") {
                 Write-Error -Message 'You are currently logged into public Azure. Please login to Azure Stack to continue.' -ErrorId 'AzureRmContextError'
-                Break
+                break
             }
         } catch {
             if (-not $Context -or -not $Context.Account) {
                 Write-Error -Message 'Run Login-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
-                Break
+                break
             }
         }
     }
 
     process {
-        $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "*master*"}).IpAddress
-        $MasterNodes = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "*master*"}
+        $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where-Object {$_.Name -like "*master*"}).IpAddress
+        $MasterNodes = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object {$_.Name -like "*master*"}
         $Username = $MasterNodes[0].OSProfile.AdminUsername
         Invoke-Command -ScriptBlock {param($PrivateKeyLocation, $Username, $IPAddress, $OutFile) ssh -i $PrivateKeyLocation $Username@$IPAddress kubectl config view --flatten | Out-File $OutFile} -ArgumentList $PrivateKeyLocation, $Username, $IPAddress, $OutFile
     }
@@ -140,7 +140,7 @@ function New-AzsAks {
     .PARAMETER AdminUsername
         The administrator username for the Kubernetes cluster. Defaults to: "azureuser"
 
-    .PARAMETER DNSNamePrefix
+    .PARAMETER DNSPrefix
         Prefix for hostnames that are created. Example: "examplednsprefix"
     
     .PARAMETER ServicePrincipal
@@ -195,7 +195,7 @@ function New-AzsAks {
         [parameter(Mandatory = $false)]
         [String]$AdminUsername = "azureuser",
         [parameter(Mandatory = $false)]
-        [String]$DNSNamePrefix,
+        [String]$DNSPrefix,
         [parameter(Mandatory = $true)]
         [String]$ServicePrincipal,
         [parameter(Mandatory = $true)]
@@ -222,12 +222,12 @@ function New-AzsAks {
             [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
             if ($Context.Environment.ResourceManagerUrl -like "*https://management.azure.com*") {
                 Write-Error -Message 'You are currently logged into public Azure. Please login to Azure Stack to continue.' -ErrorId 'AzureRmContextError'
-                Break
+                break
             }
         } catch {
             if (-not $Context -or -not $Context.Account) {
                 Write-Error -Message 'Run Login-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
-                Break
+                break
             }
         }
     }
@@ -237,12 +237,12 @@ function New-AzsAks {
         $ClientSecretSecure = ConvertTo-SecureString $ClientSecret -AsPlainText -Force
         $KubernetesTemplateURI = "https://portal.frn00006.azure.ukcloud.com:30015//artifact/20161101/Microsoft.AzureStackKubernetesCluster.0.3.0/DeploymentTemplates/azuredeploy.json"
         $SSHKey = Get-Content -Path $SSHKeyPath -Raw
-        if (!$DNSNamePrefix) {
-            $DNSNamePrefix = $ResourceGroupName.tolower()
+        if (!$DNSPrefix) {
+            $DNSPrefix = $ResourceGroupName.tolower()
         }
 
         New-AzureRmResourceGroup -Name $ResourceGroupName -Location $location
-        New-AzureRmResourceGroupDeployment -Name $DeploymentName -ResourceGroupName $ResourceGroupName -TemplateUri $KubernetesTemplateURI -sshPublicKey $SSHKey -masterProfileDnsPrefix $DNSNamePrefix `
+        New-AzureRmResourceGroupDeployment -Name $DeploymentName -ResourceGroupName $ResourceGroupName -TemplateUri $KubernetesTemplateURI -sshPublicKey $SSHKey -masterProfileDnsPrefix $DNSPrefix `
             -servicePrincipalClientId $ServicePrincipalSecure -servicePrincipalClientSecret $ClientSecretSecure -agentPoolProfileCount $AgentPoolProfileCount -agentPoolProfileVMSize $AgentPoolProfileVMSize `
             -masterPoolProfileCount $MasterPoolProfileCount -masterPoolProfileVMSize $MasterPoolProfileVMSize -storageProfile $StorageProfile -kubernetesAzureCloudProviderVersion $KubernetesAzureCloudProviderVersion -Verbose
 
@@ -284,12 +284,12 @@ function Remove-AzsAks {
             [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
             if ($Context.Environment.ResourceManagerUrl -like "*https://management.azure.com*") {
                 Write-Error -Message 'You are currently logged into public Azure. Please login to Azure Stack to continue.' -ErrorId 'AzureRmContextError'
-                Break
+                break
             }
         } catch {
             if (-not $Context -or -not $Context.Account) {
                 Write-Error -Message 'Run Login-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
-                Break
+                break
             }
         }
     }
@@ -337,30 +337,30 @@ function Get-AzsAks {
             [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
             if ($Context.Environment.ResourceManagerUrl -like "*https://management.azure.com*") {
                 Write-Error -Message 'You are currently logged into public Azure. Please login to Azure Stack to continue.' -ErrorId 'AzureRmContextError'
-                Break
+                break
             }
         } catch {
             if (-not $Context -or -not $Context.Account) {
                 Write-Error -Message 'Run Login-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
-                Break
+                break
             }
         }
     }
 
     process {
         if ($ResourceGroupName) {
-            $FirstMasterVMs = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | where {$_.Name -like "k8s-master*" -and $_.Name -like "*0"}
+            $FirstMasterVMs = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object {$_.Name -like "k8s-master*" -and $_.Name -like "*0"}
         } else {
-            $FirstMasterVMs = Get-AzureRmVM | where {$_.Name -like "k8s-master*" -and $_.Name -like "*0"}
+            $FirstMasterVMs = Get-AzureRmVM | Where-Object {$_.Name -like "k8s-master*" -and $_.Name -like "*0"}
         }
         $ArrayOfClusters = @()
-        ForEach ($VM in $FirstMasterVMs) {
-            $PoolVMs = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | where {$_.Name -like "*k8s*" -and $_.Name -notlike "*master*"}
+        foreach ($VM in $FirstMasterVMs) {
+            $PoolVMs = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | Where-Object {$_.Name -like "*k8s*" -and $_.Name -notlike "*master*"}
             $PoolName = (($PoolVMs[0].Name).Split("-"))[1]
-            $MasterVMs = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | where {$_.Name -like "*k8s*" -and $_.Name -like "*master*"}
-            $CreationVM = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | where {$_.Name -like "vmd*"}
-            $DNSName = (Get-AzureRmPublicIpAddress -ResourceGroupName $VM.ResourceGroupName | Where {$_.Name -like "k8s*"}).IpAddress
-            $KubernetesDeployment = Get-AzureRmResourceGroupDeployment -ResourceGroupName $VM.ResourceGroupName | where {$_.TemplateLink}
+            $MasterVMs = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | Where-Object {$_.Name -like "*k8s*" -and $_.Name -like "*master*"}
+            $CreationVM = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | Where-Object {$_.Name -like "vmd*"}
+            $DNSName = (Get-AzureRmPublicIpAddress -ResourceGroupName $VM.ResourceGroupName | Where-Object {$_.Name -like "k8s*"}).IpAddress
+            $KubernetesDeployment = Get-AzureRmResourceGroupDeployment -ResourceGroupName $VM.ResourceGroupName | Where-Object {$_.TemplateLink}
             $KubernetesCluster = [PSCustomObject]@{
                 "Resource group"         = $VM.ResourceGroupName
                 "Kubernetes version"     = $VM.Tags.orchestrator
@@ -451,31 +451,31 @@ function Start-AzsAksScale {
             [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
             if ($Context.Environment.ResourceManagerUrl -like "*https://management.azure.com*") {
                 Write-Error -Message 'You are currently logged into public Azure. Please login to Azure Stack to continue.' -ErrorId 'AzureRmContextError'
-                Break
+                break
             }
         } catch {
             if (-not $Context -or -not $Context.Account) {
                 Write-Error -Message 'Run Login-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
-                Break
+                break
             }
         }
     }
 
     process {
-        $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | where {$_.Name -notlike "*k8s*"}
-        $resourceNameSuffix = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName | where {$_.Name -like "*k8s*" -and $_.Name -notlike "*master*"})[0].Tags["resourceNameSuffix"]
-        $tags = $CreationVM.Tags
-        if (!$tags["poolName"]) {
-            $tags += @{poolName = "CreationVM"}
+        $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object {$_.Name -notlike "*k8s*"}
+        $ResourceNameSuffix = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object {$_.Name -like "*k8s*" -and $_.Name -notlike "*master*"})[0].Tags["resourceNameSuffix"]
+        $Tags = $CreationVM.Tags
+        if (!$Tags["poolName"]) {
+            $Tags += @{poolName = "CreationVM"}
         }
-        if (!$tags["resourceNameSuffix"]) {
-            $tags += @{resourceNameSuffix = $resourceNameSuffix} 
+        if (!$Tags["resourceNameSuffix"]) {
+            $Tags += @{resourceNameSuffix = $ResourceNameSuffix} 
         }
         $CreationVM.Plan = @{"name" = " "}
-        $CreationVM | Set-AzureRmResource -Tag $tags -Force | Out-Null
-        $MasterFQDN = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "*master*"}).DnsSettings.Fqdn
+        $CreationVM | Set-AzureRmResource -Tag $Rags -Force | Out-Null
+        $MasterFQDN = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where-Object {$_.Name -like "*master*"}).DnsSettings.Fqdn
         $Username = $CreationVM.OSProfile.AdminUsername
-        $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "vmd*"}).IpAddress
+        $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where-Object {$_.Name -like "vmd*"}).IpAddress
         $ScaleCommand = "/var/lib/waagent/custom-script/download/0/acs-engine/bin/acs-engine scale"
         $SubscriptionID = (Get-AzureRmContext).Subscription.Id
         $DeploymentDirectory = "/var/lib/waagent/custom-script/download/0/acs-engine/_output/" + $MasterFQDN.Split(".")[0]
@@ -486,8 +486,8 @@ function Start-AzsAksScale {
         } -ArgumentList $PrivateKeyLocation, $Username, $IPAddress, $ScaleCommand, $ResourceGroupName, $Location, $ServicePrincipal, $ClientSecret, $SubscriptionID, $NewNodeCount, $DeploymentDirectory, $MasterFQDN, $PoolName
 
         # Actual clean-up as the command (sometimes, completely at random) can't do it
-        $PoolVMs = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | where {$_.Name -like "*$PoolName*"}
-        $PoolNICs = Get-AzureRmNetworkInterface -ResourceGroupName $ResourceGroupName | where {$_.Name -like "*$PoolName*"}
+        $PoolVMs = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object {$_.Name -like "*$PoolName*"}
+        $PoolNICs = Get-AzureRmNetworkInterface -ResourceGroupName $ResourceGroupName | Where-Object {$_.Name -like "*$PoolName*"}
         if (!!$PoolVMs[0].StorageProfile.OsDisk.ManagedDisk) {
             foreach ($MDID in $PoolVMs.StorageProfile.OsDisk.ManagedDisk.Id) {
                 $NodeNumber = [convert]::ToInt32(($MDID.Split("-")[-1][0]), 10)
@@ -563,9 +563,9 @@ function Get-AzsAksVersions {
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         $URL = "https://api.github.com/repos/msazurestackworkloads/acs-engine/contents/examples/azurestack"
         $Branch = @{"ref" = "acs-engine-v0209-1809"}
-        $GitHubFiles = (Invoke-WebRequest -URI $URL -Body $Branch -Method GET -UseBasicParsing | ConvertFrom-Json).name | Where {$_ -like "*kubernetes*"}
+        $GitHubFiles = (Invoke-WebRequest -URI $URL -Body $Branch -Method GET -UseBasicParsing | ConvertFrom-Json).name | Where-Object {$_ -like "*kubernetes*"}
         $Versions = @()
-        ForEach ($Filename in $GitHubFiles) {
+        foreach ($Filename in $GitHubFiles) {
             $VersionNum = [PSCustomObject] @{
                 VersionNumber = $Filename.Replace(".json", "").Replace("azurestack-kubernetes", "")
             }
@@ -640,35 +640,35 @@ function Start-AzsAksUpgrade {
             [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
             if ($Context.Environment.ResourceManagerUrl -like "*https://management.azure.com*") {
                 Write-Error -Message 'You are currently logged into public Azure. Please login to Azure Stack to continue.' -ErrorId 'AzureRmContextError'
-                Break
+                break
             }
         } catch {
             if (-not $Context -or -not $Context.Account) {
                 Write-Error -Message 'Run Login-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
-                Break
+                break
             }
         }
     }
 
     process {
-        $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "vmd*"}
-        $resourceNameSuffix = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "*k8s*" -and $_.Name -notlike "*master*"})[0].Tags["resourceNameSuffix"]
-        $tags = $CreationVM.Tags
+        $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object {$_.Name -like "vmd*"}
+        $ResourceNameSuffix = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object {$_.Name -like "*k8s*" -and $_.Name -notlike "*master*"})[0].Tags["resourceNameSuffix"]
+        $Tags = $CreationVM.Tags
         if (!$tags["poolName"]) {
-            $tags += @{poolName = "CreationVM"}
+            $Tags += @{poolName = "CreationVM"}
         }
         if (!$tags["resourceNameSuffix"]) {
-            $tags += @{resourceNameSuffix = $resourceNameSuffix} 
+            $Tags += @{resourceNameSuffix = $ResourceNameSuffix} 
         }
         $CreationVM.Plan = @{"name" = " "}
-        $CreationVM | Set-AzureRmResource -Tag $tags -Force | Out-Null
-        $MasterFQDN = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "*master*"}).DnsSettings.Fqdn
+        $CreationVM | Set-AzureRmResource -Tag $Tags -Force | Out-Null
+        $MasterFQDN = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where-Object {$_.Name -like "*master*"}).DnsSettings.Fqdn
         $Username = $CreationVM.OSProfile.AdminUsername
-        $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "vmd*"}).IpAddress
+        $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where-Object {$_.Name -like "vmd*"}).IpAddress
         $ScaleCommand = "/var/lib/waagent/custom-script/download/0/acs-engine/bin/acs-engine upgrade"
         $SubscriptionID = (Get-AzureRmContext).Subscription.Id
         $DeploymentDirectory = "/var/lib/waagent/custom-script/download/0/acs-engine/_output/" + $MasterFQDN.Split(".")[0]
-        $CurrentVersion = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "*k8s*" -and $_.Name -like "*master*"})[0].Tags["orchestrator"].Split(":")[1]
+        $CurrentVersion = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object {$_.Name -like "*k8s*" -and $_.Name -like "*master*"})[0].Tags["orchestrator"].Split(":")[1]
         if ($CurrentVersion -eq $KubernetesUpgradeVersion) {
             Write-Host "Can't upgrade Kubernetes version - Cluster is already running version $CurrentVersion" -ForegroundColor Red
         } else {
@@ -723,10 +723,10 @@ function Get-AzsAksUpgradeVersions {
     )
 
     process {
-        $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | where {$_.Name -like "vmd*"}
-        $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where {$_.Name -like "vmd*"}).IpAddress
+        $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object {$_.Name -like "vmd*"}
+        $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where-Object {$_.Name -like "vmd*"}).IpAddress
         $Username = $CreationVM.OSProfile.AdminUsername
-        $FirstMasterVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | where {$_.Name -like "k8s-master*" -and $_.Name -like "*0"}
+        $FirstMasterVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object {$_.Name -like "k8s-master*" -and $_.Name -like "*0"}
         $CurrentVersion = $FirstMasterVM.Tags["orchestrator"].Split(":")[1]
         $Command = "/var/lib/waagent/custom-script/download/0/acs-engine/bin/acs-engine orchestrators"
         Write-Host "Current Kubernetes version is: $CurrentVersion" -ForegroundColor Green
