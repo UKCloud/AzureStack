@@ -355,12 +355,12 @@ function Get-AzsAks {
         }
         $ArrayOfClusters = @()
         ForEach ($VM in $FirstMasterVMs) {
-            $ResourceGroup = $VM.ResourceGroupName
             $PoolVMs = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | where {$_.Name -like "*k8s*" -and $_.Name -notlike "*master*"}
             $PoolName = (($PoolVMs[0].Name).Split("-"))[1]
             $MasterVMs = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | where {$_.Name -like "*k8s*" -and $_.Name -like "*master*"}
             $CreationVM = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | where {$_.Name -like "vmd*"}
-            $KubernetesDeployment = Get-AzureRmResourceGroupDeployment -ResourceGroupName $ResourceGroup | where {$_.TemplateLink}
+            $DNSName = (Get-AzureRmPublicIpAddress -ResourceGroupName $VM.ResourceGroupName | Where {$_.Name -like "k8s*"}).IpAddress
+            $KubernetesDeployment = Get-AzureRmResourceGroupDeployment -ResourceGroupName $VM.ResourceGroupName | where {$_.TemplateLink}
             $KubernetesCluster = [PSCustomObject]@{
                 "Resource group"         = $VM.ResourceGroupName
                 "Kubernetes version"     = $VM.Tags.orchestrator
@@ -373,7 +373,7 @@ function Get-AzsAks {
                 "Slave pool name"        = $PoolName
                 "Storage Type"           = $KubernetesDeployment.Parameters.storageProfile.Value
                 "Admin Username"         = $KubernetesDeployment.Parameters.linuxAdminUsername.Value
-                "DNS Prefix"             = $KubernetesDeployment.Parameters.masterProfileDnsPrefix.Value
+                "FQDN"                   = $DNSName.DnsSettings.Fqdn
                 "Creation VM Name"       = $CreationVM.Name
             }
             $ArrayOfClusters += $KubernetesCluster
