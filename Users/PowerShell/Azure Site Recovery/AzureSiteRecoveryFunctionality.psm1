@@ -27,9 +27,9 @@ function Test-AzureSiteRecoveryFailOver {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [string]$VaultName,
+        [String]$VaultName,
         [Parameter(Mandatory = $false)]
-        [switch]$Confirmation
+        [Switch]$Confirmation
     )
 
     begin {
@@ -40,8 +40,7 @@ function Test-AzureSiteRecoveryFailOver {
                 Write-Error -Message 'You are currently logged into Azure Stack. Please login to public azure to continue.' -ErrorId 'AzureRmContextError'
                 break
             }
-        }
-        catch {
+        } catch {
             if (-not $Context -or -not $Context.Account) {
                 Write-Error -Message 'Run Connect-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
                 break
@@ -68,7 +67,7 @@ function Test-AzureSiteRecoveryFailOver {
         # Check test failover status
         $FailureTest = $false
         $NumJobsComplete = 0
-        While ($FailoverJobs.Count -ne $NumJobsComplete) {
+        while ($FailoverJobs.Count -ne $NumJobsComplete) {
             $NumJobsComplete = 0
             $FailoverStatii = @()
             foreach ($Job in $FailoverJobs) {
@@ -109,7 +108,7 @@ function Test-AzureSiteRecoveryFailOver {
         # Check status of clean-up jobs
         $CleanupFailureTest = $false
         $NumJobsComplete = 0
-        While ($CleanupJobs.Count -ne $NumJobsComplete) {
+        while ($CleanupJobs.Count -ne $NumJobsComplete) {
             $NumJobsComplete = 0
             $CleanupStatii = @()
             foreach ($Job in $CleanupJobs) {
@@ -213,7 +212,7 @@ function Start-AzureSiteRecoveryFailOver {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [string]$VaultName
+        [String]$VaultName
     )
 
     begin {
@@ -224,8 +223,7 @@ function Start-AzureSiteRecoveryFailOver {
                 Write-Error -Message 'You are currently logged into Azure Stack. Please login to public azure to continue.' -ErrorId 'AzureRmContextError'
                 break
             }
-        }
-        catch {
+        } catch {
             if (-not $Context -or -not $Context.Account) {
                 Write-Error -Message 'Run Connect-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
                 break
@@ -238,8 +236,7 @@ function Start-AzureSiteRecoveryFailOver {
 
         if ($TestSuccessful -eq $false) {
             break
-        }
-        elseif ($TestSuccessful -eq $true) {
+        } elseif ($TestSuccessful -eq $true) {
             # Start actual failover
             Write-Host "Starting failover..."
             $FailoverJobs = @()
@@ -252,7 +249,7 @@ function Start-AzureSiteRecoveryFailOver {
             $Failure = $false
             $FailoverErrors = @()
             $NumJobsComplete = 0
-            While ($FailoverJobs.Count -ne $NumJobsComplete) {
+            while ($FailoverJobs.Count -ne $NumJobsComplete) {
                 $NumJobsComplete = 0
                 $FailoverStatii = @()
                 foreach ($Job in $FailoverJobs) {
@@ -305,7 +302,7 @@ function Start-AzureSiteRecoveryFailOver {
             $CommitFailure = $false
             $NumJobsComplete = 0
             $CommitErrors = @()
-            While ($CommitJobs.Count -ne $NumJobsComplete) {
+            while ($CommitJobs.Count -ne $NumJobsComplete) {
                 $NumJobsComplete = 0
                 $CommitStatii = @()
                 foreach ($Job in $CommitJobs) {
@@ -446,21 +443,18 @@ function Start-AzureSiteRecoveryFailBack {
                 try {
                     $Credentials = New-Object System.Management.Automation.PSCredential ($Username, $Password) 
                     Connect-AzureRmAccount -Credential $Credentials
-                }
-                catch {
+                } catch {
                     Write-Host "Failed to login to public Azure. Exiting...." -ForegroundColor Red
                     $Error[-1]
                     break
                 }
             }
-        }
-        catch {
+        } catch {
             if (-not $Context -or -not $Context.Account) {
                 try {
                     $Credentials = New-Object System.Management.Automation.PSCredential ($Username, $Password) 
                     Connect-AzureRmAccount -Credential $Credentials
-                }
-                catch {
+                } catch {
                     Write-Host "Failed to login to public Azure. Exiting...." -ForegroundColor Red
                     $Error[-1]
                     break
@@ -536,26 +530,23 @@ function Start-AzureSiteRecoveryFailBack {
         }
 
         $Completed = 0
-        While ($Completed -ne $AzureDisks.Count) {
+        while ($Completed -ne $AzureDisks.Count) {
             $Completed = 0
             foreach ($VHD in $AzureDisks) {
                 $CurrentCopy = Get-AzureStorageBlobCopyState -Blob $VHD.DiskName -Container $ImagesContainer.Name -Context $StorageAccount.Context
                 if ($CurrentCopy.Status -like "Success") {
                     try {
                         $TestIfDiskExists = Get-AzureRmDisk -DiskName $VHD.DiskName -ResourceGroupName $RG.ResourceGroupName
-                    }
-                    catch {
+                    } catch {
                         $TestIfDiskExists = $null
                     }
                     if (!$TestIfDiskExists) {
                         $UploadedVHD = "$($StorageAccount.PrimaryEndpoints.Blob)$($StorageContainer)/$($VHD.DiskName)"
                         if ($VHD.DiskType -like "Linux") {
                             $diskConfig = New-AzureRmDiskConfig -AccountType "StandardLRS" -Location $Location -CreateOption Import -SourceUri $UploadedVHD -OsType "Linux"
-                        }
-                        elseif ($VHD.DiskType -like "Windows") {
+                        } elseif ($VHD.DiskType -like "Windows") {
                             $diskConfig = New-AzureRmDiskConfig -AccountType "StandardLRS" -Location $Location -CreateOption Import -SourceUri $UploadedVHD -OsType "Windows"
-                        }
-                        elseif ($VHD.DiskType -like "DataDisk") {
+                        } elseif ($VHD.DiskType -like "DataDisk") {
                             $diskConfig = New-AzureRmDiskConfig -AccountType "StandardLRS" -Location $Location -CreateOption Import -SourceUri $UploadedVHD
                         }
                         $disk = New-AzureRmDisk -Disk $diskConfig -ResourceGroupName $RG.ResourceGroupName -DiskName $VHD.DiskName -Verbose
