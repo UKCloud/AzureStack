@@ -16,9 +16,9 @@ Prerequisites from a Windows-based external client.
 
 * Azure Stack PowerShell Modules 1.6.0 -> [Azure Stack Modules Install Guide](https://docs.ukcloud.com/articles/azure/azs-how-configure-powershell-users.html)
 
-## How to install it:
+## How to install it
 
-There is a installmodules.ps1 script that will install your modules.
+There is a InstallModules.ps1 script that will install your modules.
 
 ## How to use it
 
@@ -31,22 +31,22 @@ Once it is installed you can just invoke the commands and PowerShell will load t
 
 * Perform a test failover of your protected VMs to Azure:
 
-    ```powershell
+    ```PowerShell
     Test-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault"
     ```
 
 * Perform a failover of your protected VMs to Azure:
 
-    ```powershell
+    ```PowerShell
     Start-AzureSiteRecoveryFailOver -VaultName "AzureStackRecoveryVault"
     ```
 
 * Perform a fail back of all VMs in an Azure resource group to Azure Stack:
 
-    ```powershell
+    ```PowerShell
     Start-AzureSiteRecoveryFailBack -AzureResourceGroup "SiteRecovery-RG" -Username "exampleuser@contoso.onmicrosoft.com" `
         -StackResourceGroup "FailBack-RG" -StackStorageAccount "FailBackSA" -StackStorageContainer "FailBackContainer"
     ```
 
 > [!TIP]
-> There are more examples of usage inside the functions in the module itself.
+> More usage examples can be found by running `Get-Help <FunctionName> -Full`

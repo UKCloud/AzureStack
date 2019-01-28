@@ -37,13 +37,13 @@ Prerequisites from a Windows-based external client.
 
 > [!IMPORTANT]
 > You might need to force the latest module by running
-> ```powershell
+> ```PowerShell
 > Install-Module -Name AzureStack -RequiredVersion 1.3 -AllowClobber -Force -Verbose
 > ```
 
 ## How to install it
 
-There is a installmodules.ps1 script that will install your modules.
+There is a InstallModules.ps1 script that will install your modules.
 
 ## How to use it
 
@@ -59,13 +59,13 @@ Once it is installed you can just invoke the commands and PowerShell will load t
 
 * List currently downloaded images:
 
-    ```powershell
+    ```PowerShell
     Get-AzsMarketplaceImages
     ```
 
 * List currently downloaded images with detailed info:
 
-    ```powershell
+    ```PowerShell
     Get-AzsMarketplaceImages -ListDetails
     ```
 
@@ -74,13 +74,13 @@ Once it is installed you can just invoke the commands and PowerShell will load t
 
 * Remove all images that are currently downloaded:
 
-    ```powershell
+    ```PowerShell
     Remove-AzsMarketplaceImages
     ```
 
 * Download Marketplace Images:
 
-    ```powershell
+    ```PowerShell
     # Declare Array of Images you want to download
     $ImagesToDownload = @(
         "SQLServer2016SP1StandardWindowsServer2016", `
@@ -105,13 +105,13 @@ Once it is installed you can just invoke the commands and PowerShell will load t
     ```
 
 > [!TIP]
-> There are more examples of usage inside the functions in the module itself.
+> More usage examples can be found by running `Get-Help <FunctionName> -Full`
 
 #### Re-Download all images
 
 If you want to delete all the images and download the ones you want run this:
 
-```powershell
+```PowerShell
 # Find all images that are currently installed
 Get-AzsMarketplaceImages
 # Delete all images without prompting for confirmation
