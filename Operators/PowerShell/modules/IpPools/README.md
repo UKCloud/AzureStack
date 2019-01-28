@@ -35,13 +35,13 @@ Prerequisites from a Windows-based external client.
 
 > [!IMPORTANT]
 > You might need to force the latest module by running
-> ```powershell
+> ```PowerShell
 > Install-Module -Name AzureStack -RequiredVersion 1.3 -AllowClobber -Force -Verbose
 > ```
 
 ## How to install it
 
-There is a installmodules.ps1 script that will install your modules.
+There is a InstallModules.ps1 script that will install your modules.
 
 ## How to use it
 
@@ -56,12 +56,12 @@ Once it is installed you can just invoke the commands and PowerShell will load t
 ### Examples
 
 * Check Network Settings:
-    ```powershell
+    ```PowerShell
     Get-NetworkIpPoolInfo -IPAddress "57.139.61.192" -SubnetMask "255.255.255.192"
     ```
 
     * Return:
-        ```powershell
+        ```PowerShell
         Network ID:  57.139.61.192/26
         First Address:  57.139.61.193  <-- typically the default gateway
         Last Address:  57.139.61.254
@@ -74,14 +74,14 @@ Once it is installed you can just invoke the commands and PowerShell will load t
         ```
 
 * Provision New Public Ip Pool based on IP and Subnet:
-    ```powershell
+    ```PowerShell
     New-AzsPublicIpPool -IPAddress "57.139.61.192" -SubnetMask "255.255.255.192" -IPPoolName "PublicIpPoolExtension-1" -Confirm:$false -Force -Verbose
     ```
     > [!CAUTION]
     > You cannot delete provisioned Ip Pool so be careful!
 
 > [!TIP]
-> There are more examples of usage inside the functions in the module itself.
+> More usage examples can be found by running `Get-Help <FunctionName> -Full`
 
 ## ToDo
 
