@@ -1,38 +1,154 @@
+    <#
+    .SYNOPSIS
+        Configures a Windows Server to act as a configuration server for Azure Site Recovery from Azure Stack to Azure.
+
+    .DESCRIPTION
+        Configures a Windows Server to act as a configuration server for Azure Site Recovery from Azure Stack to Azure. 
+        Used as part of an ARM template (see links). Requires an Azure Stack and Azure Subscription
+
+    .PARAMETER ClientID
+        The application ID of a service principal with contributor permissions on Azure Stack and Azure.
+        Example: "00000000-0000-0000-0000-000000000000"
+
+    .PARAMETER ClientSecret
+        A password of the service principal specified in the ClientID parameter. "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
+    
+    .PARAMETER TenantID
+        The Tenant/Directory ID of your AAD domain. Example: "31537af4-6d77-4bb9-a681-d2394888ea26"
+
+    .PARAMETER ArmEndpoint
+        The ARM endpoint for the Azure Stack endpoint you are failing back to. Defaults to: "https://management.frn00006.azure.ukcloud.com"
+    
+    .PARAMETER TempFilesPath
+        Location on configuration server where setup files will be stored. Defaults to: "C:\TempASR\"
+    
+    .PARAMETER ExtractionPath
+        Folder within the TempFilesPath where the unified setup will be extracted to. Defaults to: "Extracted"
+
+    .PARAMETER MySQLRootPassword
+        The root password for the MySQL server created on the Configuration Server.
+    
+    .PARAMETER MySQLUserPassword
+        The user password for the MySQL server created on the Configuration Server.
+
+    .PARAMETER VNetName
+        The name of the virtual network to be created on public Azure. Defaults to: "SiteRecoveryVNet"
+
+    .PARAMETER AzureStorageAccount
+        The name of the storage account to be created on public Azure. Example: "stacksiterecoverysa"
+    
+    .PARAMETER SubnetRange
+        The subnet range of the virtual network to be created on public Azure. Defaults to: "192.168.1.0/24"
+
+    .PARAMETER VNetRange
+        The address space of the virtual network to be created on public Azure. Defaults to: "192.168.0.0/16"
+
+    .PARAMETER AzureLocation
+        The location of the recovery services vault on public Azure. Defaults to: "UK West"
+
+    .PARAMETER ReplicationPolicyName
+        The name of the site recovery replication policy to be created in the recovery services vault. Defaults to: "ReplicationPolicy"
+
+    .PARAMETER AzureResourceGroup
+        The name of the resource group to be created on public Azure. Defaults to: "SiteRecoveryTestRG"
+
+    .PARAMETER VaultName
+        The name of the recovery services vault to be created on public Azure. Defaults to: "AzureStackVault"
+
+    .PARAMETER ConfigServerUsername
+        The username for the configuration server.
+    
+    .PARAMETER ConfigServerPassword
+        The password for the configuration server.
+
+    .PARAMETER EncryptionKey
+        The encryption key for the MySQL database on the configuration server. Example: "ExampleEncryptionKey"
+
+    .PARAMETER WindowsUsername
+        The username of an administrator account on the Windows VMs to be protected. Example: "Administrator"
+
+    .PARAMETER WindowsPassword
+        The password of an administrator account on the Windows VMs to be protected
+
+    .PARAMETER LinuxRootPassword
+        The password of the root account on the Linux VMs to be protected
+
+    .PARAMETER StackResourceGroup
+        The resource group that the configuration server is in in Azure Stack. Example: "SiteRecovery-RG"
+
+    .EXAMPLE
+        powershell -ExecutionPolicy Unrestricted -File ASRCSConfig.ps1 -ClientID "00000000-0000-0000-0000-000000000000" -ClientSecret "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]=" `
+            -TenantID "31537af4-6d77-4bb9-a681-d2394888ea26" -MySQLRootPassword "Password123!" -MySQLUserPassword "Password123!" -AzureStorageAccount "stacksiterecoverysa" `
+            -AzureResourceGroup "SiteRecoveryTestRG" -VaultName "AzureStackVault" -ConfigServerUsername "ConfigAdmin" -ConfigServerPassword "Password123!" -EncryptionKey "ExampleEncryptionKey" `
+            -WindowsUsername "Administrator" -WindowsPassword "Password123!" -LinuxRootPassword "Password123!" -StackResourceGroup "SiteRecovery-RG"
+    
+    .LINK 
+        https://github.com/UKCloud/AzureStack/tree/master/Users/Extensions/Windows#asrcsconfigps1
+
+    .LINK
+        https://docs.microsoft.com/en-us/azure/site-recovery/azure-stack-site-recovery
+
+    .LINK
+        https://github.com/UKCloud/AzureStack/tree/master/Users/ARM%20Templates/Azure%20Site%20Recovery%20-%20Config%20Server
+    #>
+
+[CmdletBinding()]
 param (
-    [string]$ClientID = $(throw "-ClientID is required."),
-    [string]$ClientSecret = $(throw "-ClientSecret is required."),
-    [string]$TenantID,
-    [string]$ArmEndpoint = $(throw "-ArmEndpoint is required."),
-    [string]$TempFilesPath = "C:\TempASR\",
-    [string]$ExtractionPath = "Extracted",
-    [string]$MySQLRootPassword = $(throw "-MySQLRootPassword is required."),
-    [string]$MySQLUserPassword = $(throw "-MySQLUserPassword is required."),
-    [string]$VNetName = "SiteRecoveryVNet",
-    [string]$AzureStorageAccount = $(throw "-AzureStorageAccount is required."),
-    [string]$SubnetRange = "192.168.1.0/24",
-    [string]$VNetRange = "192.168.0.0/16",
-    [string]$AzureLocation = "UK West",
-    [string]$ReplicationPolicyName = "ReplicationPolicy",
-    [string]$AzureResourceGroup = "SiteRecoveryTestRG",
-    [string]$VaultName = "AzureStackVault",
-    [string]$ConfigServerUsername = $(throw "-ConfigServerUsername is required."), 
-    [string]$ConfigServerPassword = $(throw "-ConfigServerPassword is required."),
-    [string]$EncryptionKey = $(throw "-EncryptionKey is required."),
-    [string]$WindowsUsername =  $(throw "-WindowsUsername is required."),
-    [string]$WindowsPassword =  $(throw "-WindowsPassword is required."),
-    [string]$LinuxRootPassword =  $(throw "-LinuxRootPassword is required."),
-    [string]$StackResourceGroup = $(throw "-StackResourceGroup is required.")
+    [Parameter(Mandatory = $true)]
+    [String]$ClientID,
+    [Parameter(Mandatory = $true)]
+    [String]$ClientSecret,
+    [Parameter(Mandatory = $true)]
+    [String]$TenantID,
+    [Parameter(Mandatory = $false)]
+    [String]$ArmEndpoint = "https://management.frn00006.azure.ukcloud.com",
+    [Parameter(Mandatory = $false)]
+    [String]$TempFilesPath = "C:\TempASR\",
+    [Parameter(Mandatory = $false)]
+    [String]$ExtractionPath = "Extracted",
+    [Parameter(Mandatory = $true)]
+    [String]$MySQLRootPassword,
+    [Parameter(Mandatory = $true)]
+    [String]$MySQLUserPassword,
+    [Parameter(Mandatory = $false)]
+    [String]$VNetName = "SiteRecoveryVNet",
+    [Parameter(Mandatory = $true)]
+    [String]$AzureStorageAccount,
+    [Parameter(Mandatory = $false)]
+    [String]$SubnetRange = "192.168.1.0/24",
+    [Parameter(Mandatory = $false)]
+    [String]$VNetRange = "192.168.0.0/16",
+    [Parameter(Mandatory = $false)]
+    [String]$AzureLocation = "UK West",
+    [Parameter(Mandatory = $false)]
+    [String]$ReplicationPolicyName = "ReplicationPolicy",
+    [Parameter(Mandatory = $false)]
+    [String]$AzureResourceGroup = "SiteRecoveryTestRG",
+    [Parameter(Mandatory = $false)]
+    [String]$VaultName = "AzureStackVault",
+    [Parameter(Mandatory = $true)]
+    [String]$ConfigServerUsername,
+    [Parameter(Mandatory = $true)]
+    [String]$ConfigServerPassword,
+    [Parameter(Mandatory = $true)]
+    [String]$EncryptionKey,
+    [Parameter(Mandatory = $true)]
+    [String]$WindowsUsername,
+    [Parameter(Mandatory = $true)]
+    [String]$WindowsPassword,
+    [Parameter(Mandatory = $true)]
+    [String]$LinuxRootPassword,
+    [Parameter(Mandatory = $true)]
+    [String]$StackResourceGroup
 )
     
 ## Declare MySQL function
-Function Invoke-MySQLQuery {
+function Invoke-MySQLQuery {
     param(
-        [Parameter(
-            Mandatory = $true,
-            ParameterSetName = "",
-            ValueFromPipeline = $true)]
-            [string]$Query,
-            [string]$MySQLAdminPassword
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [String]$Query,
+        [Parameter(Mandatory = $true)]
+        [String]$MySQLAdminPassword
         )
             
     $MySQLAdminUserName = "root"
@@ -40,7 +156,7 @@ Function Invoke-MySQLQuery {
     $MySQLHost = "localhost"
     $ConnectionString = "server=" + $MySQLHost + ";port=3306;uid=" + $MySQLAdminUserName + ";pwd=" + $MySQLAdminPassword + ";database=" + $MySQLDatabase
     
-    Try {
+    try {
         [void][System.Reflection.Assembly]::LoadWithPartialName("MySql.Data")
         $Connection = New-Object MySql.Data.MySqlClient.MySqlConnection
         $Connection.ConnectionString = $ConnectionString
@@ -51,13 +167,14 @@ Function Invoke-MySQLQuery {
         $RecordCount = $dataAdapter.Fill($dataSet, "data")
         $DataSet.Tables[0]
     }
-    Catch {
+    catch {
         Write-Host "ERROR : Unable to run query '$query' `n$($Error[0])" -ForegroundColor Red
     }
-    Finally {
+    finally {
         $Connection.Close()
     }
 }
+
 # Install Modules
 Write-Host "Installing Nuget, Azure modules and Choco"
 Install-PackageProvider -Name Nuget -Force -Confirm:$false
