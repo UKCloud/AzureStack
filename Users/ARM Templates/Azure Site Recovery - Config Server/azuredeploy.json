@@ -3,17 +3,17 @@
     "contentVersion": "1.0.0.0",
     "apiProfile": "2018-03-01-hybrid",
     "parameters": {
-        "AADUsername": {
+        "ClientID": {
             "type": "string",
             "metadata": {
-                "description": "Your AAD Username"
+                "description": "The app ID of a service principal with write permissions for Azure and Azure Stack"
             },
-            "defaultValue": "example@example.com"
+            "defaultValue": ""
         },
-        "AADPassword": {
+        "ClientSecret": {
             "type": "securestring",
             "metadata": {
-                "description": "Your AAD Password"
+                "description": "A password for the service principal specified in the ClientID parameter"
             },
             "defaultValue": ""
         },
@@ -182,6 +182,7 @@
     "variables": {
         "location": "[resourceGroup().location]",
         "ResourceGroupName": "[resourceGroup().name]",
+        "TenantID": "[subscription().tenantId]",
         "imagePublisher": "MicrosoftWindowsServer",
         "imageOffer": "WindowsServer",
         "imageSKU" : "2016-Datacenter",
@@ -196,7 +197,7 @@
         "subnetRef": "[concat(variables('vnetID'),'/subnets/',parameters('StackSubnetName'))]",
         "ddisk1name": "ProcessServerCacheDisk",
         "ddisk2name": "RetentionDisk",
-        "scriptFile": "https://raw.githubusercontent.com/UKCloud/AzureStack/master/Extensions/Windows/ASRCSConfig.ps1"
+        "scriptFile": "https://raw.githubusercontent.com/UKCloud/AzureStack/master/Users/Extensions/Windows/ASRCSConfig.ps1"
     },
     "resources": [
         {
@@ -339,7 +340,7 @@
                         "fileUris": [ "[variables('scriptFile')]" ]
                     },
                     "protectedSettings": {
-                        "commandToExecute" : "[concat('powershell -ExecutionPolicy Unrestricted -File ASRCSConfig.ps1 -Username ',parameters('AADUsername'),' -Password ',parameters('AADPassword'),' -ArmEndpoint ',parameters('StackArmEndpoint'),' -MySQLRootPassword ',parameters('MySQLRootPassword'),' -MySQLUserPassword ',parameters('MySQLUserPassword'),' -AzureStorageAccount ',parameters('AzureStorageAccount'),' -AzureResourceGroup ',parameters('AzureResourceGroup'),' -VaultName ',parameters('VaultName'),' -ConfigServerUsername ',parameters('ConfigServerUsername'),' -ConfigServerPassword ',parameters('ConfigServerPassword'),' -EncryptionKey ',parameters('EncryptionKey'),' -WindowsUsername ',parameters('WindowsUsername'),' -WindowsPassword ',parameters('WindowsPassword'),' -LinuxRootPassword ',parameters('LinuxRootPassword'),' -StackResourceGroup ',variables('ResourceGroupName'))]"
+                        "commandToExecute" : "[concat('powershell -ExecutionPolicy Unrestricted -File ASRCSConfig.ps1 -ClientID ',parameters('ClientID'),' -ClientSecret ',parameters('ClientSecret'),' -TenantID ',variables('TenantID'),' -ArmEndpoint ',parameters('StackArmEndpoint'),' -MySQLRootPassword ',parameters('MySQLRootPassword'),' -MySQLUserPassword ',parameters('MySQLUserPassword'),' -AzureStorageAccount ',parameters('AzureStorageAccount'),' -AzureResourceGroup ',parameters('AzureResourceGroup'),' -VaultName ',parameters('VaultName'),' -ConfigServerUsername ',parameters('ConfigServerUsername'),' -ConfigServerPassword ',parameters('ConfigServerPassword'),' -EncryptionKey ',parameters('EncryptionKey'),' -WindowsUsername ',parameters('WindowsUsername'),' -WindowsPassword ',parameters('WindowsPassword'),' -LinuxRootPassword ',parameters('LinuxRootPassword'),' -StackResourceGroup ',variables('ResourceGroupName'))]"
                     }
                   }
                 }

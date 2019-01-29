@@ -42,12 +42,13 @@ This extension configures a windows server VM to function as a configuration ser
 
 ### Arguments
 
-`powershell -ExecutionPolicy Unrestricted -File ASRCSConfig.ps1 -Username <AAD Username> -Password <AAD Password> -ArmEndpoint <AzureStack Endpoint> -MySQLRootPassword <SQL Root Password> -MySQLUserPassword <SQL User Password> -AzureStorageAccount <Azure Storage Account> -AzureResourceGroup <Azure Resource Group> -VaultName <ASR Vault Name> -ConfigServerUsername <Windows VM Username> -ConfigServerPassword <Windows VM Password> -EncryptionKey <Encryption Key> -WindowsUsername <Replicated Windows VM Username> -WindowsPassword <Replicated Windows VM Password> -LinuxRootPassword <Replicated Linux VM Root Password> -StackResourceGroup <AzureStack Resource Group>`
+`powershell -ExecutionPolicy Unrestricted -File ASRCSConfig.ps1 -ClientID <Client ID> -ClientSecret <Client Secret> -TenantID <Tenant ID> -ArmEndpoint <AzureStack Endpoint> -MySQLRootPassword <SQL Root Password> -MySQLUserPassword <SQL User Password> -AzureStorageAccount <Azure Storage Account> -AzureResourceGroup <Azure Resource Group> -VaultName <ASR Vault Name> -ConfigServerUsername <Windows VM Username> -ConfigServerPassword <Windows VM Password> -EncryptionKey <Encryption Key> -WindowsUsername <Replicated Windows VM Username> -WindowsPassword <Replicated Windows VM Password> -LinuxRootPassword <Replicated Linux VM Root Password> -StackResourceGroup <AzureStack Resource Group>`
 
 | Field | Description | Example |
 |-------|-------------|---------|
-| Username | Your Azure Active Directory Username (the email address you use to login to public Azure and Azure Stack) | example\@example.onmicrosoft.com |
-| Password | Your Azure Active Directory Password | |
+| ClientID | The application ID of a service principal with contributor permissions on Azure Stack and Azure | 00000000-0000-0000-0000-000000000000 |
+| ClientSecret | A password of the service principal specified in the ClientID parameter | ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jkx]= |
+| TenantID | The Tenant/Directory ID of your AAD domain | 31537af4-6d77-4bb9-a681-d2394888ea26 |
 | ArmEndpoint | The Azure Resource Manager endpoint for Azure Stack | https://management.frn00006.azure.ukcloud.com |
 | MySQLRootPassword | The root password for the MySQL server created on the Configuration Server | |
 | MySQLUserPassword | The user password for the MySQL server created on the Configuration Server | |
