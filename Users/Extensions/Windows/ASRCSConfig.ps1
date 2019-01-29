@@ -260,7 +260,7 @@ $ScriptPath = "C:\TempASR\script.ps1"
 $ScriptFile = @"
 `$CredPass = ConvertTo-SecureString `$args[1] -AsPlainText -Force
 `$cred = New-Object System.Management.Automation.PSCredential (`$args[0], `$CredPass) 
-Connect-AzureRmAccount -Credential `$cred -ServicePrincipal -Tenant `$TenantID
+Connect-AzureRmAccount -Credential `$cred -ServicePrincipal -Tenant $TenantID
 # Download Vault Settings
 Write-Host 'Downloading vault settings'
 `$retry = 0
