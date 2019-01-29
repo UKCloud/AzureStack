@@ -14,6 +14,8 @@ The configuration server that is deployed creates all necessary resources on pub
 
 - A public Azure subscription on the same domain as an Azure Stack subscription.
 
+- A service principal with contributor permissions on both subscriptions
+
 - For any VMs which you wish to be protected, be sure to add the relevant custom script extension. These are required as specified in the [Azure Stack Site Recovery documentation](https://docs.microsoft.com/en-us/azure/site-recovery/azure-stack-site-recovery#step-1-prepare-azure-stack-vms). The URLs for these custom scripts are as follows:
   - Windows: https://raw.githubusercontent.com/UKCloud/AzureStack/master/Extensions/Windows/VMSetupForSR.ps1
   
@@ -46,8 +48,9 @@ The configuration server that is deployed creates all necessary resources on pub
 
 | Field | Description | Example |
 |-------|-------------|---------|
-| AADUsername | Your Azure Active Directory Username (the email address you use to login to public Azure and Azure Stack) | example\@example.com |
-| AADPassword | Your Azure Active Directory Password | |
+| ClientID | The application ID of a service principal with contributor permissions on Azure Stack and Azure | 00000000-0000-0000-0000-000000000000 |
+| ClientSecret | A password of the service principal specified in the ClientID parameter | ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jkx]= |
+| TenantID | The Tenant/Directory ID of your AAD domain | 31537af4-6d77-4bb9-a681-d2394888ea26 |
 | StackArmEndpoint | The Azure Resource Manager endpoint for Azure Stack | https://management.frn00006.azure.ukcloud.com |
 | ConfigurationServerName | The name of the configuration server VM | SRConfigServer |
 | TempFilesPath | Location on configuration server where setup files will be stored | C:\TempASR\ |
