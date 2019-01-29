@@ -196,7 +196,7 @@
         "subnetRef": "[concat(variables('vnetID'),'/subnets/',parameters('StackSubnetName'))]",
         "ddisk1name": "ProcessServerCacheDisk",
         "ddisk2name": "RetentionDisk",
-        "scriptFile": "https://raw.githubusercontent.com/UKCloud/AzureStack/master/Extensions/Windows/ASRCSConfig.ps1"
+        "scriptFile": "https://raw.githubusercontent.com/UKCloud/AzureStack/master/Users/Extensions/Windows/ASRCSConfig.ps1"
     },
     "resources": [
         {
