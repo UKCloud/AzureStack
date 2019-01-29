@@ -1,6 +1,7 @@
 param (
-    [string]$Username = $(throw "-Username is required."),  
-    [string]$Password = $(throw "-Password is required."), 
+    [string]$ClientID = $(throw "-ClientID is required."),
+    [string]$ClientSecret = $(throw "-ClientSecret is required."),
+    [string]$TenantID,
     [string]$ArmEndpoint = $(throw "-ArmEndpoint is required."),
     [string]$TempFilesPath = "C:\TempASR\",
     [string]$ExtractionPath = "Extracted",
@@ -122,9 +123,9 @@ while (get-process -Name MicrosoftAzureSiteRecoveryUnifiedSetup -ErrorAction Sil
 
 ## Login to public azure
 Write-Host "Logging into public Azure"
-$CredPass = ConvertTo-SecureString $Password -AsPlainText -Force
-$Credentials = New-Object System.Management.Automation.PSCredential ($Username, $CredPass) 
-Connect-AzureRmAccount -Credential $Credentials
+$CredPass = ConvertTo-SecureString $ClientSecret -AsPlainText -Force
+$Credentials = New-Object System.Management.Automation.PSCredential ($ClientID, $CredPass) 
+Connect-AzureRmAccount -Credential $Credentials -ServicePrincipal -Tenant $TenantID
 
 ## Create and configure a vault, then retrieve settings
 # Declare variables
@@ -142,7 +143,7 @@ $ScriptPath = "C:\TempASR\script.ps1"
 $ScriptFile = @"
 `$CredPass = ConvertTo-SecureString `$args[1] -AsPlainText -Force
 `$cred = New-Object System.Management.Automation.PSCredential (`$args[0], `$CredPass) 
-Connect-AzureRmAccount -Credential `$cred
+Connect-AzureRmAccount -Credential `$cred -ServicePrincipal -Tenant `$TenantID
 # Download Vault Settings
 Write-Host 'Downloading vault settings'
 `$retry = 0
@@ -161,7 +162,7 @@ while (!`$VaultCredPath -and `$retry -lt 20) {
 "@
 $ScriptFile | Out-File $ScriptPath -Force -Encoding ascii
 
-Powershell.exe -NoProfile -ExecutionPolicy Bypass -Command $ScriptPath $Username $Password
+Powershell.exe -NoProfile -ExecutionPolicy Bypass -Command $ScriptPath $ClientID $ClientSecret
 $VaultCredPath = Get-Content -path "$($TempFilesPath)VaultCredential.txt"
 # Create a new storage account
 Write-Host "Creating storage account and virtual network on public Azure"
@@ -241,7 +242,7 @@ $Job_AssociateFailbackPolicy = New-AzureRmRecoveryServicesAsrProtectionContainer
 # Login to Azure Stack
 Write-Host "Logging into Azure Stack"
 $StackEnvironment = Add-AzureRmEnvironment -Name "AzureStack" -ArmEndpoint $ArmEndpoint
-Connect-AzureRmAccount -EnvironmentName "AzureStack" -Credential $Credentials
+Connect-AzureRmAccount -EnvironmentName "AzureStack" -Credential $Credentials -ServicePrincipal -Tenant $TenantID
 
 # Get info for protected items
 Write-Host "Retrieving VM info from resource group"
@@ -270,7 +271,7 @@ $VMInfo
 
 # Login to public Azure
 Write-Host "Logging into public Azure"
-Connect-AzureRmAccount -Credential $Credentials
+Connect-AzureRmAccount -Credential $Credentials -ServicePrincipal -Tenant $TenantID
 
 # Add protected items to vault
 Write-Host "Adding VMs to public Azure as protectable items"
