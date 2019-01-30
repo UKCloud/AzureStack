@@ -34,19 +34,15 @@ function Start-AzsAks {
         } catch {
             Write-Host "Not executing as administrator, unable to check if OpenSSH is installed" -ForegroundColor Red
         }   
-        try {
-            # Azure Powershell way
-            [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
-            if ($Context.Environment.ResourceManagerUrl -like "*https://management.azure.com*") {
-                Write-Error -Message 'You are currently logged into public Azure. Please login to Azure Stack to continue.' -ErrorId 'AzureRmContextError'
-                break
-            }
-        } catch {
-            if (-not $Context -or -not $Context.Account) {
-                $UserCredentials = Get-Credential
-                Add-AzureRmEnvironment -Name "AzureStackUser" -ArmEndpoint $ArmEndpoint
-                Connect-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $UserCredentials
-            }
+        # Azure Powershell way to check if we are logged in as User
+        [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
+        if ($Context.Environment.ResourceManagerUrl -like "*https://adminmanagement*" -or $Context.Environment.ResourceManagerUrl -like "*azure.com*" -or -not $Context.Subscription.Name -or -not $Context -or -not $Context.Account) {
+            Write-Host -Message "You are not logged into Azure Stack. Current context is $($Context.Environment.ResourceManagerUrl)."
+            Clear-AzureRmContext
+            Write-Host -Message "Logging into Azure Stack using endpoint: $($ArmEndpoint)" -ForegroundColor Magenta
+            $UserCredentials = Get-Credential
+            Add-AzureRmEnvironment -Name "AzureStackUser" -ArmEndpoint $ArmEndpoint
+            Connect-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $UserCredentials
         }
     }
 }
@@ -94,15 +90,16 @@ function Get-AzsAksCredentials {
 
     begin {
         try {
-            # Azure Powershell way
+            # Azure Powershell way to check if we are logged in as User
             [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
-            if ($Context.Environment.ResourceManagerUrl -like "*https://management.azure.com*") {
-                Write-Error -Message 'You are currently logged into public Azure. Please login to Azure Stack to continue.' -ErrorId 'AzureRmContextError'
+            if ($Context.Environment.ResourceManagerUrl -like "*https://adminmanagement*" -or $Context.Environment.ResourceManagerUrl -like "*azure.com*" -or -not $Context.Subscription.Name) {
+                Write-Error -Message "You are not logged into Azure Stack. Current context is $($Context.Environment.ResourceManagerUrl). Login to Azure Stack to proceed."
                 break
             }
-        } catch {
+        }
+        catch {
             if (-not $Context -or -not $Context.Account) {
-                Write-Error -Message 'Run Connect-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
+                Write-Error -Message "You are not logged in. Run Connect-AzureRmEnvironment to login." -ErrorId 'AzureRmContextError'
                 break
             }
         }
@@ -218,15 +215,16 @@ function New-AzsAks {
 
     begin {
         try {
-            # Azure Powershell way
+            # Azure Powershell way to check if we are logged in as User
             [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
-            if ($Context.Environment.ResourceManagerUrl -like "*https://management.azure.com*") {
-                Write-Error -Message 'You are currently logged into public Azure. Please login to Azure Stack to continue.' -ErrorId 'AzureRmContextError'
+            if ($Context.Environment.ResourceManagerUrl -like "*https://adminmanagement*" -or $Context.Environment.ResourceManagerUrl -like "*azure.com*" -or -not $Context.Subscription.Name) {
+                Write-Error -Message "You are not logged into Azure Stack. Current context is $($Context.Environment.ResourceManagerUrl). Login to Azure Stack to proceed."
                 break
             }
-        } catch {
+        }
+        catch {
             if (-not $Context -or -not $Context.Account) {
-                Write-Error -Message 'Run Connect-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
+                Write-Error -Message "You are not logged in. Run Connect-AzureRmEnvironment to login." -ErrorId 'AzureRmContextError'
                 break
             }
         }
@@ -235,7 +233,7 @@ function New-AzsAks {
     process {
         $ServicePrincipalSecure = ConvertTo-SecureString $ServicePrincipal -AsPlainText -Force
         $ClientSecretSecure = ConvertTo-SecureString $ClientSecret -AsPlainText -Force
-        $KubernetesTemplateURI = "https://portal.frn00006.azure.ukcloud.com:30015//artifact/20161101/Microsoft.AzureStackKubernetesCluster.0.3.0/DeploymentTemplates/azuredeploy.json"
+        $KubernetesTemplateURI = "https://raw.githubusercontent.com/msazurestackworkloads/azurestack-gallery/master/acsengine-kubernetes/k8s-marketplaceitem-1809/template/DeploymentTemplates/azuredeploy.json"
         $SSHKey = Get-Content -Path $SSHKeyPath -Raw
         if (!$DNSPrefix) {
             $DNSPrefix = $ResourceGroupName.tolower()
@@ -280,15 +278,16 @@ function Remove-AzsAks {
 
     begin {
         try {
-            # Azure Powershell way
+            # Azure Powershell way to check if we are logged in as User
             [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
-            if ($Context.Environment.ResourceManagerUrl -like "*https://management.azure.com*") {
-                Write-Error -Message 'You are currently logged into public Azure. Please login to Azure Stack to continue.' -ErrorId 'AzureRmContextError'
+            if ($Context.Environment.ResourceManagerUrl -like "*https://adminmanagement*" -or $Context.Environment.ResourceManagerUrl -like "*azure.com*" -or -not $Context.Subscription.Name) {
+                Write-Error -Message "You are not logged into Azure Stack. Current context is $($Context.Environment.ResourceManagerUrl). Login to Azure Stack to proceed."
                 break
             }
-        } catch {
+        }
+        catch {
             if (-not $Context -or -not $Context.Account) {
-                Write-Error -Message 'Run Connect-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
+                Write-Error -Message "You are not logged in. Run Connect-AzureRmEnvironment to login." -ErrorId 'AzureRmContextError'
                 break
             }
         }
@@ -333,15 +332,16 @@ function Get-AzsAks {
 
     begin {
         try {
-            # Azure Powershell way
+            # Azure Powershell way to check if we are logged in as User
             [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
-            if ($Context.Environment.ResourceManagerUrl -like "*https://management.azure.com*") {
-                Write-Error -Message 'You are currently logged into public Azure. Please login to Azure Stack to continue.' -ErrorId 'AzureRmContextError'
+            if ($Context.Environment.ResourceManagerUrl -like "*https://adminmanagement*" -or $Context.Environment.ResourceManagerUrl -like "*azure.com*" -or -not $Context.Subscription.Name) {
+                Write-Error -Message "You are not logged into Azure Stack. Current context is $($Context.Environment.ResourceManagerUrl). Login to Azure Stack to proceed."
                 break
             }
-        } catch {
+        }
+        catch {
             if (-not $Context -or -not $Context.Account) {
-                Write-Error -Message 'Run Connect-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
+                Write-Error -Message "You are not logged in. Run Connect-AzureRmEnvironment to login." -ErrorId 'AzureRmContextError'
                 break
             }
         }
@@ -447,15 +447,16 @@ function Start-AzsAksScale {
 
     begin {
         try {
-            # Azure Powershell way
+            # Azure Powershell way to check if we are logged in as User
             [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
-            if ($Context.Environment.ResourceManagerUrl -like "*https://management.azure.com*") {
-                Write-Error -Message 'You are currently logged into public Azure. Please login to Azure Stack to continue.' -ErrorId 'AzureRmContextError'
+            if ($Context.Environment.ResourceManagerUrl -like "*https://adminmanagement*" -or $Context.Environment.ResourceManagerUrl -like "*azure.com*" -or -not $Context.Subscription.Name) {
+                Write-Error -Message "You are not logged into Azure Stack. Current context is $($Context.Environment.ResourceManagerUrl). Login to Azure Stack to proceed."
                 break
             }
-        } catch {
+        }
+        catch {
             if (-not $Context -or -not $Context.Account) {
-                Write-Error -Message 'Run Connect-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
+                Write-Error -Message "You are not logged in. Run Connect-AzureRmEnvironment to login." -ErrorId 'AzureRmContextError'
                 break
             }
         }
@@ -636,15 +637,16 @@ function Start-AzsAksUpgrade {
 
     begin {
         try {
-            # Azure Powershell way
+            # Azure Powershell way to check if we are logged in as User
             [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
-            if ($Context.Environment.ResourceManagerUrl -like "*https://management.azure.com*") {
-                Write-Error -Message 'You are currently logged into public Azure. Please login to Azure Stack to continue.' -ErrorId 'AzureRmContextError'
+            if ($Context.Environment.ResourceManagerUrl -like "*https://adminmanagement*" -or $Context.Environment.ResourceManagerUrl -like "*azure.com*" -or -not $Context.Subscription.Name) {
+                Write-Error -Message "You are not logged into Azure Stack. Current context is $($Context.Environment.ResourceManagerUrl). Login to Azure Stack to proceed."
                 break
             }
-        } catch {
+        }
+        catch {
             if (-not $Context -or -not $Context.Account) {
-                Write-Error -Message 'Run Connect-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
+                Write-Error -Message "You are not logged in. Run Connect-AzureRmEnvironment to login." -ErrorId 'AzureRmContextError'
                 break
             }
         }
@@ -721,6 +723,23 @@ function Get-AzsAksUpgradeVersions {
         [parameter(Mandatory = $false)]
         [String]$Location = "frn00006"
     )
+
+    begin {
+        try {
+            # Azure Powershell way to check if we are logged in as User
+            [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
+            if ($Context.Environment.ResourceManagerUrl -like "*https://adminmanagement*" -or $Context.Environment.ResourceManagerUrl -like "*azure.com*" -or -not $Context.Subscription.Name) {
+                Write-Error -Message "You are not logged into Azure Stack. Current context is $($Context.Environment.ResourceManagerUrl). Login to Azure Stack to proceed."
+                break
+            }
+        }
+        catch {
+            if (-not $Context -or -not $Context.Account) {
+                Write-Error -Message "You are not logged in. Run Connect-AzureRmEnvironment to login." -ErrorId 'AzureRmContextError'
+                break
+            }
+        }
+    }
 
     process {
         $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object {$_.Name -like "vmd*"}
