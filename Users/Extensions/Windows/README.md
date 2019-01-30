@@ -50,8 +50,8 @@ This extension configures a windows server VM to function as a configuration ser
 | ClientSecret | A password of the service principal specified in the ClientID parameter | ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jkx]= |
 | TenantID | The Tenant/Directory ID of your AAD domain | 31537af4-6d77-4bb9-a681-d2394888ea26 |
 | ArmEndpoint | The Azure Resource Manager endpoint for Azure Stack | https://management.frn00006.azure.ukcloud.com |
-| MySQLRootPassword | The root password for the MySQL server created on the Configuration Server | |
-| MySQLUserPassword | The user password for the MySQL server created on the Configuration Server | |
+| MySQLRootPassword | The root password for the MySQL server created on the Configuration Server (Must meet password requirements specified [below](#MySQL-Password-Requirements)) | |
+| MySQLUserPassword | The user password for the MySQL server created on the Configuration Server (Must meet password requirements specified [below](#MySQL-Password-Requirements)) | |
 | AzureStorageAccount | The name of the storage account to be created on public Azure (Must be unique across public Azure)  | stacksiterecoverysa |
 | AzureResourceGroup | The name of the resource group to be created on public Azure  | SiteRecoveryTestRG |
 | VaultName | The name of the recovery services vault to be created on public Azure  | AzureStackVault |
@@ -62,3 +62,13 @@ This extension configures a windows server VM to function as a configuration ser
 | WindowsPassword | The password of an administrator account on the Windows VMs to be protected | |
 | LinuxRootPassword | The password of the root account on the Linux VMs to be protected | |
 | StackResourceGroup | The name of the resource group which the VM is in on Azure Stack  | SiteRecovery-RG |
+
+#### MySQL Password Requirements
+
+Password must conform to all of the following rules:
+
+- Password must contain at least one letter
+- Password must contain at least one number
+- Password must contain at least one special character (_!@#$%)
+- Password must be between 8 and 16 characters
+- Password cannot contain spaces
