@@ -222,12 +222,10 @@ $output = "$($TempFilesPath)MicrosoftAzureSiteRecoveryUnifiedSetup.exe"
 # Create MySQL credentials file
 Write-Host "Creating MySQL credentials file"
 $SQLCredPath = "$($TempFilesPath)MySQLCredentialsfile.txt" 
-$OutStuff = @"
-[MySQLCredentials]
-MySQLRootPassword = "$MySQLRootPassword"
-MySQLUserPassword = "$MySQLUserPassword"
-"@
-$OutStuff | Out-File $SQLCredPath -Force -Encoding ascii
+Out-File $SQLCredPath -Force -Encoding ascii
+"[MySQLCredentials]" | Add-Content -Path $SQLCredPath
+"MySQLRootPassword = `"$MySQLRootPassword`"" | Add-Content -Path $SQLCredPath
+"MySQLUserPassword = `"$MySQLUserPassword`"" | Add-Content -Path $SQLCredPath
 
 # Extract setup file
 Write-Host "Extracting setup file"
