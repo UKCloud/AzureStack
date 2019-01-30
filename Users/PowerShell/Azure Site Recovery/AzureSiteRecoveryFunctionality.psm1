@@ -395,6 +395,9 @@ function Start-AzureSiteRecoveryFailBack {
     .PARAMETER NSGName
         The name of the network security group to place the VMs on after being failed back. Defaults to: "myNSG"
 
+    .PARAMETER UseStorageAccount
+        If declared the failed back VMs will use a storage account instead of managed disks.
+
     .EXAMPLE
         Start-AzureSiteRecoveryFailBack -AzureResourceGroup "SiteRecovery-RG" -Username "exampleuser@contoso.onmicrosoft.com" -StackResourceGroup "FailBack-RG" -StackStorageAccount "FailBackSA" `
             -StackStorageContainer "FailBackContainer"
@@ -433,7 +436,9 @@ function Start-AzureSiteRecoveryFailBack {
         [Parameter(Mandatory = $false)]
         [String]$SubnetRange = "192.168.1.0/24",
         [Parameter(Mandatory = $false)]
-        [String]$NSGName = "myNSG"
+        [String]$NSGName = "myNSG",
+        [Parameter(Mandatory = $false)]
+        [Switch]$UseStorageAccount
     )
     begin {
         try {
@@ -535,21 +540,23 @@ function Start-AzureSiteRecoveryFailBack {
             foreach ($VHD in $AzureDisks) {
                 $CurrentCopy = Get-AzureStorageBlobCopyState -Blob $VHD.DiskName -Container $ImagesContainer.Name -Context $StorageAccount.Context
                 if ($CurrentCopy.Status -like "Success") {
-                    try {
-                        $TestIfDiskExists = Get-AzureRmDisk -DiskName $VHD.DiskName -ResourceGroupName $RG.ResourceGroupName
-                    } catch {
-                        $TestIfDiskExists = $null
-                    }
-                    if (!$TestIfDiskExists) {
-                        $UploadedVHD = "$($StorageAccount.PrimaryEndpoints.Blob)$($StorageContainer)/$($VHD.DiskName)"
-                        if ($VHD.DiskType -like "Linux") {
-                            $diskConfig = New-AzureRmDiskConfig -AccountType "StandardLRS" -Location $Location -CreateOption Import -SourceUri $UploadedVHD -OsType "Linux"
-                        } elseif ($VHD.DiskType -like "Windows") {
-                            $diskConfig = New-AzureRmDiskConfig -AccountType "StandardLRS" -Location $Location -CreateOption Import -SourceUri $UploadedVHD -OsType "Windows"
-                        } elseif ($VHD.DiskType -like "DataDisk") {
-                            $diskConfig = New-AzureRmDiskConfig -AccountType "StandardLRS" -Location $Location -CreateOption Import -SourceUri $UploadedVHD
+                    if (!$UseStorageAccount) {
+                        try {
+                            $TestIfDiskExists = Get-AzureRmDisk -DiskName $VHD.DiskName -ResourceGroupName $RG.ResourceGroupName
+                        } catch {
+                            $TestIfDiskExists = $null
                         }
-                        $disk = New-AzureRmDisk -Disk $diskConfig -ResourceGroupName $RG.ResourceGroupName -DiskName $VHD.DiskName -Verbose
+                        if (!$TestIfDiskExists) {
+                            $UploadedVHD = "$($StorageAccount.PrimaryEndpoints.Blob)$($StorageContainer)/$($VHD.DiskName)"
+                            if ($VHD.DiskType -like "Linux") {
+                                $diskConfig = New-AzureRmDiskConfig -AccountType "StandardLRS" -Location $Location -CreateOption Import -SourceUri $UploadedVHD -OsType "Linux"
+                            } elseif ($VHD.DiskType -like "Windows") {
+                                $diskConfig = New-AzureRmDiskConfig -AccountType "StandardLRS" -Location $Location -CreateOption Import -SourceUri $UploadedVHD -OsType "Windows"
+                            } elseif ($VHD.DiskType -like "DataDisk") {
+                                $diskConfig = New-AzureRmDiskConfig -AccountType "StandardLRS" -Location $Location -CreateOption Import -SourceUri $UploadedVHD
+                            }
+                            $disk = New-AzureRmDisk -Disk $diskConfig -ResourceGroupName $RG.ResourceGroupName -DiskName $VHD.DiskName -Verbose
+                        }
                     }
                     $Completed ++
                 }
@@ -559,6 +566,8 @@ function Start-AzureSiteRecoveryFailBack {
 
 
         ## Create VMS
+        # Save current context to a variable
+        $Context = Get-AzureRmContext
 
         # Create a subnet configuration
         Write-Host "Creating virtual network"
@@ -571,46 +580,71 @@ function Start-AzureSiteRecoveryFailBack {
         Write-Host "Creating network security group"
         $NetworkSG = New-AzureRmNetworkSecurityGroup -ResourceGroupName $RG.ResourceGroupName -Location $Location -Name $NSGName
 
-        foreach ($Vm in $FailbackVMs) {
-            Write-Host "Creating VM: $($VM.Name)"
-    
-            $PublicIPName = "$($VM.Name)IP"
-            $NICName = ($VM.NetworkProfile.NetworkInterfaces.id -split "/")[-1]
-            $VMName = $VM.Name
-            $VMSize = $VM.HardwareProfile.VMSize
-    
-            # Create a public IP address
-            $PublicIP = New-AzureRmPublicIpAddress -ResourceGroupName $RG.ResourceGroupName -Location $Location -AllocationMethod 'Dynamic' -Name $PublicIPName
-    
-            # Create a virtual network card and associate it with the public IP address and NSG
-            $NetworkInterface = New-AzureRmNetworkInterface -Name $NICName -ResourceGroupName $RG.ResourceGroupName -Location $Location -SubnetId $VirtualNetwork.Subnets[0].Id -PublicIpAddressId $PublicIP.Id -NetworkSecurityGroupId $NetworkSG.Id
-    
-            # Create the virtual machine configuration object
-            $VirtualMachine = New-AzureRmVMConfig -VMName $VMName -VMSize $VMSize
-    
-            # Add Network Interface Card 
-            $VirtualMachine = Add-AzureRmVMNetworkInterface -Id $NetworkInterface.Id -VM $VirtualMachine
-    
-            # Applies the OS disk properties to the virtual machine.
-            $OSDisk = Get-AzureRmDisk -ResourceGroupName $RG.ResourceGroupName -Name $VM.StorageProfile.OsDisk.Name
-            if ($OSDisk.OsType -like "Linux") {
-                $VirtualMachine = Set-AzureRmVMOSDisk -VM $VirtualMachine -ManagedDiskId $($OSDisk.Id) -StorageAccountType "StandardLRS" -CreateOption Attach -Linux
-            } elseif ($OSDisk.OsType -like "Windows") {
-                $VirtualMachine = Set-AzureRmVMOSDisk -VM $VirtualMachine -ManagedDiskId $($OSDisk.Id) -StorageAccountType "StandardLRS" -CreateOption Attach -Windows
-            }
-    
-    
-            $LunNumber = 0
-            foreach ($DataDisk in $VM.StorageProfile.DataDisks) {
-                $DDisk = Get-AzureRmDisk -ResourceGroupName $RG.ResourceGroupName -Name $DataDisk.Name
-                $VirtualMachine = Add-AzureRmVMDataDisk -CreateOption Attach -Lun $LunNumber -VM $VirtualMachine -ManagedDiskId $DDisk.Id
-                $LunNumber ++
-            }
-    
-            # Create the virtual machine.
-            $NewVM = New-AzureRmVM -ResourceGroupName $RG.ResourceGroupName -Location $Location -VM $VirtualMachine
-            $NewVM
+        $StorageContainerLocation = "$($StorageAccount.PrimaryEndpoints.Blob)$($StorageContainer)"
+
+        foreach ($VM in $FailbackVMs) {
+            Start-Job -ScriptBlock {
+                param($VM, $RG, $Location, $VirtualNetwork, $NetworkSG, $StorageContainerLocation, $UseStorageAccount, $Context)
+                Write-Host "Creating VM: $($VM.Name)"
+        
+                $PublicIPName = "$($VM.Name)IP"
+                $NICName = ($VM.NetworkProfile.NetworkInterfaces.id -split "/")[-1]
+                $VMName = $VM.Name
+                $VMSize = $VM.HardwareProfile.VMSize
+        
+                # Create a public IP address
+                $PublicIP = New-AzureRmPublicIpAddress -ResourceGroupName $RG.ResourceGroupName -Location $Location -AllocationMethod 'Dynamic' -Name $PublicIPName -AzureRmContext $Context
+        
+                # Create a virtual network card and associate it with the public IP address and NSG
+                $NetworkInterface = New-AzureRmNetworkInterface -Name $NICName -ResourceGroupName $RG.ResourceGroupName -Location $Location -SubnetId $VirtualNetwork.Subnets[0].Id -PublicIpAddressId $PublicIP.Id -NetworkSecurityGroupId $NetworkSG.Id -AzureRmContext $Context
+        
+                # Create the virtual machine configuration object
+                $VirtualMachine = New-AzureRmVMConfig -VMName $VMName -VMSize $VMSize -AzureRmContext $Context
+        
+                # Add Network Interface Card 
+                $VirtualMachine = Add-AzureRmVMNetworkInterface -Id $NetworkInterface.Id -VM $VirtualMachine -AzureContext $Context
+        
+                # Applies the OS disk properties to the virtual machine.
+                if (!$UseStorageAccount) {
+                    $OSDisk = Get-AzureRmDisk -ResourceGroupName $RG.ResourceGroupName -Name $VM.StorageProfile.OsDisk.Name -AzureRmContext $Context
+                    if ($OSDisk.OsType -like "Linux") {
+                        $VirtualMachine = Set-AzureRmVMOSDisk -VM $VirtualMachine -ManagedDiskId $($OSDisk.Id) -StorageAccountType "StandardLRS" -CreateOption Attach -Linux -AzureRmContext $Context
+                    } elseif ($OSDisk.OsType -like "Windows") {
+                        $VirtualMachine = Set-AzureRmVMOSDisk -VM $VirtualMachine -ManagedDiskId $($OSDisk.Id) -StorageAccountType "StandardLRS" -CreateOption Attach -Windows-AzureRmContext $Context
+                    }
+            
+                    $LunNumber = 0
+                    foreach ($DataDisk in $VM.StorageProfile.DataDisks) {
+                        $DDisk = Get-AzureRmDisk -ResourceGroupName $RG.ResourceGroupName -Name $DataDisk.Name -AzureRmContext $Context
+                        $VirtualMachine = Add-AzureRmVMDataDisk -CreateOption Attach -Lun $LunNumber -VM $VirtualMachine -ManagedDiskId $DDisk.Id -AzureRmContext $Context
+                        $LunNumber ++
+                    }
+                } else {
+                    if ($VM.StorageProfile.OsDisk.OsType -like "Linux") {
+                        $VirtualMachine = Set-AzureRmVMOSDisk -VM $VirtualMachine -VhdUri "$($StorageContainerLocation)/$($VM.StorageProfile.OsDisk.Name)" `
+                            -StorageAccountType "StandardLRS" -Name $VM.StorageProfile.OsDisk.Name -CreateOption Attach -Linux -AzureRmContext $Context
+                    }
+                    elseif ($VM.StorageProfile.OsDisk.OsType -like "Windows") {
+                        $VirtualMachine = Set-AzureRmVMOSDisk -VM $VirtualMachine -VhdUri "$($StorageContainerLocation)/$($VM.StorageProfile.OsDisk.Name)" `
+                            -StorageAccountType "StandardLRS" -Name $VM.StorageProfile.OsDisk.Name -CreateOption Attach -Windows -AzureRmContext $Context
+                    }
+
+                    $LunNumber = 0
+                    foreach ($DataDisk in $VM.StorageProfile.DataDisks) {
+                        $VirtualMachine = Add-AzureRmVMDataDisk -Name $DataDisk.Name -CreateOption Attach -Lun $LunNumber -VM $VirtualMachine `
+                            -VhdUri "$($StorageContainerLocation)/$($DataDisk.Name)" -AzureRmContext $Context
+                        $LunNumber ++
+                    }
+                }
+        
+                # Create the virtual machine.
+                $NewVM = New-AzureRmVM -ResourceGroupName $RG.ResourceGroupName -Location $Location -VM $VirtualMachine -AzureRmContext $Context
+                $NewVM
+            } -Name $VM.Name -ArgumentList $VM, $RG, $Location, $VirtualNetwork, $NetworkSG, $StorageContainerLocation, $UseStorageAccount, $   
         }
+        Get-Job | Wait-Job
+        Write-Host "All VMs have been created" -ForegroundColor Green 
+        Get-AzureRmVM -ResourceGroupName $RG.ResourceGroupName
     }
 }
 
