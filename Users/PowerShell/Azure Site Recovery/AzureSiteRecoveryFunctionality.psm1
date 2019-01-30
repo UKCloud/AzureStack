@@ -1,3 +1,5 @@
+#Requires -Module AzureRM.RecoveryServices, AzureRM, AzureStack
+
 function Test-AzureSiteRecoveryFailOver {
     <#
     .SYNOPSIS
