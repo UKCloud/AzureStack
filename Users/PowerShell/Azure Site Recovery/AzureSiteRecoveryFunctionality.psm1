@@ -1,4 +1,4 @@
-#Requires -Module AzureRM.RecoveryServices, AzureRM, AzureStack
+#Requires -Module AzureRM.RecoveryServices, AzureRM.RecoveryServices.SiteRecovery, AzureRM, AzureStack
 
 function Test-AzureSiteRecoveryFailOver {
     <#
@@ -364,11 +364,11 @@ function Start-AzureSiteRecoveryFailBack {
     .PARAMETER AzureResourceGroup
         The name of the resource group in public Azure. Example: "SiteRecovery-RG"
 
-    .PARAMETER Username
-        Your Azure AD username. Used for logging into public Azure / Azure Stack. Example: "exampleuser@contoso.onmicrosoft.com"
+    .PARAMETER ClientId
+        The application ID of a service principal with contributor permissions on Azure Stack. Example: "00000000-0000-0000-0000-000000000000"
     
-    .PARAMETER Password
-        Your Azure AD password as a SecureString. Used for logging into public Azure / Azure Stack. If not specified then an input prompt will appear for this.
+    .PARAMETER ClientSecret
+        A secret of the service principal specified in the ServicePrincipal parameter. Example: "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
     
     .PARAMETER ArmEndpoint
         The ARM endpoint for the Azure Stack endpoint you are failing back to. Defaults to: "https://management.frn00006.azure.ukcloud.com"
@@ -418,9 +418,10 @@ function Start-AzureSiteRecoveryFailBack {
         [Parameter(Mandatory = $true)]
         [String]$AzureResourceGroup,
         [Parameter(Mandatory = $true)]
-        [String]$Username,
-        [Parameter(Mandatory = $false)] 
-        [SecureString]$Password = $(Read-Host "Input password" -AsSecureString -Force),
+        [Alias("ServicePrincipal")]
+        [String]$ClientId,
+        [Parameter(Mandatory = $true)] 
+        [String]$ClientSecret,
         [Parameter(Mandatory = $false)]
         [String]$ArmEndpoint = "https://management.frn00006.azure.ukcloud.com",
         [Parameter(Mandatory = $true)]
@@ -442,35 +443,25 @@ function Start-AzureSiteRecoveryFailBack {
         [Parameter(Mandatory = $false)]
         [Switch]$UseStorageAccount
     )
+
     begin {
         try {
             # Azure Powershell way
             [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
             if ($Context.Environment.ResourceManagerUrl -notlike "*https://management.azure.com*") {
-                try {
-                    $Credentials = New-Object System.Management.Automation.PSCredential ($Username, $Password) 
-                    Connect-AzureRmAccount -Credential $Credentials
-                } catch {
-                    Write-Host "Failed to login to public Azure. Exiting...." -ForegroundColor Red
-                    $Error[-1]
-                    break
-                }
+                Write-Error -Message 'You are currently logged into Azure Stack. Please login to public azure to continue.' -ErrorId 'AzureRmContextError'
+                break
             }
         } catch {
             if (-not $Context -or -not $Context.Account) {
-                try {
-                    $Credentials = New-Object System.Management.Automation.PSCredential ($Username, $Password) 
-                    Connect-AzureRmAccount -Credential $Credentials
-                } catch {
-                    Write-Host "Failed to login to public Azure. Exiting...." -ForegroundColor Red
-                    $Error[-1]
-                    break
-                }
+                Write-Error -Message 'Run Connect-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
+                break
             }
         }
-        
     }
+
     process {
+        $TenantId = (Get-AzureRmContext).Tenant.Id
         $RGName = Get-AzureRmResourceGroup -Name $AzureResourceGroup
         Write-Host "Retrieving VMs from $($RGName.ResourceGroupName) resource group"
         $VMsinRG = Get-AzureRmVM -ResourceGroupName $($RGName.ResourceGroupName)
@@ -519,9 +510,11 @@ function Start-AzureSiteRecoveryFailBack {
             }
         }
 
-        # Login Azure Stack 
+        # Login Azure Stack
+        $CredentialPass = ConvertTo-SecureString $ClientSecret -AsPlainText -Force
+        $Credentials = New-Object System.Management.Automation.PSCredential ($ClientID, $CredentialPass) 
         $StackEnvironment = Add-AzureRmEnvironment -Name "AzureStackUser" -ArmEndpoint $ArmEndpoint
-        Connect-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $Credentials
+        Connect-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $Credentials -ServicePrincipal -Tenant $TenantID
 
         # Create base resources in Azure Stack
         $Location = $StackEnvironment.StorageEndpointSuffix.split(".")[0]
