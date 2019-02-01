@@ -55,8 +55,8 @@ The configuration server that is deployed creates all necessary resources on pub
 | ConfigurationServerName | The name of the configuration server VM | SRConfigServer |
 | TempFilesPath | Location on configuration server where setup files will be stored | C:\TempASR\ |
 | ExtractionPath | The name of the folder within the TempFilesPath where the configuration server unified setup will be extracted to | Extracted |
-| MySQLRootPassword | The root password for the MySQL server created on the Configuration Server | |
-| MySQLUserPassword | The user password for the MySQL server created on the Configuration Server | |
+| MySQLRootPassword | The root password for the MySQL server created on the Configuration Server (Must meet password requirements specified in [below](#MySQL-Password-Requirements)) | |
+| MySQLUserPassword | The user password for the MySQL server created on the Configuration Server (Must meet password requirements specified [below](#MySQL-Password-Requirements)) | |
 | AzureVNetName | The name of the virtual network to be created on public Azure | SiteRecoveryVNet |
 | StackVNetName | The name of the existing virtual network to connect the configuration server to on Azure Stack | SiteRecoveryVNet |
 | StackSubnetName | The name of the existing virtual network subnet to connect the configuration server to on Azure Stack | default |
@@ -78,6 +78,16 @@ The configuration server that is deployed creates all necessary resources on pub
 ## Notes
 
 This ARM template and accompanying scripts were created following the process found in the [Azure Stack Site Recovery documentation](https://docs.microsoft.com/en-us/azure/site-recovery/azure-stack-site-recovery#step-1-prepare-azure-stack-vms).
+
+### MySQL Password Requirements
+
+Password must conform to all of the following rules:
+
+- Password must contain at least one letter
+- Password must contain at least one number
+- Password must contain at least one special character (_!@#$%)
+- Password must be between 8 and 16 characters
+- Password cannot contain spaces
 
 ## See Also
 
