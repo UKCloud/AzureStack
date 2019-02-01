@@ -194,6 +194,7 @@ function New-AzsAks {
         [parameter(Mandatory = $false)]
         [String]$DNSPrefix,
         [parameter(Mandatory = $true)]
+        [Alias("ClientId")]
         [String]$ServicePrincipal,
         [parameter(Mandatory = $true)]
         [String]$ClientSecret,
