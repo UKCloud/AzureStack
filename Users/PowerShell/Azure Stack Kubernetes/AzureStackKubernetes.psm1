@@ -23,7 +23,21 @@ function Start-AzsAks {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
-        [string]$ArmEndpoint = "https://management.frn00006.azure.ukcloud.com"
+        [String]$ArmEndpoint = "https://management.frn00006.azure.ukcloud.com",
+        [Parameter(Mandatory = $true, ParameterSetName="MFA")]
+        [Switch]$MFA,
+        [Parameter(Mandatory = $true, ParameterSetName="ServicePrincipal")]
+        [Alias("ServicePrincipal")]
+        [String]$ClientId,
+        [Parameter(Mandatory = $true, ParameterSetName="ServicePrincipal")]
+        [String]$ClientSecret,
+        [Parameter(Mandatory = $true, ParameterSetName="ServicePrincipal")]
+        [Alias("TenantDomain","Domain")]
+        [String]$TenantID
+        [Parameter(Mandatory = $true, ParameterSetName="GivenCreds")]
+        [String]$Username,
+        [Parameter(Mandatory = $true, ParameterSetName="GivenCreds")]
+        [String]$Password
     )
     process {
         try {
@@ -37,11 +51,25 @@ function Start-AzsAks {
         # Azure Powershell way to check if we are logged in as User
         [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
         if ($Context.Environment.ResourceManagerUrl -like "*https://adminmanagement*" -or $Context.Environment.ResourceManagerUrl -like "*azure.com*" -or -not $Context.Subscription.Name -or -not $Context -or -not $Context.Account) {
-            Write-Host -Message "You are not logged into Azure Stack. Current context is $($Context.Environment.ResourceManagerUrl)."
+            Write-Host -Object "You are not logged into Azure Stack. Current context is $($Context.Environment.ResourceManagerUrl)."
             Clear-AzureRmContext
-            Write-Host -Message "Logging into Azure Stack using endpoint: $($ArmEndpoint)" -ForegroundColor Magenta
-            $UserCredentials = Get-Credential
-            Add-AzureRmEnvironment -Name "AzureStackUser" -ArmEndpoint $ArmEndpoint
+        }
+        Write-Host -Object "Logging into Azure Stack using endpoint: $($ArmEndpoint)" -ForegroundColor Magenta
+        Add-AzureRmEnvironment -Name "AzureStackUser" -ArmEndpoint $ArmEndpoint
+        if ($MFA) {
+            Connect-AzureRmAccount -EnvironmentName "AzureStackUser"
+        } 
+        elseif ($ClientID) {
+            $ClientSecretSecure = ConvertTo-SecureString $ClientSecret -AsPlainText -Force
+            $Credentials = New-Object System.Management.Automation.PSCredential ($ClientID, $ClientSecret)
+            Connect-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $Credentials -ServicePrincipal -Tenant $TenantID
+        } 
+        elseif ($Username) {
+            $PasswordSecure = ConvertTo-SecureString $Password -AsPlainText -Force
+            $UserCredentials = New-Object System.Management.Automation.PSCredential ($Username, $PasswordSecure)
+            Connect-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $Credentials
+        } else {
+            $Credentials = Get-Credential
             Connect-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $UserCredentials
         }
     }
