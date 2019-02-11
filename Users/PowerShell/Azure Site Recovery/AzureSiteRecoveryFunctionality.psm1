@@ -52,11 +52,19 @@ function Test-AzureSiteRecoveryFailOver {
 
     process {
         # Retrieve the vault information
-        $VaultVar = Get-AzureRmRecoveryServicesVault -Name $VaultName
-        Set-AzureRmRecoveryServicesAsrVaultContext -Vault $VaultVar
-        $FabricVar = Get-AzureRmRecoveryServicesAsrFabric
-        $ContainerVar = Get-AzureRmRecoveryServicesAsrProtectionContainer -Fabric $FabricVar
-        $ProtectedVMs = Get-AzureRmRecoveryServicesAsrReplicationProtectedItem -ProtectionContainer $ContainerVar
+        try {
+            $VaultVar = Get-AzureRmRecoveryServicesVault -Name $VaultName
+            Set-AzureRmRecoveryServicesAsrVaultContext -Vault $VaultVar
+            $FabricVar = Get-AzureRmRecoveryServicesAsrFabric
+            $ContainerVar = Get-AzureRmRecoveryServicesAsrProtectionContainer -Fabric $FabricVar
+            $ProtectedVMs = Get-AzureRmRecoveryServicesAsrReplicationProtectedItem -ProtectionContainer $ContainerVar
+        }
+        catch {
+            Write-Error -Message "$($_)"
+            Write-Error -Message "Retrieving vault settings failed"
+            break
+        }
+
         Write-Host "VMs to test failover: $($ProtectedVMs.Name)" -ForegroundColor Green
 
         # Start test failover
