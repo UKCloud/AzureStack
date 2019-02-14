@@ -33,7 +33,7 @@ function Start-AzsAks {
         [String]$ClientSecret,
         [Parameter(Mandatory = $true, ParameterSetName="ServicePrincipal")]
         [Alias("TenantDomain","Domain")]
-        [String]$TenantID
+        [String]$TenantID,
         [Parameter(Mandatory = $true, ParameterSetName="GivenCreds")]
         [String]$Username,
         [Parameter(Mandatory = $true, ParameterSetName="GivenCreds")]
