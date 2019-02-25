@@ -12,10 +12,10 @@ function Start-AzsAks {
 
     .EXAMPLE
         Start-AzsAks
-    
+
     .EXAMPLE
         Start-AzsAks -ArmEndpoint "https://management.frn00006.azure.ukcloud.com"
-    
+
     .NOTES
         This command requires administrator privileges to check for/install OpenSSH Client. Without these privileges this step will be skipped.
     #>
@@ -47,7 +47,7 @@ function Start-AzsAks {
             }
         } catch {
             Write-Host "Not executing as administrator, unable to check if OpenSSH is installed" -ForegroundColor Red
-        }   
+        }
         # Azure Powershell way to check if we are logged in as User
         [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IAzureContext]$Context = Get-AzureRmContext
         if ($Context.Environment.ResourceManagerUrl -like "*https://adminmanagement*" -or $Context.Environment.ResourceManagerUrl -like "*azure.com*" -or -not $Context.Subscription.Name -or -not $Context -or -not $Context.Account) {
@@ -58,12 +58,12 @@ function Start-AzsAks {
         Add-AzureRmEnvironment -Name "AzureStackUser" -ArmEndpoint $ArmEndpoint
         if ($MFA) {
             Connect-AzureRmAccount -EnvironmentName "AzureStackUser"
-        } 
+        }
         elseif ($ClientID) {
             $ClientSecretSecure = ConvertTo-SecureString $ClientSecret -AsPlainText -Force
             $Credentials = New-Object System.Management.Automation.PSCredential ($ClientID, $ClientSecret)
             Connect-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $Credentials -ServicePrincipal -Tenant $TenantID
-        } 
+        }
         elseif ($Username) {
             $PasswordSecure = ConvertTo-SecureString $Password -AsPlainText -Force
             $UserCredentials = New-Object System.Management.Automation.PSCredential ($Username, $PasswordSecure)
@@ -85,23 +85,23 @@ function Get-AzsAksCredentials {
         Gets access credentials for a Kubernetes cluster. Mimics the Azure CLI command: az aks get-credentials
 
     .PARAMETER PrivateKeyLocation
-        The local file path to the private SSH key for the Kubernetes cluster. Example: "C:\AzureStack\KuberenetesKey.ppk"
+        The local file path to the private SSH key for the Kubernetes cluster. Example: "C:\AzureStack\KubernetesKey.ppk"
 
     .PARAMETER ResourceGroupName
         The name of the resource group which the Kubernetes cluster is in. Example: "AKS-RG"
 
     .PARAMETER OutFile
         The output file to save the access credential information to. Defaults to "Config"
-    
+
     .EXAMPLE
-        Get-AzsAksCredentials -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -ResourceGroupName "AKS-RG"
-    
+        Get-AzsAksCredentials -PrivateKeyLocation "C:\AzureStack\KubernetesKey.ppk" -ResourceGroupName "AKS-RG"
+
     .EXAMPLE
-        Get-AzsAksCredentials -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -ResourceGroupName "AKS-RG" -OutFile "Config"
-    
+        Get-AzsAksCredentials -PrivateKeyLocation "C:\AzureStack\KubernetesKey.ppk" -ResourceGroupName "AKS-RG" -OutFile "Config"
+
     .NOTES
         This cmdlet requires you to be logged into Azure Stack to run successfully.
-    
+
     .LINK
         https://docs.microsoft.com/en-us/cli/azure/aks?view=azure-cli-latest#az-aks-get-credentials
     #>
@@ -158,19 +158,19 @@ function New-AzsAks {
 
     .PARAMETER Location
         The location to create the Kubernetes cluster in. Defaults to: "frn00006"
-    
+
     .PARAMETER SSHKeyPath
-        The file path of the public SSH key to create the Kubernetes cluster with. Example: "C:\AzureStack\KuberenetesKey.pub"
-    
+        The file path of the public SSH key to create the Kubernetes cluster with. Example: "C:\AzureStack\KubernetesKey.pub"
+
     .PARAMETER AdminUsername
         The administrator username for the Kubernetes cluster. Defaults to: "azureuser"
 
     .PARAMETER DNSPrefix
         Prefix for hostnames that are created. Example: "examplednsprefix"
-    
+
     .PARAMETER ServicePrincipal
         The application ID of a service principal with contributor permissions on Azure Stack. Example: "00000000-0000-0000-0000-000000000000"
-    
+
     .PARAMETER ClientSecret
         A secret of the service principal specified in the ServicePrincipal parameter. Example: "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
 
@@ -179,27 +179,27 @@ function New-AzsAks {
 
     .PARAMETER AgentPoolProfileVMSize
         The VM size of the nodes in the Kubernetes agent node pool. Defaults to "Standard_D2_v2"
-    
+
     .PARAMETER MasterPoolProfileCount
         The number of nodes in the Kubernetes master node pool. Defaults to 3.
-    
+
     .PARAMETER MasterPoolProfileVMSize
         The VM size of the nodes in the Kubernetes master node pool. Defaults to "Standard_D2_v2"
-    
+
     .PARAMETER StorageProfile
         The type of storage to use. Can be either "blobdisk" for storage accounts, or "manageddisk" for managed disks. Defaults to "manageddisk"
-    
+
     .PARAMETER KubernetesAzureCloudProviderVersion
         The version of kubernetes to use for creating the cluster. Run Get-AzsAksVersions to list available versions. Defaults to the latest version
 
     .EXAMPLE
-        New-AzsAks -ResourceGroupName "AKS-RG" -SSHKeyPath "C:\AzureStack\KuberenetesKey.pub" `
+        New-AzsAks -ResourceGroupName "AKS-RG" -SSHKeyPath "C:\AzureStack\KubernetesKey.pub" `
             -ServicePrincipal "00000000-0000-0000-0000-000000000000" -ClientSecret "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]=" `
             -storageProfile "blobdisk"
-    
+
     .NOTES
         This cmdlet requires you to be logged into Azure Stack to run successfully.
-    
+
     .LINK
         https://docs.microsoft.com/en-us/cli/azure/aks?view=azure-cli-latest#az-aks-create
 
@@ -265,7 +265,7 @@ function New-AzsAks {
         $KubernetesTemplateURI = "https://raw.githubusercontent.com/msazurestackworkloads/azurestack-gallery/master/acsengine-kubernetes/k8s-marketplaceitem-1809/template/DeploymentTemplates/azuredeploy.json"
         $SSHKey = Get-Content -Path $SSHKeyPath -Raw
         if (!$DNSPrefix) {
-            $DNSPrefix = $ResourceGroupName.tolower()
+            $DNSPrefix = $ResourceGroupName.ToLower()
         }
 
         New-AzureRmResourceGroup -Name $ResourceGroupName -Location $location
@@ -287,14 +287,14 @@ function Remove-AzsAks {
 
     .PARAMETER ResourceGroupName
         The name of the resource group which the Kubernetes cluster is in. Example: "AKS-RG"
-    
+
     .EXAMPLE
         Remove-AzsAks -ResourceGroupName "AKS-RG"
-    
+
     .NOTES
         This cmdlet requires you to be logged into Azure Stack to run successfully.
         This cmdlet will erase the entire resource group which the cluster is in. Use at your own risk.
-    
+
     .LINK
         https://docs.microsoft.com/en-us/cli/azure/aks?view=azure-cli-latest#az-aks-delete
     #>
@@ -339,16 +339,16 @@ function Get-AzsAks {
 
     .PARAMETER ResourceGroupName
         The name of the resource group which the Kubernetes cluster is in. Used when looking for a specific cluster. Example: "AKS-RG"
-    
+
     .EXAMPLE
         Get-AzsAks
 
     .EXAMPLE
         Get-AzsAks -ResourceGroupName "AKS-RG"
-    
+
     .NOTES
         This cmdlet requires you to be logged into Azure Stack to run successfully.
-    
+
     .LINK
         https://docs.microsoft.com/en-us/cli/azure/aks?view=azure-cli-latest#az-aks-list
     #>
@@ -424,14 +424,14 @@ function Start-AzsAksScale {
         The name of the resource group which the Kubernetes cluster is in. Example: "AKS-RG"
 
     .PARAMETER PrivateKeyLocation
-        The local file path to the private SSH key for the Kubernetes cluster. Example: "C:\AzureStack\KuberenetesKey.ppk"
+        The local file path to the private SSH key for the Kubernetes cluster. Example: "C:\AzureStack\KubernetesKey.ppk"
 
     .PARAMETER Location
         The location which the Kubernetes cluster is in. Defaults to: "frn00006"
 
     .PARAMETER ServicePrincipal
         The application ID of a service principal with contributor permissions on Azure Stack. Example: "00000000-0000-0000-0000-000000000000"
-    
+
     .PARAMETER ClientSecret
         A secret of the service principal specified in the ServicePrincipal parameter. Example: "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
 
@@ -442,16 +442,16 @@ function Start-AzsAksScale {
         The name of the node pool to scale. Defaults to "linuxpool2"
 
     .EXAMPLE
-        Start-AzsAksScale -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -ServicePrincipal "00000000-0000-0000-0000-000000000000" `
+        Start-AzsAksScale -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KubernetesKey.ppk" -ServicePrincipal "00000000-0000-0000-0000-000000000000" `
             -ClientSecret "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]=" -NewNodeCount 5
-    
+
     .EXAMPLE
-        Start-AzsAksScale -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -Location "frn00006" -ServicePrincipal "00000000-0000-0000-0000-000000000000" `
+        Start-AzsAksScale -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KubernetesKey.ppk" -Location "frn00006" -ServicePrincipal "00000000-0000-0000-0000-000000000000" `
             -ClientSecret "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]=" -NewNodeCount 5 -PoolName "linuxpool2"
-    
+
     .NOTES
         This cmdlet requires you to be logged into Azure Stack to run successfully.
-    
+
     .LINK
         https://docs.microsoft.com/en-us/cli/azure/aks?view=azure-cli-latest#az-aks-scale
     #>
@@ -499,7 +499,7 @@ function Start-AzsAksScale {
             $Tags += @{poolName = "CreationVM"}
         }
         if (!$Tags["resourceNameSuffix"]) {
-            $Tags += @{resourceNameSuffix = $ResourceNameSuffix} 
+            $Tags += @{resourceNameSuffix = $ResourceNameSuffix}
         }
         $CreationVM.Plan = @{"name" = " "}
         $CreationVM | Set-AzureRmResource -Tag $Rags -Force | Out-Null
@@ -510,7 +510,7 @@ function Start-AzsAksScale {
         $SubscriptionID = (Get-AzureRmContext).Subscription.Id
         $DeploymentDirectory = "/var/lib/waagent/custom-script/download/0/acs-engine/_output/" + $MasterFQDN.Split(".")[0]
         Invoke-Command -ScriptBlock {
-            param($PrivateKeyLocation, $Username, $IPAddress, $ScaleCommand, $ResourceGroupName, $Location, $ServicePrincipal, $ClientSecret, $SubscriptionID, $NewNodeCount, $DeploymentDirectory, $MasterFQDN, $PoolName) 
+            param($PrivateKeyLocation, $Username, $IPAddress, $ScaleCommand, $ResourceGroupName, $Location, $ServicePrincipal, $ClientSecret, $SubscriptionID, $NewNodeCount, $DeploymentDirectory, $MasterFQDN, $PoolName)
             ssh -i $PrivateKeyLocation $Username@$IPAddress sudo $ScaleCommand --resource-group $ResourceGroupName --auth-method client_secret --azure-env AzureStackCloud --location $Location --client-id $ServicePrincipal `
                 --client-secret $ClientSecret --subscription-id $SubscriptionID --new-node-count $NewNodeCount --deployment-dir $DeploymentDirectory --master-FQDN $MasterFQDN --node-pool $PoolName
         } -ArgumentList $PrivateKeyLocation, $Username, $IPAddress, $ScaleCommand, $ResourceGroupName, $Location, $ServicePrincipal, $ClientSecret, $SubscriptionID, $NewNodeCount, $DeploymentDirectory, $MasterFQDN, $PoolName
@@ -548,10 +548,10 @@ function Show-AzsAks {
 
     .EXAMPLE
         Show-AzsAks -ResourceGroupName "AKS-RG"
-    
+
     .NOTES
         This cmdlet requires you to be logged into Azure Stack to run successfully.
-    
+
     .LINK
         https://docs.microsoft.com/en-us/cli/azure/aks?view=azure-cli-latest#az-aks-show
     #>
@@ -571,17 +571,17 @@ function Show-AzsAks {
 function Get-AzsAksVersions {
     <#
     .SYNOPSIS
-        Get the versions available for creating a Kubernetes cluster. 
+        Get the versions available for creating a Kubernetes cluster.
 
     .DESCRIPTION
         Get the versions available for creating a Kubernetes cluster. Mimics the Azure CLI command: az aks get-versions
 
     .EXAMPLE
         Get-AzsAksVersions
-    
+
     .NOTES
         This cmdlet can only be run a limited amount of times per hour, due to GitHub Rate Limits. See links for details.
-    
+
     .LINK
         https://docs.microsoft.com/en-us/cli/azure/aks?view=azure-cli-latest#az-aks-get-versions
 
@@ -601,7 +601,7 @@ function Get-AzsAksVersions {
             }
             $Versions += $VersionNum
         }
-        $Versions = $Versions | Sort-Object -Property @{Expression = {[convert]::ToInt32(($_.VersionNumber -split "\.")[-1])}} 
+        $Versions = $Versions | Sort-Object -Property @{Expression = {[convert]::ToInt32(($_.VersionNumber -split "\.")[-1])}}
         $Versions
     }
 }
@@ -619,14 +619,14 @@ function Start-AzsAksUpgrade {
         The name of the resource group which the Kubernetes cluster is in. Example: "AKS-RG"
 
     .PARAMETER PrivateKeyLocation
-        The local file path to the private SSH key for the Kubernetes cluster. Example: "C:\AzureStack\KuberenetesKey.ppk"
+        The local file path to the private SSH key for the Kubernetes cluster. Example: "C:\AzureStack\KubernetesKey.ppk"
 
     .PARAMETER Location
         The location which the Kubernetes cluster is in. Defaults to: "frn00006"
 
     .PARAMETER ServicePrincipal
         The application ID of a service principal with contributor permissions on Azure Stack. Example: "00000000-0000-0000-0000-000000000000"
-    
+
     .PARAMETER ClientSecret
         A secret of the service principal specified in the ServicePrincipal parameter. Example: "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
 
@@ -634,16 +634,16 @@ function Start-AzsAksUpgrade {
         The version of Kubernetes to upgrade the cluster to. Available versions can be found using Get-AzsAksUpgradeVersions. Example: "1.11.2"
 
     .EXAMPLE
-        Start-AzsAksUpgrade -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -ServicePrincipal "00000000-0000-0000-0000-000000000000" `
+        Start-AzsAksUpgrade -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KubernetesKey.ppk" -ServicePrincipal "00000000-0000-0000-0000-000000000000" `
             -ClientSecret "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]=" -KubernetesUpgradeVersion "1.11.2"
-    
+
     .EXAMPLE
-        Start-AzsAksUpgrade -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -Location "frn00006" -ServicePrincipal "00000000-0000-0000-0000-000000000000" `
+        Start-AzsAksUpgrade -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KubernetesKey.ppk" -Location "frn00006" -ServicePrincipal "00000000-0000-0000-0000-000000000000" `
             -ClientSecret "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]=" -KubernetesUpgradeVersion "1.11.2"
-    
+
     .NOTES
         This cmdlet requires you to be logged into Azure Stack to run successfully.
-    
+
     .LINK
         https://docs.microsoft.com/en-us/cli/azure/aks?view=azure-cli-latest#az-aks-upgrade
     #>
@@ -689,7 +689,7 @@ function Start-AzsAksUpgrade {
             $Tags += @{poolName = "CreationVM"}
         }
         if (!$tags["resourceNameSuffix"]) {
-            $Tags += @{resourceNameSuffix = $ResourceNameSuffix} 
+            $Tags += @{resourceNameSuffix = $ResourceNameSuffix}
         }
         $CreationVM.Plan = @{"name" = " "}
         $CreationVM | Set-AzureRmResource -Tag $Tags -Force | Out-Null
@@ -704,7 +704,7 @@ function Start-AzsAksUpgrade {
             Write-Host "Can't upgrade Kubernetes version - Cluster is already running version $CurrentVersion" -ForegroundColor Red
         } else {
             Invoke-Command -ScriptBlock {
-                param($PrivateKeyLocation, $Username, $IPAddress, $ScaleCommand, $ResourceGroupName, $Location, $ServicePrincipal, $ClientSecret, $SubscriptionID, $DeploymentDirectory, $MasterFQDN, $KubernetesAzureCloudProviderVersion) 
+                param($PrivateKeyLocation, $Username, $IPAddress, $ScaleCommand, $ResourceGroupName, $Location, $ServicePrincipal, $ClientSecret, $SubscriptionID, $DeploymentDirectory, $MasterFQDN, $KubernetesAzureCloudProviderVersion)
                 ssh -i $PrivateKeyLocation $Username@$IPAddress sudo $ScaleCommand --resource-group $ResourceGroupName --auth-method client_secret --azure-env AzureStackCloud --location $Location --client-id $ServicePrincipal `
                     --client-secret $ClientSecret --subscription-id $SubscriptionID --deployment-dir $DeploymentDirectory --master-FQDN $MasterFQDN --upgrade-version $KubernetesAzureCloudProviderVersion
             } -ArgumentList $PrivateKeyLocation, $Username, $IPAddress, $ScaleCommand, $ResourceGroupName, $Location, $ServicePrincipal, $ClientSecret, $SubscriptionID, $DeploymentDirectory, $MasterFQDN, $KubernetesAzureCloudProviderVersion
@@ -725,20 +725,20 @@ function Get-AzsAksUpgradeVersions {
         The name of the resource group which the Kubernetes cluster is in. Example: "AKS-RG"
 
     .PARAMETER PrivateKeyLocation
-        The local file path to the private SSH key for the Kubernetes cluster. Example: "C:\AzureStack\KuberenetesKey.ppk"
+        The local file path to the private SSH key for the Kubernetes cluster. Example: "C:\AzureStack\KubernetesKey.ppk"
 
     .PARAMETER Location
         The location which the Kubernetes cluster is in. Defaults to: "frn00006"
 
     .EXAMPLE
-        Get-AzsAksUpgradeVersions -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk"
-    
+        Get-AzsAksUpgradeVersions -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KubernetesKey.ppk"
+
     .EXAMPLE
-        Get-AzsAksUpgradeVersions -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KuberenetesKey.ppk" -Location "frn00006"
-    
+        Get-AzsAksUpgradeVersions -ResourceGroupName "AKS-RG" -PrivateKeyLocation "C:\AzureStack\KubernetesKey.ppk" -Location "frn00006"
+
     .NOTES
         This cmdlet requires you to be logged into Azure Stack to run successfully.
-    
+
     .LINK
         https://docs.microsoft.com/en-us/cli/azure/aks?view=azure-cli-latest#az-aks-get-upgrades
     #>
@@ -779,7 +779,7 @@ function Get-AzsAksUpgradeVersions {
         $Command = "/var/lib/waagent/custom-script/download/0/acs-engine/bin/acs-engine orchestrators"
         Write-Host "Current Kubernetes version is: $CurrentVersion" -ForegroundColor Green
         Invoke-Command -ScriptBlock {
-            param($PrivateKeyLocation, $Username, $IPAddress, $Command, $CurrentVersion) 
+            param($PrivateKeyLocation, $Username, $IPAddress, $Command, $CurrentVersion)
             ssh -i $PrivateKeyLocation $Username@$IPAddress sudo $Command --orchestrator kubernetes --version $CurrentVersion
         } -ArgumentList $PrivateKeyLocation, $Username, $IPAddress, $Command, $CurrentVersion
     }
