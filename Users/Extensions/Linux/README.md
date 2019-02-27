@@ -26,7 +26,7 @@ Set-AzureRmVMExtension -ResourceGroupName "<Resource Group Name>" -Location "<Lo
 
 ### Overview
 
-This extension changes the root password of a Linux VM to the specified value. This is necessary for Azure Site Recovery, however it is bad practice to use this in any circumstance where it is not necessary. This script also enables root via SSH, which is also required for Azure Site Recovery.
+This extension changes the root password of a Linux VM to the specified value. This is necessary for Azure Site Recovery, however it is bad practice to use this in any circumstance where it is not necessary. This script also enables root via SSH and mounts the boot partition, both of which are required for Azure Site Recovery.
 
 ### Command Structure
 
