@@ -1,5 +1,6 @@
 #!/bin/bash
 
+sudo mount /dev/sda1 /boot
 sudo sed -i -e "s/PermitRootLogin prohibit-password/PermitRootLogin yes/" /etc/ssh/sshd_config
 sudo service sshd restart
 echo "root:$1" | chpasswd
