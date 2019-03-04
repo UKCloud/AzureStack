@@ -68,7 +68,7 @@ function Test-AzureSiteRecoveryFailOver {
             break
         }
 
-        Write-Host "VMs to test failover: $($ProtectedVMs.Name)" -ForegroundColor Green
+        Write-Host -Object "VMs to test failover: $($ProtectedVMs.Name)" -ForegroundColor Green
 
         # Start test failover
         $FailoverJobs = @()
@@ -91,24 +91,24 @@ function Test-AzureSiteRecoveryFailOver {
                 $FailoverStatii += $FailoverStatus
             }
 
-            Write-Host "Status at: $(Get-Date -UFormat '%H:%M:%S - %d/%m/%Y')"
+            Write-Host -Object "Status at: $(Get-Date -UFormat '%H:%M:%S - %d/%m/%Y')"
             Write-Host ($FailoverStatii | Format-Table | Out-String).Split("`n")[1]
             Write-Host ($FailoverStatii | Format-Table | Out-String).Split("`n")[2]
             $FailoverStatii | Out-String -Stream | ForEach-Object {
                 if ($_ -clike "* Succeeded*") {
-                    Write-Host "$($_)" -ForegroundColor Green
+                    Write-Host -Object "$($_)" -ForegroundColor Green
                     $NumJobsComplete += 1
                 }
                 elseif ($_ -clike "* Failed*") {
-                    Write-Host "$($_)" -ForegroundColor Red
+                    Write-Host -Object "$($_)" -ForegroundColor Red
                     $NumJobsComplete += 1
                     $FailureTest = $true
                 }
                 elseif ($_ -clike "* InProgress*") {
-                    Write-Host "$($_)"
+                    Write-Host -Object "$($_)"
                 }
             }
-            Write-Host ""
+            Write-Host -Object ""
 
             if ($FailoverJobs.Count -ne $NumJobsComplete) {
                 Start-Sleep -Seconds 30
@@ -116,7 +116,7 @@ function Test-AzureSiteRecoveryFailOver {
         }
 
         # Start test failover clean-up
-        Write-Host "Starting test failover clean-up"
+        Write-Host -Object "Starting test failover clean-up"
         $CleanupJobs = @()
         foreach ($VM in $ProtectedVMs) {
             $CleanupJob = Start-AzureRmRecoveryServicesAsrTestFailoverCleanupJob -ReplicationProtectedItem $VM
@@ -137,24 +137,24 @@ function Test-AzureSiteRecoveryFailOver {
                 $CleanupStatii += $CleanupStatus
             }
 
-            Write-Host "Status at: $(Get-Date -UFormat '%H:%M:%S - %d/%m/%Y')"
+            Write-Host -Object "Status at: $(Get-Date -UFormat '%H:%M:%S - %d/%m/%Y')"
             Write-Host ($CleanupStatii | Format-Table | Out-String).Split("`n")[1]
             Write-Host ($CleanupStatii | Format-Table | Out-String).Split("`n")[2]
             $CleanupStatii | Out-String -Stream | ForEach-Object {
                 if ($_ -clike "* Succeeded*") {
-                    Write-Host "$($_)" -ForegroundColor Green
+                    Write-Host -Object "$($_)" -ForegroundColor Green
                     $NumJobsComplete += 1
                 }
                 elseif ($_ -clike "* Failed*") {
-                    Write-Host "$($_)" -ForegroundColor Red
+                    Write-Host -Object "$($_)" -ForegroundColor Red
                     $NumJobsComplete += 1
                     $CleanupFailureTest = $true
                 }
                 elseif ($_ -clike "* InProgress*") {
-                    Write-Host "$($_)"
+                    Write-Host -Object "$($_)"
                 }
             }
-            Write-Host ""
+            Write-Host -Object ""
 
             if ($CleanupJobs.Count -ne $NumJobsComplete) {
                 Start-Sleep -Seconds 30
@@ -166,15 +166,15 @@ function Test-AzureSiteRecoveryFailOver {
             while ($Valid -eq $false -and $FailureTest -eq $true) {
                 $YesNo = Read-Host -Prompt "One or more of the VMs failed during test failover. Are you sure you want to proceed? (y/n)"
                 if ($YesNo -like "*n*") {
-                    Write-Host "Exiting..."
+                    Write-Host -Object "Exiting..."
                     return $false
                 }
                 elseif ($YesNo -notlike "*y*") {
-                    Write-Host ""
-                    Write-Host "Please enter a valid option (E.G. y or n)"
+                    Write-Host -Object ""
+                    Write-Host -Object "Please enter a valid option (E.G. y or n)"
                 }
                 else {
-                    Write-Host "Proceeding..."
+                    Write-Host -Object "Proceeding..."
                     $Valid = $true
                 }
             }
@@ -184,15 +184,15 @@ function Test-AzureSiteRecoveryFailOver {
             while ($Valid -eq $false -and $CleanupFailureTest -eq $true) {
                 $YesNo = Read-Host -Prompt "One or more of the VMs failed during test failover clean-up. Are you sure you want to proceed? (y/n)"
                 if ($YesNo -like "*n*") {
-                    Write-Host "Exiting..."
+                    Write-Host -Object "Exiting..."
                     return $false
                 }
                 elseif ($YesNo -notlike "*y*") {
-                    Write-Host ""
-                    Write-Host "Please enter a valid option (E.G. y or n)"
+                    Write-Host -Object ""
+                    Write-Host -Object "Please enter a valid option (E.G. y or n)"
                 }
                 else {
-                    Write-Host "Proceeding..."
+                    Write-Host -Object "Proceeding..."
                     $Valid = $true
                 }
             }
@@ -201,11 +201,11 @@ function Test-AzureSiteRecoveryFailOver {
         else {
             $Valid = $true
             if ($FailureTest -eq $true) {
-                Write-Host "One or more of the VMs failed during test failover." -ForegroundColor Red
+                Write-Host -Object "One or more of the VMs failed during test failover." -ForegroundColor Red
                 $Valid = $false
             }
             if ($CleanupFailureTest -eq $true) {
-                Write-Host "One or more of the VMs failed during test failover clean-up." -ForegroundColor Red
+                Write-Host -Object "One or more of the VMs failed during test failover clean-up." -ForegroundColor Red
                 $Valid = $false
             }
         }
@@ -284,10 +284,10 @@ function Start-AzureSiteRecoveryFailOver {
             break
         }
 
-        Write-Host "VMs to failover: $($ProtectedVMs.Name)" -ForegroundColor Green
+        Write-Host -Object "VMs to failover: $($ProtectedVMs.Name)" -ForegroundColor Green
 
         # Start actual failover
-        Write-Host "Starting failover..."
+        Write-Host -Object "Starting failover..."
         $FailoverJobs = @()
         foreach ($VM in $ProtectedVMs) {
             $FailoverJob = Start-AzureRmRecoveryServicesAsrUnplannedFailoverJob -Direction PrimaryToRecovery -ReplicationProtectedItem $VM
@@ -316,24 +316,24 @@ function Start-AzureSiteRecoveryFailOver {
                 }
             }
 
-            Write-Host "Status at: $(Get-Date -UFormat '%H:%M:%S - %d/%m/%Y')"
+            Write-Host -Object "Status at: $(Get-Date -UFormat '%H:%M:%S - %d/%m/%Y')"
             Write-Host ($FailoverStatii | Format-Table | Out-String).Split("`n")[1]
             Write-Host ($FailoverStatii | Format-Table | Out-String).Split("`n")[2]
             $FailoverStatii | Out-String -Stream | ForEach-Object {
                 if ($_ -clike "* Succeeded*") {
-                    Write-Host "$($_)" -ForegroundColor Green
+                    Write-Host -Object "$($_)" -ForegroundColor Green
                     $NumJobsComplete += 1
                 }
                 elseif ($_ -clike "* Failed*") {
-                    Write-Host "$($_)" -ForegroundColor Red
+                    Write-Host -Object "$($_)" -ForegroundColor Red
                     $NumJobsComplete += 1
                     $Failure = $true
                 }
                 elseif ($_ -clike "* InProgress*") {
-                    Write-Host "$($_)"
+                    Write-Host -Object "$($_)"
                 }
             }
-            Write-Host ""
+            Write-Host -Object ""
 
             if ($FailoverJobs.Count -ne $NumJobsComplete) {
                 Start-Sleep -Seconds 30
@@ -341,11 +341,11 @@ function Start-AzureSiteRecoveryFailOver {
         }
 
         if ($Failure -eq $true) {
-            Write-Host "One or more VMs failed to failover:"
+            Write-Host -Object "One or more VMs failed to failover:"
             $FailoverErrors | Format-Table
         }
         else {
-            Write-Host "Committing replicated VMs..."
+            Write-Host -Object "Committing replicated VMs..."
             $CommitJobs = @()
             foreach ($VM in $ProtectedVMs) {
                 $CommitJob = Start-AzureRmRecoveryServicesAsrCommitFailoverJob -ReplicationProtectedItem $VM
@@ -375,24 +375,24 @@ function Start-AzureSiteRecoveryFailOver {
                 }
             }
 
-            Write-Host "Status at: $(Get-Date -UFormat '%H:%M:%S - %d/%m/%Y')"
+            Write-Host -Object "Status at: $(Get-Date -UFormat '%H:%M:%S - %d/%m/%Y')"
             Write-Host ($CommitStatii | Format-Table | Out-String).Split("`n")[1]
             Write-Host ($CommitStatii | Format-Table | Out-String).Split("`n")[2]
             $CommitStatii | Out-String -Stream | ForEach-Object {
                 if ($_ -clike "* Succeeded*") {
-                    Write-Host "$($_)" -ForegroundColor Green
+                    Write-Host -Object "$($_)" -ForegroundColor Green
                     $NumJobsComplete += 1
                 }
                 elseif ($_ -clike "* Failed*") {
-                    Write-Host "$($_)" -ForegroundColor Red
+                    Write-Host -Object "$($_)" -ForegroundColor Red
                     $NumJobsComplete += 1
                     $CommitFailure = $true
                 }
                 elseif ($_ -clike "* InProgress*") {
-                    Write-Host "$($_)"
+                    Write-Host -Object "$($_)"
                 }
             }
-            Write-Host ""
+            Write-Host -Object ""
 
             if ($CommitJobs.Count -ne $NumJobsComplete) {
                 Start-Sleep -Seconds 30
@@ -400,11 +400,11 @@ function Start-AzureSiteRecoveryFailOver {
         }
 
         if ($CommitFailure -eq $true) {
-            Write-Host "One or more VMs failed to commit:"
+            Write-Host -Object "One or more VMs failed to commit:"
             $CommitErrors | Format-Table
         }
         else {
-            Write-Host "Failover completed successfully" -ForegroundColor Green
+            Write-Host -Object "Failover completed successfully" -ForegroundColor Green
         }
     }
 }
@@ -459,19 +459,20 @@ function Start-AzureSiteRecoveryFailBack {
         The name of the network security group to place the VMs on after being failed back. Defaults to: "myNSG"
 
     .PARAMETER UseStorageAccount
-        If declared the failed back VMs will use a storage account instead of managed disks.
+        If declared the failed-back VMs will use a storage account instead of managed disks.
 
     .EXAMPLE
-        Start-AzureSiteRecoveryFailBack -AzureResourceGroup "SiteRecovery-RG" -ClientId "00000000-0000-0000-0000-000000000000" -ClientSecret "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]=" -StackResourceGroup "FailBack-RG" -StackStorageAccount "FailBackSA" `
-            -StackStorageContainer "FailBackContainer"
+        Start-AzureSiteRecoveryFailBack -AzureResourceGroup "SiteRecovery-RG" -ClientId "00000000-0000-0000-0000-000000000000" -ClientSecret "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]=" -StackResourceGroup "FailBack-RG" -StackStorageAccount "failbacksa" `
+            -StackStorageContainer "failbackcontainer"
 
     .EXAMPLE
         Start-AzureSiteRecoveryFailBack -AzureResourceGroup "SiteRecovery-RG" -ClientId "00000000-0000-0000-0000-000000000000" -ClientSecret "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]=" -ArmEndpoint "https://management.frn00006.azure.ukcloud.com" `
-            -StackResourceGroup "FailBack-RG" -StackStorageAccount "FailBackSA" -StackStorageContainer "FailBackContainer" -VNetName "myVNetwork" -SubnetName "default" -VNetRange "192.168.0.0/16" `
+            -StackResourceGroup "FailBack-RG" -StackStorageAccount "failbacksa" -StackStorageContainer "failbackcontainer" -VNetName "myVNetwork" -SubnetName "default" -VNetRange "192.168.0.0/16" `
             -SubnetRange "192.168.1.0/24" -NSGName "myNSG"
 
     .NOTES
-        This cmdlet does not clear the VMs from public Azure. Once you have confirmed that the fail back process has completed successfully, these can be removed with Remove-AzureRmResourceGroup -Name $AzureResourceGroup
+        This cmdlet shuts down the VMs running on public Azure to copy the disks. Please ensure that running workloads are saved before executing this command. Proceed at your own risk.
+        This cmdlet does not remove the VMs from public Azure. Once you have confirmed that the fail back process has completed successfully, these can be removed with "Remove-AzureRmResourceGroup -Name $AzureResourceGroup".
     #>
 
     [CmdletBinding()]
@@ -527,34 +528,35 @@ function Start-AzureSiteRecoveryFailBack {
     process {
         $TenantId = (Get-AzureRmContext).Tenant.Id
         $RGName = Get-AzureRmResourceGroup -Name $AzureResourceGroup
-        Write-Host "Retrieving VMs from $($RGName.ResourceGroupName) resource group"
+        Write-Verbose -Message "Retrieving VMs from $($RGName.ResourceGroupName) resource group"
         $VMsinRG = Get-AzureRmVM -ResourceGroupName $($RGName.ResourceGroupName)
         $VMNames = @()
         foreach ($VM in $VMsinRG) {
             $VMNames += $($VM.Name)
         }
 
-        Write-Host "VMs to failback:"
+        Write-Host -Object "VMs to failback:"
         $VMNames
+        Write-Host -Object ""
 
         # Declare Arrays
         $AzureDisks = @()
         $FailbackVMs = @()
 
         ### Get disk URIs
-        Write-Host "Retrieving Disk URIs"
+        Write-Host -Object "Retrieving Disk URIs"
         foreach ($VMName in $VMNames) {
             $VMObj = Get-AzureRmVM -ResourceGroupName $($RGName.ResourceGroupName) -Name $VMName
             $FailbackVMs += $VMObj
-            Write-Host "Stopping virtual machine: $($VMObj.Name)"
+            Write-Host -Object "Stopping virtual machine: $($VMObj.Name)"
             Stop-AzureRmVM -Name $VMObj.Name -ResourceGroupName $VMObj.ResourceGroupName -Confirm:$false -Force
-            Write-Host "Retrieving disk URIs for VM: $($VMObj.Name)"
+            Write-Host -Object "Retrieving disk URIs for VM: $($VMObj.Name)"
             if ($VMObj.StorageProfile.OsDisk.Vhd.Uri) {
                 $VHDUri = $VMObj.StorageProfile.OsDisk.Vhd.Uri
             }
             elseif ($VMObj.StorageProfile.OsDisk.ManagedDisk) {
                 $ManagedDisk = Get-AzureRmDisk -ResourceGroupName $($RGName.ResourceGroupName) -DiskName $($VMObj.StorageProfile.OsDisk.Name)
-                $VHDUri = $ManagedDisk | Grant-AzureRmDiskAccess -DurationInSecond 7200 -Access Read
+                $VHDUri = ($ManagedDisk | Grant-AzureRmDiskAccess -DurationInSecond 7200 -Access Read).AccessSAS
             }
             $AzureDisk = New-Object -TypeName System.Object
             $AzureDisk | Add-Member -Name VMName -MemberType NoteProperty -Value $VMObj.Name
@@ -564,8 +566,14 @@ function Start-AzureSiteRecoveryFailBack {
             $AzureDisks += $AzureDisk
             if ($VMObj.StorageProfile.DataDisks) {
                 foreach ($Disk in $VMObj.StorageProfile.DataDisks) {
-                    $ManagedDisk = Get-AzureRmDisk -ResourceGroupName $($RGName.ResourceGroupName) -DiskName $($Disk.Name)
-                    $VHDUri = $ManagedDisk | Grant-AzureRmDiskAccess -DurationInSecond 7200 -Access Read
+                    if ($Disk.ManagedDisk) {
+                        $ManagedDisk = Get-AzureRmDisk -ResourceGroupName $($RGName.ResourceGroupName) -DiskName $($Disk.Name)
+                        $VHDUri = ($ManagedDisk | Grant-AzureRmDiskAccess -DurationInSecond 7200 -Access Read).AccessSAS
+                    }
+                    elseif ($Disk.Vhd) {
+                        $VHDUri = $Disk.Vhd.Uri
+                    }
+
                     $AzureDisk = New-Object -TypeName System.Object
                     $AzureDisk | Add-Member -Name VMName -MemberType NoteProperty -Value $VMObj.Name
                     $AzureDisk | Add-Member -Name DiskType -MemberType NoteProperty -Value "DataDisk"
@@ -591,7 +599,7 @@ function Start-AzureSiteRecoveryFailBack {
         # Create base resources in Azure Stack
         $Location = $StackEnvironment.StorageEndpointSuffix.split(".")[0]
 
-        Write-Host "Creating resource group, storage account and container"
+        Write-Host -Object "Creating resource group, storage account and container"
         try {
             $RG = New-AzureRmResourceGroup -Name $StackResourceGroup -Location $Location -Force
             $StorageAccount = New-AzureRmStorageAccount -Name $StackStorageAccount -Type Standard_LRS -Location $Location -ResourceGroupName $RG.ResourceGroupName
@@ -601,9 +609,10 @@ function Start-AzureSiteRecoveryFailBack {
             Write-Error -Message $_
             break
         }
-        Write-Host "Starting copy operation from public Azure to Azure Stack"
+
+        Write-Host -Object "Starting copy operation from public Azure to Azure Stack"
         foreach ($VHD in $AzureDisks) {
-            Start-AzureStorageBlobCopy -AbsoluteUri $VHD.DiskURI.AccessSAS -DestContainer $ImagesContainer.Name -DestBlob $VHD.DiskName -DestContext $StorageAccount.Context
+            Start-AzureStorageBlobCopy -AbsoluteUri $VHD.DiskURI -DestContainer $ImagesContainer.Name -DestBlob $VHD.DiskName -DestContext $StorageAccount.Context
         }
 
         $Completed = 0
@@ -639,7 +648,7 @@ function Start-AzureSiteRecoveryFailBack {
                     $Completed ++
                 }
             }
-            Write-Host "Status at: $(Get-Date -UFormat '%H:%M:%S - %d/%m/%Y')"
+            Write-Host -Object "Status at: $(Get-Date -UFormat '%H:%M:%S - %d/%m/%Y')"
             $CopyStatii | Select-Object -Property DiskName, BytesCopied, TotalBytes, Status | Format-Table
             if ($Completed -ne $AzureDisks.Count) {
                 Start-Sleep -Seconds 20
@@ -648,14 +657,14 @@ function Start-AzureSiteRecoveryFailBack {
 
         ## Create VMs
         # Create a subnet configuration
-        Write-Host "Creating virtual network"
+        Write-Host -Object "Creating virtual network"
         $SubnetConfig = New-AzureRmVirtualNetworkSubnetConfig -Name $SubnetName -AddressPrefix $SubnetRange
 
         # Create a virtual network
         $VirtualNetwork = New-AzureRmVirtualNetwork -ResourceGroupName $RG.ResourceGroupName -Location $Location -Name $VNetName -AddressPrefix $VNetRange -Subnet $SubnetConfig
 
         # Create a network security group
-        Write-Host "Creating network security group"
+        Write-Host -Object "Creating network security group"
         $NetworkSG = New-AzureRmNetworkSecurityGroup -ResourceGroupName $RG.ResourceGroupName -Location $Location -Name $NSGName
 
         $StorageContainerLocation = "$($StorageAccount.PrimaryEndpoints.Blob)$($ImagesContainer.Name)"
@@ -663,20 +672,20 @@ function Start-AzureSiteRecoveryFailBack {
         $VMSizes = Get-AzureRmVMSize -Location $Location
 
         foreach ($VM in $FailbackVMs) {
-            Write-Host "Creating VM: $($VM.Name)"
+            Write-Host -Object "Creating VM: $($VM.Name)"
 
-            $PublicIPName = "$($VM.Name)IP"
-            $NICName = ($VM.NetworkProfile.NetworkInterfaces.id -split "/")[-1]
+            $PublicIPName = "$($VM.Name)-IP"
+            $NICName = "$($VM.Name)-NIC"
             $VMName = $VM.Name
             $VMSize = $VM.HardwareProfile.VMSize
 
             if ($VMSizes.Name -notcontains $VMSize) {
                 if ($VMSizes.Name -notcontains $VMSize.Replace("v3", "v2")) {
-                    Write-Host -Object "Setting VMSize to Standard_F8s_v2 as $($VMSize) does not exist on Azure Stack"
+                    Write-Warning -Message "Setting VMSize to Standard_F8s_v2 as $($VMSize) does not exist on Azure Stack"
                     $VMSize = "Standard_F8s_v2"
                 }
                 else {
-                    Write-Host -Object "Setting VMSize to $($VMSize.Replace("v3","v2")) as $($VMSize) does not exist on Azure Stack"
+                    Write-Warning -Message "Setting VMSize to $($VMSize.Replace("v3","v2")) as $($VMSize) does not exist on Azure Stack"
                     $VMSize = $VMSize.Replace("v3", "v2")
                 }
             }
@@ -693,7 +702,7 @@ function Start-AzureSiteRecoveryFailBack {
             # Add Network Interface Card
             $VirtualMachine = Add-AzureRmVMNetworkInterface -Id $NetworkInterface.Id -VM $VirtualMachine
 
-            # Applies the OS disk properties to the virtual machine.
+            # Apply the disk properties to the virtual machine config
             if (!$UseStorageAccount) {
                 $OSDisk = Get-AzureRmDisk -ResourceGroupName $RG.ResourceGroupName -Name $VM.StorageProfile.OsDisk.Name
                 if ($OSDisk.OsType -like "Linux") {
@@ -727,11 +736,11 @@ function Start-AzureSiteRecoveryFailBack {
                 }
             }
 
-            # Create the virtual machine.
-            $NewVM = New-AzureRmVM -ResourceGroupName $RG.ResourceGroupName -Location $Location -VM $VirtualMachine -AsJob
+            # Create the virtual machine
+            New-AzureRmVM -ResourceGroupName $RG.ResourceGroupName -Location $Location -VM $VirtualMachine -AsJob
         }
         Get-Job | Wait-Job
-        Write-Host "All VMs have been created" -ForegroundColor Green
-        Get-AzureRmVM -ResourceGroupName $RG.ResourceGroupName
+        Write-Host -Object "All VMs have been created" -ForegroundColor Green
+        Get-AzureRmVM -ResourceGroupName $RG.ResourceGroupName | Select-Object -Property Name, ResourceGroupName, ProvisioningState
     }
 }
