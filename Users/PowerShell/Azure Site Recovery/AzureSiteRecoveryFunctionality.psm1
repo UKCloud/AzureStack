@@ -739,8 +739,12 @@ function Start-AzureSiteRecoveryFailBack {
             # Create the virtual machine
             New-AzureRmVM -ResourceGroupName $RG.ResourceGroupName -Location $Location -VM $VirtualMachine -AsJob
         }
-        Get-Job | Wait-Job
+        while ($(Get-Job).State -like "*Running*" -or $(Get-Job).State -like "*NotStarted*") {
+            Write-Host -Object "Status at: $(Get-Date -UFormat '%H:%M:%S - %d/%m/%Y')"
+            Get-Job | Select-Object -Property Id, Command, PSBeginTime, PSEndTime, State | Format-Table
+            Get-Job | Wait-Job -Timeout 30 | Out-Null
+        }
         Write-Host -Object "All VMs have been created" -ForegroundColor Green
-        Get-AzureRmVM -ResourceGroupName $RG.ResourceGroupName | Select-Object -Property Name, ResourceGroupName, ProvisioningState
+        Get-AzureRmVM -ResourceGroupName $RG.ResourceGroupName | Select-Object -Property Name, ResourceGroupName, ProvisioningState | Format-Table
     }
 }
