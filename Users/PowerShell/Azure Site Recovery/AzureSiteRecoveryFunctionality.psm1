@@ -592,7 +592,7 @@ function Start-AzureSiteRecoveryFailBack {
             Connect-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $Credentials -ServicePrincipal -Tenant $TenantID
         }
         catch {
-            Write-Error -Message $_
+            Write-Error -Message "$($_)"
             break
         }
 
@@ -606,7 +606,7 @@ function Start-AzureSiteRecoveryFailBack {
             $ImagesContainer = New-AzureStorageContainer -Name $StackStorageContainer -Permission Blob -Context $StorageAccount.Context
         }
         catch {
-            Write-Error -Message $_
+            Write-Error -Message "$($_)"
             break
         }
 
