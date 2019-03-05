@@ -1,9 +1,9 @@
-    <#
+<#
     .SYNOPSIS
         Configures a Windows Server to act as a configuration server for Azure Site Recovery from Azure Stack to Azure.
 
     .DESCRIPTION
-        Configures a Windows Server to act as a configuration server for Azure Site Recovery from Azure Stack to Azure. 
+        Configures a Windows Server to act as a configuration server for Azure Site Recovery from Azure Stack to Azure.
         Used as part of an ARM template (see links). Requires an Azure Stack and Azure Subscription
 
     .PARAMETER ClientID
@@ -12,22 +12,22 @@
 
     .PARAMETER ClientSecret
         A password of the service principal specified in the ClientID parameter. "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
-    
+
     .PARAMETER TenantID
         The Tenant/Directory ID of your AAD domain. Example: "31537af4-6d77-4bb9-a681-d2394888ea26"
 
     .PARAMETER ArmEndpoint
         The ARM endpoint for the Azure Stack endpoint you are failing back to. Defaults to: "https://management.frn00006.azure.ukcloud.com"
-    
+
     .PARAMETER TempFilesPath
         Location on configuration server where setup files will be stored. Defaults to: "C:\TempASR\"
-    
+
     .PARAMETER ExtractionPath
         Folder within the TempFilesPath where the unified setup will be extracted to. Defaults to: "Extracted"
 
     .PARAMETER MySQLRootPassword
         The root password for the MySQL server created on the Configuration Server.
-    
+
     .PARAMETER MySQLUserPassword
         The user password for the MySQL server created on the Configuration Server.
 
@@ -36,7 +36,7 @@
 
     .PARAMETER AzureStorageAccount
         The name of the storage account to be created on public Azure. Example: "stacksiterecoverysa"
-    
+
     .PARAMETER SubnetRange
         The subnet range of the virtual network to be created on public Azure. Defaults to: "192.168.1.0/24"
 
@@ -57,7 +57,7 @@
 
     .PARAMETER ConfigServerUsername
         The username for the configuration server.
-    
+
     .PARAMETER ConfigServerPassword
         The password for the configuration server.
 
@@ -81,8 +81,8 @@
             -TenantID "31537af4-6d77-4bb9-a681-d2394888ea26" -MySQLRootPassword "Password123!" -MySQLUserPassword "Password123!" -AzureStorageAccount "stacksiterecoverysa" `
             -AzureResourceGroup "SiteRecoveryTestRG" -VaultName "AzureStackVault" -ConfigServerUsername "ConfigAdmin" -ConfigServerPassword "Password123!" -EncryptionKey "ExampleEncryptionKey" `
             -WindowsUsername "Administrator" -WindowsPassword "Password123!" -LinuxRootPassword "Password123!" -StackResourceGroup "SiteRecovery-RG"
-    
-    .LINK 
+
+    .LINK
         https://github.com/UKCloud/AzureStack/tree/master/Users/Extensions/Windows#asrcsconfigps1
 
     .LINK
@@ -141,7 +141,7 @@ param (
     [Parameter(Mandatory = $true)]
     [String]$StackResourceGroup
 )
-    
+
 ## Declare MySQL function
 function Invoke-MySQLQuery {
     param(
@@ -149,13 +149,13 @@ function Invoke-MySQLQuery {
         [String]$Query,
         [Parameter(Mandatory = $true)]
         [String]$MySQLAdminPassword
-        )
-            
+    )
+
     $MySQLAdminUserName = "root"
     $MySQLDatabase = "svsdb1"
     $MySQLHost = "localhost"
     $ConnectionString = "server=" + $MySQLHost + ";port=3306;uid=" + $MySQLAdminUserName + ";pwd=" + $MySQLAdminPassword + ";database=" + $MySQLDatabase
-    
+
     try {
         [void][System.Reflection.Assembly]::LoadWithPartialName("MySql.Data")
         $Connection = New-Object MySql.Data.MySqlClient.MySqlConnection
@@ -221,7 +221,7 @@ $output = "$($TempFilesPath)MicrosoftAzureSiteRecoveryUnifiedSetup.exe"
 
 # Create MySQL credentials file
 Write-Host "Creating MySQL credentials file"
-$SQLCredPath = "$($TempFilesPath)MySQLCredentialsfile.txt" 
+$SQLCredPath = "$($TempFilesPath)MySQLCredentialsfile.txt"
 Out-File $SQLCredPath -Force -Encoding ascii
 "[MySQLCredentials]" | Add-Content -Path $SQLCredPath
 "MySQLRootPassword = `"$MySQLRootPassword`"" | Add-Content -Path $SQLCredPath
@@ -239,7 +239,7 @@ while (get-process -Name MicrosoftAzureSiteRecoveryUnifiedSetup -ErrorAction Sil
 ## Login to public azure
 Write-Host "Logging into public Azure"
 $CredPass = ConvertTo-SecureString $ClientSecret -AsPlainText -Force
-$Credentials = New-Object System.Management.Automation.PSCredential ($ClientID, $CredPass) 
+$Credentials = New-Object System.Management.Automation.PSCredential ($ClientID, $CredPass)
 Connect-AzureRmAccount -Credential $Credentials -ServicePrincipal -Tenant $TenantID
 
 ## Create and configure a vault, then retrieve settings
@@ -254,10 +254,10 @@ $SRVault = New-AzureRmRecoveryServicesVault -Name $VaultName -ResourceGroupName 
 Set-AzureRmRecoveryServicesBackupProperties -Vault $SRVault -BackupStorageRedundancy LocallyRedundant
 # Set Vault Context
 Set-AzureRmRecoveryServicesAsrVaultContext -Vault $SRVault
-$ScriptPath = "C:\TempASR\script.ps1" 
+$ScriptPath = "C:\TempASR\script.ps1"
 $ScriptFile = @"
 `$CredPass = ConvertTo-SecureString `$args[1] -AsPlainText -Force
-`$cred = New-Object System.Management.Automation.PSCredential (`$args[0], `$CredPass) 
+`$cred = New-Object System.Management.Automation.PSCredential (`$args[0], `$CredPass)
 Connect-AzureRmAccount -Credential `$cred -ServicePrincipal -Tenant $TenantID
 # Download Vault Settings
 Write-Host 'Downloading vault settings'
@@ -292,10 +292,10 @@ $FailbackReplicationPolicy = New-AzureRmRecoveryServicesAsrPolicy -AzureToVMware
 
 # Run setup
 Write-Host "Installing Azure Site Recovery Configuration Server"
-$ScriptPath2 = "$($TempFilesPath)script2.ps1" 
+$ScriptPath2 = "$($TempFilesPath)script2.ps1"
 "& `"$($TempFilesPath)$($ExtractionPath)\UNIFIEDSETUP.EXE`" /AcceptThirdpartyEULA /ServerMode `"CS`" /InstallLocation $InstallPath /MySQLCredsFilePath $SQLCredPath /VaultCredsFilePath $VaultCredPath /EnvType NonVMWare" | Out-File $ScriptPath2 -Force -Encoding ascii
 
- 
+
 psexec -h -u $ConfigServerUsername -p $ConfigServerPassword cmd /c "Powershell.exe -NoProfile -ExecutionPolicy Bypass -Command $ScriptPath2"
 #Powershell.exe -NoProfile -ExecutionPolicy Bypass -Command $ScriptPath2
 #https://stackoverflow.com/questions/41550616/customscriptextension-cannot-run-start-process-access-is-denied
@@ -463,20 +463,10 @@ foreach ($Item in $ProtectedItems) {
     }
     if ($Item.OS -like "*LINUX*") {
         $LinuxAccount = $RunAsAccounts | Where-Object {$_.accountName -like "LinuxAccount"}
-        if ($Item.Disks) {
-            $Job_EnableReplicationLinux = New-AzureRmRecoveryServicesAsrReplicationProtectedItem -VMwareToAzure -ProtectableItem $Item -Name $Item.FriendlyName -RecoveryVmName $Item.FriendlyName -ProtectionContainerMapping $ContainerMapping -IncludeDiskId $Disks -RecoveryAzureStorageAccountId $StorageAccount.Id -ProcessServer $ProcessServer -Account $LinuxAccount -RecoveryResourceGroupId $SRRG.ResourceId -RecoveryAzureNetworkId $VirtualNetwork.Id -RecoveryAzureSubnetName "default"
-        }
-        else {
-            $Job_EnableReplicationLinux = New-AzureRmRecoveryServicesAsrReplicationProtectedItem -VMwareToAzure -ProtectableItem $Item -Name $Item.FriendlyName -RecoveryVmName $Item.FriendlyName -ProtectionContainerMapping $ContainerMapping -RecoveryAzureStorageAccountId $StorageAccount.Id -ProcessServer $ProcessServer -Account $LinuxAccount -RecoveryResourceGroupId $SRRG.ResourceId -RecoveryAzureNetworkId $VirtualNetwork.Id -RecoveryAzureSubnetName "default"    
-        }
+        $Job_EnableReplicationLinux = New-AzureRmRecoveryServicesAsrReplicationProtectedItem -VMwareToAzure -ProtectableItem $Item -Name $Item.FriendlyName -RecoveryVmName $Item.FriendlyName -ProtectionContainerMapping $ContainerMapping -IncludeDiskId $Disks -RecoveryAzureStorageAccountId $StorageAccount.Id -ProcessServer $ProcessServer -Account $LinuxAccount -RecoveryResourceGroupId $SRRG.ResourceId -RecoveryAzureNetworkId $VirtualNetwork.Id -RecoveryAzureSubnetName "default"
     }
     elseif ($Item.OS -like "*WINDOWS*") {
         $WindowsAccount = $RunAsAccounts | Where-Object {$_.accountName -like "WindowsAccount"}
-        if ($Item.Disks) {
-            $Job_EnableReplicationWin = New-AzureRmRecoveryServicesAsrReplicationProtectedItem -VMwareToAzure -ProtectableItem $Item -Name $Item.FriendlyName -RecoveryVmName $Item.FriendlyName -ProtectionContainerMapping $ContainerMapping -IncludeDiskId $Disks -RecoveryAzureStorageAccountId $StorageAccount.Id -ProcessServer $ProcessServer -Account $WindowsAccount -RecoveryResourceGroupId $SRRG.ResourceId -RecoveryAzureNetworkId $VirtualNetwork.Id -RecoveryAzureSubnetName "default"
-        }
-        else {
-            $Job_EnableReplicationWin = New-AzureRmRecoveryServicesAsrReplicationProtectedItem -VMwareToAzure -ProtectableItem $Item -Name $Item.FriendlyName -RecoveryVmName $Item.FriendlyName -ProtectionContainerMapping $ContainerMapping -RecoveryAzureStorageAccountId $StorageAccount.Id -ProcessServer $ProcessServer -Account $WindowsAccount -RecoveryResourceGroupId $SRRG.ResourceId -RecoveryAzureNetworkId $VirtualNetwork.Id -RecoveryAzureSubnetName "default"
-        }
+        $Job_EnableReplicationWin = New-AzureRmRecoveryServicesAsrReplicationProtectedItem -VMwareToAzure -ProtectableItem $Item -Name $Item.FriendlyName -RecoveryVmName $Item.FriendlyName -ProtectionContainerMapping $ContainerMapping -IncludeDiskId $Disks -RecoveryAzureStorageAccountId $StorageAccount.Id -ProcessServer $ProcessServer -Account $WindowsAccount -RecoveryResourceGroupId $SRRG.ResourceId -RecoveryAzureNetworkId $VirtualNetwork.Id -RecoveryAzureSubnetName "default"
     }
 }
