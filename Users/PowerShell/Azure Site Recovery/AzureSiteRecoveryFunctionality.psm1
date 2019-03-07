@@ -556,7 +556,7 @@ function Start-AzureSiteRecoveryFailBack {
             }
             elseif ($VMObj.StorageProfile.OsDisk.ManagedDisk) {
                 $ManagedDisk = Get-AzureRmDisk -ResourceGroupName $($RGName.ResourceGroupName) -DiskName $($VMObj.StorageProfile.OsDisk.Name)
-                $VHDUri = ($ManagedDisk | Grant-AzureRmDiskAccess -DurationInSecond 7200 -Access Read).AccessSAS
+                $VHDUri = ($ManagedDisk | Grant-AzureRmDiskAccess -DurationInSecond 14400 -Access Read).AccessSAS
             }
             $AzureDisk = New-Object -TypeName System.Object
             $AzureDisk | Add-Member -Name VMName -MemberType NoteProperty -Value $VMObj.Name
@@ -568,7 +568,7 @@ function Start-AzureSiteRecoveryFailBack {
                 foreach ($Disk in $VMObj.StorageProfile.DataDisks) {
                     if ($Disk.ManagedDisk) {
                         $ManagedDisk = Get-AzureRmDisk -ResourceGroupName $($RGName.ResourceGroupName) -DiskName $($Disk.Name)
-                        $VHDUri = ($ManagedDisk | Grant-AzureRmDiskAccess -DurationInSecond 7200 -Access Read).AccessSAS
+                        $VHDUri = ($ManagedDisk | Grant-AzureRmDiskAccess -DurationInSecond 14400 -Access Read).AccessSAS
                     }
                     elseif ($Disk.Vhd) {
                         $VHDUri = $Disk.Vhd.Uri
@@ -651,7 +651,7 @@ function Start-AzureSiteRecoveryFailBack {
             Write-Host -Object "Status at: $(Get-Date -UFormat '%H:%M:%S - %d/%m/%Y')"
             $CopyStatii | Select-Object -Property DiskName, BytesCopied, TotalBytes, Status | Format-Table
             if ($Completed -ne $AzureDisks.Count) {
-                Start-Sleep -Seconds 20
+                Start-Sleep -Seconds 30
             }
         }
 

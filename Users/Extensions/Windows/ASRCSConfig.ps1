@@ -441,7 +441,7 @@ $ASRFabrics = Get-AzureRmRecoveryServicesAsrFabric
 # Create Accounts Object
 Write-Host -Object "Waiting for Protected Item accounts to be populated in public Azure"
 $RetryASRAccounts = 0
-while (!$ASRFabrics[0].FabricSpecificDetails.RunAsAccounts -and $RetryASRAccounts -lt 20) {
+while (!$ASRFabrics[0].FabricSpecificDetails.RunAsAccounts -and $RetryASRAccounts -lt 40) {
     $ASRFabrics = Get-AzureRmRecoveryServicesAsrFabric
     Start-Sleep -Seconds 60
     $RetryASRAccounts ++
@@ -462,11 +462,14 @@ foreach ($Item in $ProtectedItems) {
         }
         $DiskNum ++
     }
+
+    # Set account settings
     if ($Item.OS -like "*LINUX*") {
         $AdminAccount = $RunAsAccounts | Where-Object {$_.accountName -like "LinuxAccount"}
     }
     elseif ($Item.OS -like "*WINDOWS*") {
         $AdminAccount = $RunAsAccounts | Where-Object {$_.accountName -like "WindowsAccount"}
     }
+
     $Job_EnableReplication = New-AzureRmRecoveryServicesAsrReplicationProtectedItem -VMwareToAzure -ProtectableItem $Item -Name $Item.FriendlyName -RecoveryVmName $Item.FriendlyName -ProtectionContainerMapping $ContainerMapping -IncludeDiskId $Disks -RecoveryAzureStorageAccountId $StorageAccount.Id -ProcessServer $ProcessServer -Account $AdminAccount -RecoveryResourceGroupId $SRRG.ResourceId -RecoveryAzureNetworkId $VirtualNetwork.Id -RecoveryAzureSubnetName "default"
 }
