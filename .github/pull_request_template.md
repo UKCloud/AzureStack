@@ -16,3 +16,5 @@
 <!--- Put an `x` in each box once completed. --->
 - [ ] My code follows the code style of this project. (If applicable)
 - [ ] I have tested all changes to the code. (If applicable)
+<!-- Add a type label and any other relevant labels to your pull request --->
+- [ ] I have added the relevant labels to this pull request
