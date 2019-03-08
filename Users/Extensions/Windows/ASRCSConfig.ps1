@@ -471,5 +471,11 @@ foreach ($Item in $ProtectedItems) {
         $AdminAccount = $RunAsAccounts | Where-Object {$_.accountName -like "WindowsAccount"}
     }
 
-    $Job_EnableReplication = New-AzureRmRecoveryServicesAsrReplicationProtectedItem -VMwareToAzure -ProtectableItem $Item -Name $Item.FriendlyName -RecoveryVmName $Item.FriendlyName -ProtectionContainerMapping $ContainerMapping -IncludeDiskId $Disks -RecoveryAzureStorageAccountId $StorageAccount.Id -ProcessServer $ProcessServer -Account $AdminAccount -RecoveryResourceGroupId $SRRG.ResourceId -RecoveryAzureNetworkId $VirtualNetwork.Id -RecoveryAzureSubnetName "default"
+    # Set replication on VM
+    if ($Disks) {
+        New-AzureRmRecoveryServicesAsrReplicationProtectedItem -VMwareToAzure -ProtectableItem $Item -Name $Item.FriendlyName -RecoveryVmName $Item.FriendlyName -ProtectionContainerMapping $ContainerMapping -IncludeDiskId $Disks -RecoveryAzureStorageAccountId $StorageAccount.Id -ProcessServer $ProcessServer -Account $AdminAccount -RecoveryResourceGroupId $SRRG.ResourceId -RecoveryAzureNetworkId $VirtualNetwork.Id -RecoveryAzureSubnetName "default"
+    }
+    else {
+        New-AzureRmRecoveryServicesAsrReplicationProtectedItem -VMwareToAzure -ProtectableItem $Item -Name $Item.FriendlyName -RecoveryVmName $Item.FriendlyName -ProtectionContainerMapping $ContainerMapping -RecoveryAzureStorageAccountId $StorageAccount.Id -ProcessServer $ProcessServer -Account $AdminAccount -RecoveryResourceGroupId $SRRG.ResourceId -RecoveryAzureNetworkId $VirtualNetwork.Id -RecoveryAzureSubnetName "default"
+    }
 }
