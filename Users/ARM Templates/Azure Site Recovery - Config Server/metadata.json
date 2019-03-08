@@ -3,5 +3,5 @@
     "description": "Deploys an ASR configuration server with supporting resources. This template also creates and configures a vault, storage account and virtual network on public Azure",
     "summary": "This template takes a minimum amount of parameters and deploys an ASR configuration server, and configures site recovery to public Azure.",
     "githubUsername": "BaileyLawson",
-    "dateUpdated": "2016-11-06"
+    "dateUpdated": "2019-03-08"
   }
