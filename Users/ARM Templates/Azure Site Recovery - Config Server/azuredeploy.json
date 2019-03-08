@@ -2,6 +2,13 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "apiProfile": "2018-03-01-hybrid",
+    "metadata": {
+        "itemDisplayName": "Deploy an ASR configuration server to Azure Stack",
+        "description": "Deploys an ASR configuration server with supporting resources. This template also creates and configures a vault, storage account and virtual network on public Azure",
+        "summary": "This template takes a minimum amount of parameters and deploys an ASR configuration server, and configures site recovery to public Azure.",
+        "githubUsername": "BaileyLawson",
+        "dateUpdated": "2019-03-08"
+    },
     "parameters": {
         "ClientID": {
             "type": "string",
