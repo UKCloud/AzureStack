@@ -13,6 +13,5 @@
 
 ### Essential checklist.
 <!--- Put an `x` in each box once completed. --->
-- [ ] I have read the **CONTRIBUTING** document.
-- [ ] My code follows the code style of this project.
-- [ ] I have tested the changes to the code (If applicable)
+- [ ] My code follows the code style of this project. (If applicable)
+- [ ] I have tested all changes to the code. (If applicable)
