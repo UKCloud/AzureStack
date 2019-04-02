@@ -21,7 +21,7 @@ Prerequisites from a Windows-based external client.
 
 * PowerShell 5.1
 
-* Azure Stack PowerShell Modules 1.6.0 -> [Azure Stack Modules Install Guide](https://docs.ukcloud.com/articles/azure/azs-how-configure-powershell-users.html)
+* Azure Stack PowerShell Modules 1.7.1 -> [Azure Stack Modules Install Guide](https://docs.ukcloud.com/articles/azure/azs-how-configure-powershell-users.html)
 
 ## How to install it
 
