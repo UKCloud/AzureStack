@@ -350,8 +350,8 @@ function Get-AzureStackInvoiceEstimate {
 
         if ($Destination) {
             $InvoiceObject = [PSCustomObject]@{
-                'SubscriptionDisplayName'             = $($Sub.Name)
-                'SubscriptionID'                      = $($Sub.SubscriptionId)
+                'SubscriptionDisplayName'              = $($Sub.Name)
+                'SubscriptionID'                       = $($Sub.SubscriptionId)
                 'Total-Windows-vCPU-usage(Core/Hour)'  = $WinVMCount
                 'Total-Linux-vCPU-usage(Core/Hour)'    = $LinuxVMCount
                 'Total-RAM-usage(GB/Hour)'             = $RamCount
