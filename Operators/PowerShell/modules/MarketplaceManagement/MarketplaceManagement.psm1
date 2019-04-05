@@ -206,7 +206,7 @@ function Remove-AzsMarketplaceImages {
     }
 }
 
-function Download-AzsMarketplaceImages {
+function Import-AzsMarketplaceImages {
     <#
     .SYNOPSIS
         Download marketplace items
@@ -222,22 +222,22 @@ function Download-AzsMarketplaceImages {
         Note: This will not download anything but only list items
 
     .EXAMPLE
-        Download-AzsMarketplaceImages -ImagesToDownload "RogueWave.CentOSbased69-ARM."
+        Import-AzsMarketplaceImages -ImagesToDownload "RogueWave.CentOSbased69-ARM."
 
     .EXAMPLE
-        Download-AzsMarketplaceImages -ImagesToDownload "RogueWave.CentOSbased69-ARM.","SQLServer2016SP1StandardWindowsServer2016.February"
+        Import-AzsMarketplaceImages -ImagesToDownload "RogueWave.CentOSbased69-ARM.","SQLServer2016SP1StandardWindowsServer2016.February"
 
     .EXAMPLE
-        Download-AzsMarketplaceImages -ImagesToDownload "RogueWave.CentOSbased69-ARM.","SQLServer2016SP1StandardWindowsServer2016.February" -Verbose
+        Import-AzsMarketplaceImages -ImagesToDownload "RogueWave.CentOSbased69-ARM.","SQLServer2016SP1StandardWindowsServer2016.February" -Verbose
 
     .EXAMPLE
-        Download-AzsMarketplaceImages -ImagesToDownload "RogueWave.CentOSbased69-ARM.","SQLServer2016SP1StandardWindowsServer2016.February" -Verbose -Confirm:$false
+        Import-AzsMarketplaceImages -ImagesToDownload "RogueWave.CentOSbased69-ARM.","SQLServer2016SP1StandardWindowsServer2016.February" -Verbose -Confirm:$false
 
     .EXAMPLE
-        Download-AzsMarketplaceImages -ImagesToDownload "RogueWave.CentOSbased69-ARM.","SQLServer2016SP1StandardWindowsServer2016.February" -WhatIf
+        Import-AzsMarketplaceImages -ImagesToDownload "RogueWave.CentOSbased69-ARM.","SQLServer2016SP1StandardWindowsServer2016.February" -WhatIf
 
     .EXAMPLE
-        Download-AzsMarketplaceImages -Verbose -WhatIf
+        Import-AzsMarketplaceImages -Verbose -WhatIf
 
     .EXAMPLE
         # Declare Array of Images you want to download
@@ -260,7 +260,7 @@ function Download-AzsMarketplaceImages {
             "RogueWave.CentOSbased73-ARM.", `
             "RogueWave.CentOSbased74-ARM."
         )
-        Download-AzsMarketplaceImages -ImagesToDownload $ImagesToDownload
+        Import-AzsMarketplaceImages -ImagesToDownload $ImagesToDownload
 
     #>
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = "High")]
@@ -921,8 +921,8 @@ $HtmlBodyString
 <# Examples of usage
 Get-AzsAvailableMarketplaceImages -ListDetails
 
-Download-AzsMarketplaceImages -ImagesToDownload "RogueWave.CentOSbased69-ARM." -WhatIf
-Download-AzsMarketplaceImages -ImagesToDownload "RogueWave.CentOSbased69-ARM.","SQLServer2016SP1StandardWindowsServer2016.February" -WhatIf
+Import-AzsMarketplaceImages -ImagesToDownload "RogueWave.CentOSbased69-ARM." -WhatIf
+Import-AzsMarketplaceImages -ImagesToDownload "RogueWave.CentOSbased69-ARM.","SQLServer2016SP1StandardWindowsServer2016.February" -WhatIf
 
 # Declare Array of Images you want to download
 $ImagesToDownload = @(
@@ -977,8 +977,8 @@ $ImagesToDownloadNew = @(
     "roguewave.centosbased75-arm"
 )
 
-Download-AzsMarketplaceImages -ImagesToDownload $ImagesToDownload -WhatIf
-Download-AzsMarketplaceImages -ImagesToDownload $ImagesToDownload -ListDetails -WhatIf
+Import-AzsMarketplaceImages -ImagesToDownload $ImagesToDownload -WhatIf
+Import-AzsMarketplaceImages -ImagesToDownload $ImagesToDownload -ListDetails -WhatIf
 
 
 #Get-AzsMarketplaceImages |  Remove-AzsMarketplaceImages -WhatIf -Verbose

@@ -19,14 +19,17 @@ This guide is intended to provide a reference on how can we manage Marketplace I
 
 Includes functions:
 
-    - Get-AzsMarketplaceImages
+    - Import-AzsMarketplaceImages
     - Get-AzsAvailableMarketplaceImages
-    - Download-AzsMarketplaceImage
+    - Get-AzsMarketplaceImages
+    - Get-AzsMarketplaceUpdateStatus
+    - Remove-AzsMarketplaceDuplicateImages
     - Remove-AzsMarketplaceImages
     - Remove-AzsMarketplaceImagesAll
+    - Update-AzsMarketplaceImages
 
 > [!NOTE]
-> Module is using cmdlets from azs.azurebridge.admin -> [more info](https://docs.microsoft.com/en-us/powershell/module/azs.azurebridge.admin/?view=azurestackps-1.3.0)
+> Module is using cmdlets from azs.azurebridge.admin -> [more info](https://docs.microsoft.com/en-us/powershell/module/azs.azurebridge.admin/)
 
 ## Prerequisites
 
@@ -34,13 +37,7 @@ Prerequisites from a Windows-based external client.
 
 * PowerShell 5.1
 
-* Azure Stack PowerShell Modules 1.3 -> [Azure Stack Modules Install Guide](https://github.com/UKCloud/AzureStack/blob/master/operators/powershell/azs-how-ps-configure-powershell-operator.md)
-
-> [!IMPORTANT]
-> You might need to force the latest module by running
-> ```powershell
-> Install-Module -Name AzureStack -RequiredVersion 1.3 -AllowClobber -Force -Verbose
-> ```
+* Azure Stack PowerShell Modules -> [Azure Stack Modules Install Guide](https://docs.ukcloud.com/articles/azure/azs-how-configure-powershell-operators.html)
 
 ## How to install it
 
@@ -108,7 +105,7 @@ Once it is installed you can just invoke the commands and PowerShell will load t
         "RogueWave.CentOSbased73-ARM.", `
         "RogueWave.CentOSbased74-ARM." 
     )
-    Download-AzsMarketplaceImages -ImagesToDownload $ImagesToDownload
+    Import-AzsMarketplaceImages -ImagesToDownload $ImagesToDownload
     ```
 
 > [!TIP]
@@ -170,7 +167,7 @@ $ImagesToDownloadNew = @(
 )
 
 # Download items based on the array above
-Download-AzsMarketplaceImages -ImagesToDownload $ImagesToDownload -Confirm:$false -Force -Verbose
+Import-AzsMarketplaceImages -ImagesToDownload $ImagesToDownload -Confirm:$false -Force -Verbose
 ```
 
 ## ToDo
