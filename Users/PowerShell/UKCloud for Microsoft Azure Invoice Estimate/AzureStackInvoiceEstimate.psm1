@@ -26,16 +26,16 @@ function Get-AzureStackInvoiceEstimate {
         File path of csv file containing SQL VM details. See links for example CSV file. Example: "C:\AzureStack\SQLVMs.csv"
 
     .EXAMPLE
-        Get-AzureStackInvoiceEstimate -StartDate "03/01/2018" -EndDate "04/01/2019"
+        Get-AzureStackInvoiceEstimate -StartDate "03/01/2019" -EndDate "04/01/2019"
 
     .EXAMPLE
-        Get-AzureStackInvoiceEstimate -StartDate "03/01/2018" -EndDate "04/01/2019" -Destination "C:\AzureStack-Invoice-March-2019"
+        Get-AzureStackInvoiceEstimate -StartDate "03/01/2019" -EndDate "04/01/2019" -Destination "C:\AzureStack-Invoice-March-2019"
 
     .EXAMPLE
-        Get-AzureStackInvoiceEstimate -StartDate "03/01/2018" -EndDate "04/01/2019" -Destination "C:\AzureStack-Invoice-March-2019" -FileName "AzureStack-Invoice.csv"
+        Get-AzureStackInvoiceEstimate -StartDate "03/01/2019" -EndDate "04/01/2019" -Destination "C:\AzureStack-Invoice-March-2019" -FileName "AzureStack-Invoice.csv"
 
     .EXAMPLE
-        Get-AzureStackInvoiceEstimate -StartDate "03/01/2018" -EndDate "04/01/2019" -Destination "C:\AzureStack-Invoice-March-2019" -FileName "AzureStack-Invoice.csv" -SQLFilePath "C:\AzureStack\SQLVMs.csv"
+        Get-AzureStackInvoiceEstimate -StartDate "03/01/2019" -EndDate "04/01/2019" -Destination "C:\AzureStack-Invoice-March-2019" -FileName "AzureStack-Invoice.csv" -SQLFilePath "C:\AzureStack\SQLVMs.csv"
 
     .NOTES
         This cmdlet retrieves data directly from Azure Stack. The invoice estimate provided may not be 100% accurate.
@@ -207,8 +207,12 @@ function Get-AzureStackInvoiceEstimate {
         # Create a list of sizes to compare against
         $VMSizes = Get-AzureRmVMSize -Location $Location | Select-Object -Property Name, NumberOfCores, @{Name = 'MemoryInGB'; Expression = { ( $_.MemoryInMB / 1024) } }
 
+        Write-Output -InputObject "Retrieving usage"
+        Write-Output -InputObject "Please wait, this may take a while..."
+
         # Retrieve usage data from Azure Stack
         $UsageSummary = @()
+        $StartLine = [Console]::CursorTop
         do {
             $Result = Get-UsageAggregates -ReportedStartTime $StartDate -ReportedEndTime $EndDate -ContinuationToken $Result.ContinuationToken
             $Result.UsageAggregations.Properties | ForEach-Object {
@@ -258,6 +262,8 @@ function Get-AzureStackInvoiceEstimate {
                 }
                 $UsageSummary += $Record
             }
+            [Console]::CursorTop = $StartLine
+            Write-Output -InputObject "Retrieved $($UsageSummary.Count) records so far"
         } while ($Result.ContinuationToken)
 
         # Summate usage from individual objects
@@ -306,33 +312,37 @@ function Get-AzureStackInvoiceEstimate {
         $TotalCost = $RamCost + $VirtualCpuCost + $StorageCost + $WindowsLicenceCost + $SQLStdSmallCost + $SQLStdLargeCost + $SQLEntSmallCost + $SQLEntLargeCost
 
         # Write total usage
+        Write-Output -InputObject ""
         Write-Output -InputObject "USAGE:"
         Write-Output -InputObject "Total Windows vCPU usage (core/hour): $($WinVMCount)"
         Write-Output -InputObject "Total Linux vCPU usage (core/hour): $($LinuxVMCount)"
         Write-Output -InputObject "Total RAM usage (GB/hour): $($RamCount)"
         Write-Output -InputObject "Total Storage usage (GB/hour): $($StorageCount)"
-        Write-Output -InputObject "Total SQL Std (0-4 vCPU) hours: $($SQLStdSmall)"
-        Write-Output -InputObject "Total SQL Std (5+ vCPU) hours: $($SQLStdLarge)"
-        Write-Output -InputObject "Total SQL Ent (0-4 vCPU) licences: $($SQLEntSmall)"
-        Write-Output -InputObject "Total SQL Ent (5+ vCPU) licences: $($SQLEntLarge)"
+        if ($SQLVMArray) {
+            Write-Output -InputObject "Total SQL Std (0-4 vCPU) hours: $($SQLStdSmall)"
+            Write-Output -InputObject "Total SQL Std (5+ vCPU) hours: $($SQLStdLarge)"
+            Write-Output -InputObject "Total SQL Ent (0-4 vCPU) licences: $($SQLEntSmall)"
+            Write-Output -InputObject "Total SQL Ent (5+ vCPU) licences: $($SQLEntLarge)"
+        }
         Write-Output -InputObject ""
-
 
         # Output the cost
         Write-Output -InputObject "Total vCPU cost: £$($VirtualCpuCost)"
         Write-Output -InputObject "Total RAM cost: £$($RamCost)"
         Write-Output -InputObject "Total Storage cost: £$($StorageCost)"
         Write-Output -InputObject "Total Windows Licence cost: £$($WindowsLicenceCost)"
-        Write-Output -InputObject "Total SQL Std (0-4 vCPU) cost: $($SQLStdSmallCost)"
-        Write-Output -InputObject "Total SQL Std (5+ vCPU) cost: $($SQLStdLargeCost)"
-        Write-Output -InputObject "Total SQL Ent (0-4 vCPU) cost: $($SQLEntSmallCost)"
-        Write-Output -InputObject "Total SQL Ent (5+ vCPU) cost: $($SQLEntLargeCost)"
+        if ($SQLVMArray) {
+            Write-Output -InputObject "Total SQL Std (0-4 vCPU) cost: $($SQLStdSmallCost)"
+            Write-Output -InputObject "Total SQL Std (5+ vCPU) cost: $($SQLStdLargeCost)"
+            Write-Output -InputObject "Total SQL Ent (0-4 vCPU) cost: $($SQLEntSmallCost)"
+            Write-Output -InputObject "Total SQL Ent (5+ vCPU) cost: $($SQLEntLargeCost)"
+        }
 
         # Write total cost in green
         ## Save current colour
         $StartColour = $Host.UI.RawUI.ForegroundColor
         ## Set new colour
-        $Host.UI.RawUI.ForegroundColor = $ForegroundColour
+        $Host.UI.RawUI.ForegroundColor = "Green"
         ## Write total cost
         Write-Output -InputObject "Invoice Total: £$($TotalCost)"
         ## Set colour back to original
@@ -359,6 +369,10 @@ function Get-AzureStackInvoiceEstimate {
                 'Total-SQL-Ent-(0-4-vCPU)-cost(£)'     = $([Math]::Round($SQLEntSmallCost, 2))
                 'Total-SQL-Ent-(5+-vCPU)-cost(£)'      = $([Math]::Round($SQLEntLargeCost, 2))
                 'Invoice-Total(£)'                     = $([Math]::Round($TotalCost, 2))
+            }
+
+            if (-not $SQLVMArray) {
+                $InvoiceObject = $InvoiceObject | Select-Object -Property * -ExcludeProperty Total-SQL*
             }
 
             $InvoiceObject | Export-Csv -Path (Join-Path -Path $Destination -ChildPath $FileName) -NoTypeInformation -Force -Encoding Default
