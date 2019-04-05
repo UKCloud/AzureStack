@@ -15,43 +15,56 @@ function Get-AzureStackInvoiceEstimate {
 
     .PARAMETER FileName
         Destination file name. Defaults to "AzureStack-Invoice.csv"
-    
+
     .PARAMETER StartDate
         The start of the time period to retrieve billing info for in american format. Example: "12/01/2018" (1st December 2018)
 
     .PARAMETER EndDate
         The end of the time period to retrieve billing info for in american format.  Example: "01/01/2019" (1st January 2018)
-        
-    .PARAMETER Location
-        The Azure Stack region. Defaults to: "frn00006"
+
+    .PARAMETER SQLFilePath
+        File path of csv file containing SQL VM details. See links for example CSV file. Example: "C:\AzureStack\SQLVMs.csv"
 
     .EXAMPLE
-        Get-AzureStackInvoiceEstimate -StartDate 12/01/2018 -EndDate 01/01/2019
+        Get-AzureStackInvoiceEstimate -StartDate "03/01/2018" -EndDate "04/01/2019"
 
     .EXAMPLE
-        Get-AzureStackInvoiceEstimate -StartDate "12/01/2018" -EndDate "01/01/2019" -Destination "C:\AzureStack-Invoice-December-2018"
-    
+        Get-AzureStackInvoiceEstimate -StartDate "03/01/2018" -EndDate "04/01/2019" -Destination "C:\AzureStack-Invoice-March-2019"
+
     .EXAMPLE
-        Get-AzureStackInvoiceEstimate -StartDate "12/01/2018" -EndDate "01/01/2019" -Destination "C:\AzureStack-Invoice-December-2018" -FileName "AzureStack-Invoice.csv" -Location "frn00006"
-    
+        Get-AzureStackInvoiceEstimate -StartDate "03/01/2018" -EndDate "04/01/2019" -Destination "C:\AzureStack-Invoice-March-2019" -FileName "AzureStack-Invoice.csv"
+
+    .EXAMPLE
+        Get-AzureStackInvoiceEstimate -StartDate "03/01/2018" -EndDate "04/01/2019" -Destination "C:\AzureStack-Invoice-March-2019" -FileName "AzureStack-Invoice.csv" -SQLFilePath "C:\AzureStack\SQLVMs.csv"
+
     .NOTES
         This cmdlet retrieves data directly from Azure Stack. The invoice estimate provided may not be 100% accurate.
         This cmdlet requires you to be logged into Azure Stack to run successfully.
+
+    .LINK
+        https://github.com/UKCloud/AzureStack/tree/master/Users/PowerShell/UKCloud%20for%20Microsoft%20Azure%20Invoice%20Estimate
+
     #>
 
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
-        [ValidateScript( {if (!(Test-Path $_)) { New-item -ItemType Directory -Path $_ -Force -Verbose} else {Test-Path $_ -Verbose }})]
-        [String]$Destination,
+        [ValidateScript({ if (-not (Test-Path -Path $_)) { New-Item -ItemType Directory -Path $_ -Force } else { $true } })]
+        [String]
+        $Destination,
         [Parameter(Mandatory = $false)]
-        [String]$FileName = "AzureStack-Invoice.csv",
+        [String]
+        $FileName = "AzureStack-Invoice.csv",
         [Parameter(Mandatory = $true)]
-        [DateTime]$StartDate,
+        [DateTime]
+        $StartDate,
         [Parameter(Mandatory = $true)]
-        [DateTime]$EndDate,
+        [DateTime]
+        $EndDate,
         [Parameter(Mandatory = $false)]
-        $Location = "frn00006"
+        [ValidateScript({ Test-Path -Path $_ })]
+        [String]
+        $SQLFilePath
     )
     begin {
         try {
@@ -61,7 +74,7 @@ function Get-AzureStackInvoiceEstimate {
                 Write-Error -Message 'You are currently logged into public Azure. Please login to Azure Stack to continue.' -ErrorId 'AzureRmContextError'
                 break
             }
-        } 
+        }
         catch {
             if (-not $Context -or -not $Context.Account) {
                 Write-Error -Message 'Run Connect-AzureRmAccount to login.' -ErrorId 'AzureRmContextError'
@@ -73,6 +86,26 @@ function Get-AzureStackInvoiceEstimate {
         # Declare Variables
         # Get subscription details
         $Sub = Get-AzureRmSubscription
+
+        # Get location from Azure Resource Manager context
+        $Location = ($Context.Environment.StorageEndpointSuffix).Split(".")[0]
+
+        # Import SQLFile if required
+        if ($SQLFilePath) {
+            $SQLVMArray = Import-Csv -Path $SQLFilePath
+
+            # Declare SQL hash table
+            [HashTable]$SQLEntVMs = @{}
+
+            # Check whether CSV data is in correct format
+            $IncorrectSQLVersion = $SQLVMArray | Where-Object { $_.SQLVersion -notlike "STD" -and $_.SQLVersion -notlike "ENT" }
+
+            if ($IncorrectSQLVersion) {
+                Write-Warning -Message "WARNING! SQL CSV contained the following incorrect SQL versions. Please ensure that hhe version is either 'STD' (standard) or 'ENT' (enterprise)."
+                $IncorrectSQLVersion | Format-Table -AutoSize
+            }
+        }
+
         # Create an array of meter IDs to be used for translation
         $Meters = @{
             'F271A8A388C44D93956A063E1D2FA80B'     = 'Static IP Address Usage'
@@ -157,6 +190,7 @@ function Get-AzureStackInvoiceEstimate {
             '89009682-df7f-44fe-aeb1-63fba3ddbf4c' = 'Managed Disk ActualStandardSnapshotSize (Byte * Hour) (Deprecated)'
             '95b0c03f-8a82-4524-8961-ccfbf575f536' = 'Managed Disk ActualPremiumSnapshotSize (Byte * Hour) (Deprecated)'
         }
+
         # Create an array for UKCloud Pricing
         # Full pricing can be found here: https://assets.digitalmarketplace.service.gov.uk/g-cloud-10/documents/92406/113527390782629-pricing-document-2018-11-14-1427.pdf
         $UKCloudPricing = [PSCustomObject]@{
@@ -164,18 +198,20 @@ function Get-AzureStackInvoiceEstimate {
             '£/RAM/hour'                                    = 0.013
             'Additional-Storage-(All variants)-£/GiB/month' = 0.10
             'Microsoft-WindowsOSServer-£/vCPU/hour'         = 0.035
+            'Microsoft-SQL-Std-0-to-4-vCPUs-£/hour'         = 0.31
+            'Microsoft-SQL-Std-5+-vCPUs-£/hour'             = 0.58
+            'Microsoft-SQL-Ent-0-to-4-vCPUs-£/month'        = 825
+            'Microsoft-SQL-Ent-5+-vCPUs-£/month'            = 1650
         }
 
-        # Create a list of sizes to compare against 
-        $VMSizes = Get-AzureRmVMSize -Location $Location | Select-Object -Property Name, NumberOfCores, @{Name = 'MemoryInGB'; Expression = {( $_.MemoryInMB / 1024)}}
+        # Create a list of sizes to compare against
+        $VMSizes = Get-AzureRmVMSize -Location $Location | Select-Object -Property Name, NumberOfCores, @{Name = 'MemoryInGB'; Expression = { ( $_.MemoryInMB / 1024) } }
 
         # Retrieve usage data from Azure Stack
-        $Start = $true
         $UsageSummary = @()
-        while ($Result.ContinuationToken -or $Start -eq $true ) {
-            $Start = $false
+        do {
             $Result = Get-UsageAggregates -ReportedStartTime $StartDate -ReportedEndTime $EndDate -ContinuationToken $Result.ContinuationToken
-            $Result.UsageAggregations.Properties  | ForEach-Object {
+            $Result.UsageAggregations.Properties | ForEach-Object {
                 $Record = New-Object -TypeName System.Object
                 $ResourceInfo = ($_.InstanceData | ConvertFrom-Json).'Microsoft.Resources'
                 $ResourceText = $ResourceInfo.ResourceUri
@@ -197,20 +233,35 @@ function Get-AzureStackInvoiceEstimate {
                 $record | Add-Member -Name Subscription -MemberType NoteProperty -Value $Subscription
                 $record | Add-Member -Name ResourceUri -MemberType NoteProperty -Value $ResourceText
                 if ($Record.ResourceType -like "*virtualmachine*") {
-                    $Record | Add-Member -Name VMSize -MemberType NoteProperty -Value (($Record.AdditionalInfo.Split('"'))[3])
+                    $Record | Add-Member -Name VMSize -MemberType NoteProperty -Value ($Record.AdditionalInfo.Split('"'))[3]
                     foreach ($VMSize in $VMSizes) {
                         if ($VMSize.Name -eq $Record.VMSize) {
                             $Record | Add-Member -Name RAMinGB -MemberType NoteProperty -Value ($VMSize.MemoryInGB)
                             $Record | Add-Member -Name RAMinGBHours -MemberType NoteProperty -Value (($Record.RAMInGB * $Record.Quantity) / $VMSize.NumberOfCores)
+                            $Record | Add-Member -Name NumberOfCores -MemberType NoteProperty -Value $VMSize.NumberOfCores
+                        }
+                    }
+                    # Figure out SQL licensing
+                    if ($SQLVMArray.VMName -contains $ResourceName) {
+                        $SQLVM = $SQLVMArray | Where-Object { $_.VMName -like $ResourceName }
+                        $Record | Add-Member -Name SQLVersion -MemberType NoteProperty -Value $SQLVM.SQLVersion
+                        if ($SQLVM.SQLVersion -like "ENT") {
+                            $SQLVM | Add-Member -Name NumberOfCores -MemberType NoteProperty -Value $Record.NumberOfCores
+                            if (-not $SQLEntVMs[$SQLVM.VMName]) {
+                                $SQLEntVMs.Add($SQLVM.VMName, $SQLVM)
+                            }
+                            elseif ($SQLEntVMs[$SQLVM.VMName].NumberOfCores -lt $SQLVM.NumberOfCores) {
+                                $SQLEntVMs[$SQLVM.VMName].NumberOfCores = $SQLVM.NumberOfCores
+                            }
                         }
                     }
                 }
                 $UsageSummary += $Record
             }
-        }
+        } while ($Result.ContinuationToken)
 
         # Summate usage from individual objects
-        $WinVMCount, $LinuxVMCount, $RamCount, $StorageCount = 0, 0, 0, 0
+        $WinVMCount, $LinuxVMCount, $RamCount, $StorageCount, $SQLStdSmall, $SQLStdLarge, $SQLEntSmall, $SQLEntLarge = 0, 0, 0, 0, 0, 0, 0, 0
         foreach ($Usage in $UsageSummary) {
             if ($Usage.MeterName -like "Windows VM Size Hours") {
                 $WinVMCount += $Usage.Quantity
@@ -223,47 +274,96 @@ function Get-AzureStackInvoiceEstimate {
             if ($Usage.MeterName -like "PageBlobCapacity" -or $Usage.MeterName -like "Managed Disk ActualStandardDiskSize (GB * Month)" -or $Usage.MeterName -like "Managed Disk ActualPremiumDiskSize  (GB * Month)" -or $Usage.MeterName -like "Managed Disk ActualStandardSnapshotSize (GB * Month)" -or $Usage.MeterName -like "Managed Disk ActualPremiumSnapshotSize (GB * Month)") {
                 $StorageCount += $Usage.Quantity
             }
+            if ($Usage.SQLVersion -like "STD" -and $Usage.MeterName -like "VM size hours" ) {
+                if ($Usage.NumberOfCores -lt 5) {
+                    $SQLStdSmall += $Usage.Quantity
+                }
+                else {
+                    $SQLStdLarge += $Usage.Quantity
+                }
+            }
         }
 
-        # Write total usage
-        Write-Host "USAGE:"
-        Write-Host "Total Windows vCPU usage (Core/Hour): $($WinVMCount)"
-        Write-Host "Total Linux vCPU usage (Core/Hour): $($LinuxVMCount)"
-        Write-Host "Total RAM usage (GB/Hour): $($RamCount)"
-        Write-Host "Total Storage usage (GB/hour): $($StorageCount)"
-        Write-Host ""
+        # SQL Enterprise
+        foreach ($Value in $SubSQLEntVMs.Values) {
+            if ($Usage.NumberOfCores -lt 5) {
+                $SQLEntSmall += 1
+            }
+            else {
+                $SQLEntLarge += 1
+            }
+        }
 
-        # Calculate cost from usage and UKCloud Pricing
-        $StorageCost = [Math]::Round(($StorageCount * $UKCloudPricing.'Additional-Storage-(All variants)-£/GiB/month' / 24 / (365 / 12)), 2)
-        $VirtualCpuCost = [Math]::Round((($WinVMCount + $LinuxVMCount) * $UKCloudPricing.'£/vCPU/hour'), 2)
-        $WindowsLicenceCost = [Math]::Round(($WinVMCount * $UKCloudPricing.'Microsoft-WindowsOSServer-£/vCPU/hour'), 2)
-        $RamCost = [Math]::Round(($RamCount * $UKCloudPricing.'£/RAM/hour'), 2)
-        $TotalCost = [Math]::Round(($RamCost + $VirtualCpuCost + $StorageCost + $WindowsLicenceCost), 2)
+        # Calculate cost from usage UKCloud Pricing
+        $StorageCost = $StorageCount * $UKCloudPricing.'Additional-Storage-(All variants)-£/GiB/month' / 24 / (365 / 12)
+        $VirtualCpuCost = ($WinVMCount + $LinuxVMCount) * $UKCloudPricing.'£/vCPU/hour'
+        $WindowsLicenceCost = ($WinVMCount * $UKCloudPricing.'Microsoft-WindowsOSServer-£/vCPU/hour')
+        $RamCost = $RamCount * $UKCloudPricing.'£/RAM/hour'
+        $SQLStdSmallCost = $SQLStdSmall * $UKCloudPricing.'Microsoft-SQL-Std-0-to-4-vCPUs-£/hour'
+        $SQLStdLargeCost = $SQLStdLarge * $UKCloudPricing.'Microsoft-SQL-Std-5+-vCPUs-£/hour'
+        $SQLEntSmallCost = $SQLEntSmall * $UKCloudPricing.'Microsoft-SQL-Ent-0-to-4-vCPUs-£/month'
+        $SQLEntLargeCost = $SQLEntLarge * $UKCloudPricing.'Microsoft-SQL-Ent-5+-vCPUs-£/month'
+        $TotalCost = $RamCost + $VirtualCpuCost + $StorageCost + $WindowsLicenceCost + $SQLStdSmallCost + $SQLStdLargeCost + $SQLEntSmallCost + $SQLEntLargeCost
+
+        # Write total usage
+        Write-Output -InputObject "USAGE:"
+        Write-Output -InputObject "Total Windows vCPU usage (core/hour): $($WinVMCount)"
+        Write-Output -InputObject "Total Linux vCPU usage (core/hour): $($LinuxVMCount)"
+        Write-Output -InputObject "Total RAM usage (GB/hour): $($RamCount)"
+        Write-Output -InputObject "Total Storage usage (GB/hour): $($StorageCount)"
+        Write-Output -InputObject "Total SQL Std (0-4 vCPU) hours: $($SQLStdSmall)"
+        Write-Output -InputObject "Total SQL Std (5+ vCPU) hours: $($SQLStdLarge)"
+        Write-Output -InputObject "Total SQL Ent (0-4 vCPU) licences: $($SQLEntSmall)"
+        Write-Output -InputObject "Total SQL Ent (5+ vCPU) licences: $($SQLEntLarge)"
+        Write-Output -InputObject ""
+
 
         # Output the cost
-        Write-Host "COST:"
-        Write-Host "Total Storage cost: £$($StorageCost)"
-        Write-Host "Total vCPU cost: £$($VirtualCpuCost)"
-        Write-Host "Total Windows license cost: £$($WindowsLicenceCost)"
-        Write-Host "Total RAM cost: £$($RamCost)"
-        Write-Host "Invoice Total: £$($TotalCost)" -ForegroundColor Green
+        Write-Output -InputObject "Total vCPU cost: £$($VirtualCpuCost)"
+        Write-Output -InputObject "Total RAM cost: £$($RamCost)"
+        Write-Output -InputObject "Total Storage cost: £$($StorageCost)"
+        Write-Output -InputObject "Total Windows Licence cost: £$($WindowsLicenceCost)"
+        Write-Output -InputObject "Total SQL Std (0-4 vCPU) cost: $($SQLStdSmallCost)"
+        Write-Output -InputObject "Total SQL Std (5+ vCPU) cost: $($SQLStdLargeCost)"
+        Write-Output -InputObject "Total SQL Ent (0-4 vCPU) cost: $($SQLEntSmallCost)"
+        Write-Output -InputObject "Total SQL Ent (5+ vCPU) cost: $($SQLEntLargeCost)"
+
+        # Write total cost in green
+        ## Save current colour
+        $StartColour = $Host.UI.RawUI.ForegroundColor
+        ## Set new colour
+        $Host.UI.RawUI.ForegroundColor = $ForegroundColour
+        ## Write total cost
+        Write-Output -InputObject "Invoice Total: £$($TotalCost)"
+        ## Set colour back to original
+        $Host.UI.RawUI.ForegroundColor = $StartColour
 
         if ($Destination) {
             $InvoiceObject = [PSCustomObject]@{
                 'SubscriptionDisplayName'             = $($Sub.Name)
                 'SubscriptionID'                      = $($Sub.SubscriptionId)
-                'Total-Windows-vCPU-usage(Core/Hour)' = $WinVMCount
-                'Total-Linux-vCPU-usage(Core/Hour)'   = $LinuxVMCount
-                'Total-RAM-usage(GB/Hour)'            = $RamCount
-                'Total-Storage-usage(GB/hour)'        = $StorageCount
-                'Total-vCPU-cost(£)'                  = $VirtualCpuCost
-                'Total-RAM-cost(£)'                   = $RamCost
-                'Total-Storage-cost(£)'               = $StorageCost
-                'Total-Windows-Licence-cost(£)'       = $WindowsLicenceCost
-                'Invoice-Total(£)'                    = $TotalCost
+                'Total-Windows-vCPU-usage(Core/Hour)'  = $WinVMCount
+                'Total-Linux-vCPU-usage(Core/Hour)'    = $LinuxVMCount
+                'Total-RAM-usage(GB/Hour)'             = $RamCount
+                'Total-Storage-usage(GB/hour)'         = $StorageCount
+                'Total-SQL-Std-(0-4-vCPU)-hours'       = $SQLStdSmall
+                'Total-SQL-Std-(5+-vCPU)-hours'        = $SQLStdLarge
+                'Total-SQL-Ent-(0-4-vCPU)-licences'    = $SQLEntSmall
+                'Total-SQL-Ent-(5+-vCPU)-licences'     = $SQLEntLarge
+                'Total-vCPU-cost(£)'                   = $([Math]::Round($VirtualCpuCost, 2))
+                'Total-RAM-cost(£)'                    = $([Math]::Round($RamCost, 2))
+                'Total-Storage-cost(£)'                = $([Math]::Round($StorageCost, 2))
+                'Total-Windows-Licence-cost(£)'        = $([Math]::Round($WindowsLicenceCost, 2))
+                'Total-SQL-Std-(0-4-vCPU)-cost(£)'     = $([Math]::Round($SQLStdSmallCost, 2))
+                'Total-SQL-Std-(5+-vCPU)-cost(£)'      = $([Math]::Round($SQLStdLargeCost, 2))
+                'Total-SQL-Ent-(0-4-vCPU)-cost(£)'     = $([Math]::Round($SQLEntSmallCost, 2))
+                'Total-SQL-Ent-(5+-vCPU)-cost(£)'      = $([Math]::Round($SQLEntLargeCost, 2))
+                'Invoice-Total(£)'                     = $([Math]::Round($TotalCost, 2))
             }
-            $InvoiceObject | Export-Csv -Path (Join-Path $Destination $FileName) -NoTypeInformation -Force -Encoding Default
-            Write-Host "CSV file saved to $(Join-Path $Destination $FileName)" -ForegroundColor Green
+
+            $InvoiceObject | Export-Csv -Path (Join-Path -Path $Destination -ChildPath $FileName) -NoTypeInformation -Force -Encoding Default
+            Write-Output -InputObject ""
+            Write-Output -InputObject "CSV file saved to $(Join-Path -Path $Destination -ChildPath $FileName)"
         }
     }
 }
