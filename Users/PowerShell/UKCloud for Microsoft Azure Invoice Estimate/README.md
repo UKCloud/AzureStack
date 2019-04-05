@@ -25,6 +25,9 @@ Once it is installed you can just invoke the commands and PowerShell will load t
 > [!IMPORTANT]
 > **You need to log in to Azure Stack first before you can execute the commands as they will fail otherwise.**.
 
+> [!NOTE]
+> The dates for `-StartDate` and `-EndDate` are in American format (mm/dd/yyyy).
+
 ### Examples
 
 * Return an estimate of your Azure Stack invoice for March 2019 based on Azure Stack API metrics:
