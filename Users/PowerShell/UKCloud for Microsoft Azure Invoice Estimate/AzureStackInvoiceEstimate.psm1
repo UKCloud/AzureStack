@@ -17,10 +17,10 @@ function Get-AzureStackInvoiceEstimate {
         Destination file name. Defaults to "AzureStack-Invoice.csv"
 
     .PARAMETER StartDate
-        The start of the time period to retrieve billing info for in american format. Example: "03/01/2019" (1st March 2019)
+        The start of the time period to retrieve billing info for in American format. Example: "03/01/2019" (1st March 2019)
 
     .PARAMETER EndDate
-        The end of the time period to retrieve billing info for in american format.  Example: "04/01/2019" (1st April 2019)
+        The end of the time period to retrieve billing info for in American format.  Example: "04/01/2019" (1st April 2019)
 
     .PARAMETER SQLFilePath
         File path of csv file containing SQL VM details. See links for example CSV file. Example: "C:\AzureStack\SQLVMs.csv"
