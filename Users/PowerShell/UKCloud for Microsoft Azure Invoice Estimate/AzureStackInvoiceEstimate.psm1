@@ -4,23 +4,23 @@ function Get-AzureStackInvoiceEstimate {
         Returns an estimate of your Azure Stack Invoice based on Azure Stack API metrics.
 
     .DESCRIPTION
-        Compile Azure Stack Billing Data based on Azure Stack API metrics. It is using the meter translation table from AzureStack-Tools.
-        THis function will create a CSV file containing an estimate for your invoice for the specified time period.
+        Compile Azure Stack billing data based on Azure Stack API metrics. It is using the meter translation table from AzureStack-Tools.
+        This function will create a CSV file containing an estimate for your invoice for the specified time period.
 
     .PARAMETER Destination
         Destination folder location. If not specified the pricing estimate will only be printed to the PowerShell console.
         Note:
         It will check if the folder exists and will create it if it does not.
-        Example: "C:\AzureStack-Invoice-December-2018"
+        Example: "C:\AzureStack-Invoice-March-2019"
 
     .PARAMETER FileName
         Destination file name. Defaults to "AzureStack-Invoice.csv"
 
     .PARAMETER StartDate
-        The start of the time period to retrieve billing info for in american format. Example: "12/01/2018" (1st December 2018)
+        The start of the time period to retrieve billing info for in american format. Example: "03/01/2019" (1st March 2019)
 
     .PARAMETER EndDate
-        The end of the time period to retrieve billing info for in american format.  Example: "01/01/2019" (1st January 2018)
+        The end of the time period to retrieve billing info for in american format.  Example: "04/01/2019" (1st April 2019)
 
     .PARAMETER SQLFilePath
         File path of csv file containing SQL VM details. See links for example CSV file. Example: "C:\AzureStack\SQLVMs.csv"
@@ -43,7 +43,6 @@ function Get-AzureStackInvoiceEstimate {
 
     .LINK
         https://github.com/UKCloud/AzureStack/tree/master/Users/PowerShell/UKCloud%20for%20Microsoft%20Azure%20Invoice%20Estimate
-
     #>
 
     [CmdletBinding()]
