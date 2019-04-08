@@ -72,3 +72,32 @@ Password must conform to all of the following rules:
 - Password must contain at least one special character (_!@#$%)
 - Password must be between 8 and 16 characters
 - Password cannot contain spaces
+
+## AzureBackupConfig.ps1
+
+### Overview
+
+This extension configures the Microsoft Azure Recovery Services agent on a windows VM. This allows the VM to backup to a Recovery Services vault on public Azure. The extension is installed following the process [here](https://docs.microsoft.com/en-us/azure/backup/backup-configure-vault).
+
+### Arguments
+
+`powershell -ExecutionPolicy Unrestricted -File ASRCSConfig.ps1 -ClientID <Client ID> -ClientSecret <Client Secret> -TenantID <Tenant ID> -AzureResourceGroup <Azure Resource Group> -VaultName <ASR Vault Name> -AzureLocation <Azure Location> -ExistingRG -ExistingVault -TempFilesPath <Temp Files Path> -EncryptionKey <Encryption Key> -BackupDays <Days to schedule backups on> -BackupTimes <Times to schedule backups at> -RetentionLength <Number of days to keep backups for> -FoldersToBackup <Folders to backup> -BackupNow`
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| ClientId | The application ID of a service principal with contributor permissions on Azure. | 00000000-0000-0000-0000-000000000000 |
+| ClientSecret | The Tenant/Directory ID of your AAD domain. | ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]= |
+| TenantId | The Tenant/Directory ID of your AAD domain. | 31537af4-6d77-4bb9-a681-d2394888ea26 |
+| AzureResourceGroup | The name of the resource group to be created on public Azure. | AzureStackBackupRG |
+| VaultName | The name of the recovery services vault to be created on public Azure. | AzureStackVault |
+| AzureLocation | The location of the recovery services vault on public Azure. | UK West |
+| ExistingRG | Switch used to specify that the resource group already exists in public Azure. | |
+| ExistingVault | Switch used to specify that the vault already exists in public Azure. | |
+| TempFilesPath | Location on the server where setup files will be stored. | C:\temp |
+| EncryptionKey | The encryption key for the MySQL database on the configuration server. | ExampleEncryptionKey |
+| BackupDays | A comma separated list of the days to backup on. | Wednesday, Sunday |
+| BackupTimes | A comma separated list of the times to backup at on the backup days. | 16:00, 20:00 |
+| RetentionLength | The number of days to keep each backup for. | 7 |
+| FoldersToBackup | A comma separated list of folders to backup. By default backs up all drives excluding temporary storage. | C:\Users, C:\Important |
+| BackupNow | Switch used to specify that the server should backup once the MARS agent is installed. | |
+| NoSchedule | Switch used to specify that the schedule configuration step can be skipped. | |
