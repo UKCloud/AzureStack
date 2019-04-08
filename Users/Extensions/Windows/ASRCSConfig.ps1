@@ -90,7 +90,7 @@
 
     .LINK
         https://github.com/UKCloud/AzureStack/tree/master/Users/ARM%20Templates/Azure%20Site%20Recovery%20-%20Config%20Server
-    #>
+#>
 
 [CmdletBinding()]
 param (
