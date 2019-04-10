@@ -253,7 +253,6 @@ while (!`$VaultCredPath -and `$Retry -lt 20) {
         Add-OBFileSpec -Policy $BackupPolicy -FileSpec $FileInclusions
         Add-OBFileSpec -Policy $BackupPolicy -FileSpec $FileExclusions
 
-
         # Remove the (possibly) existing policy
         try {
             Get-OBPolicy | Remove-OBPolicy -Confirm:$false -ErrorAction Stop
