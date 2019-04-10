@@ -93,6 +93,7 @@ param (
     [String]
     $ClientSecret,
     [Parameter(Mandatory = $true)]
+    [ValidatePattern('^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$')] # RegEx to enforce that domain name is passed as a parameter
     [String]
     $TenantId,
 
@@ -155,10 +156,10 @@ process {
 
     # Install Modules
     Write-Output -InputObject "Installing Nuget and AzureRM PowerShell modules"
-    Install-PackageProvider -Name Nuget -Force -Confirm:$false | Out-Null
-    Install-Module -Name AzureRM -RequiredVersion 2.4.0 -Force -Confirm:$false
-    Install-Module -Name AzureRM.RecoveryServices -Force -Confirm:$false
-    Install-Module -Name AzureRM.RecoveryServices.SiteRecovery -Force -Confirm:$false
+    Install-PackageProvider -Name NuGet -Confirm:$false -Force | Out-Null
+    Install-Module -Name AzureRM -RequiredVersion 2.4.0 -Confirm:$false -Force
+    Install-Module -Name AzureRM.RecoveryServices -Confirm:$false -Force
+    Install-Module -Name AzureRM.RecoveryServices.SiteRecovery -Confirm:$false -Force
 
     # Download the MARS agent
     Write-Output -InputObject "Downloading MARS agent"
