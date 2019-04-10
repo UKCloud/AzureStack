@@ -33,7 +33,7 @@
         Location on the server where setup files will be stored. Defaults to: "C:\temp"
 
     .PARAMETER EncryptionKey
-        The encryption key for the MySQL database on the configuration server. Example: "ExampleEncryptionKey"
+        The encryption key to encrypt the backups with. Example: "ExampleEncryptionKey"
 
     .PARAMETER BackupDays
         A comma separated list of the days to backup on. Example: "Wednesday", "Sunday"
