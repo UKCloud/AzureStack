@@ -1,37 +1,37 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "apiProfile": "2018-03-01-hybrid",
-    "parameters": { },
-    "variables": {
-      "networkSecurityGroupName": "TestNSG"
-    },
-    "resources": [
-      {
-        "name": "[variables('networkSecurityGroupName')]",
-        "type": "Microsoft.Network/networkSecurityGroups",
-        "location": "[resourceGroup().location]",
-        "tags": {
-          "displayName": "NetworkSecurityGroup"
-        },
-        "properties": {
-          "securityRules": [
-            {
-              "name": "Rule 1",
-              "properties": {
-                "protocol": "*",
-                "sourcePortRange": "*",
-                "destinationPortRange": "*",
-                "sourceAddressPrefix": "*",
-                "destinationAddressPrefix": "*",
-                "access": "Allow",
-                "priority": 101,
-                "direction": "Inbound"
-              }
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "apiProfile": "2018-03-01-hybrid",
+  "parameters": {},
+  "variables": {
+    "networkSecurityGroupName": "TestNSG"
+  },
+  "resources": [
+    {
+      "name": "[variables('networkSecurityGroupName')]",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "NetworkSecurityGroup"
+      },
+      "properties": {
+        "securityRules": [
+          {
+            "name": "Rule 1",
+            "properties": {
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 101,
+              "direction": "Inbound"
             }
-          ]
-        }
+          }
+        ]
       }
-    ],
-    "outputs": { }
+    }
+  ],
+  "outputs": {}
 }
