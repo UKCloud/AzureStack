@@ -224,7 +224,7 @@ $SQLCredPath = "$($TempFilesPath)MySQLCredentialsfile.txt"
 Out-File $SQLCredPath -Force -Encoding ascii
 "[MySQLCredentials]" | Add-Content -Path $SQLCredPath
 "MySQLRootPassword = `"$MySQLRootPassword`"" | Add-Content -Path $SQLCredPath
-"MySQLUserPassword = `"$MySQLUserPassword`"" | Add-Content -Path $SQLCredPath
+"MySQLUserPassword = `"$MySQLUserPassword`"" | Add-Content -Path $SQLCredPath -NoNewline
 
 # Extract setup file
 Write-Host -Object "Extracting setup file"
