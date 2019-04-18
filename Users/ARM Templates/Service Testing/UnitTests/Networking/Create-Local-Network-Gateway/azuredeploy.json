@@ -10,7 +10,6 @@
     },
     "resources": [
         {
-            "apiVersion": "2017-10-01",
             "type": "Microsoft.Network/localNetworkGateways",
             "name": "[variables('lngName')]",
             "location": "[resourceGroup().location]",

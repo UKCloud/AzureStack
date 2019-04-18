@@ -1,5 +1,6 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "apiProfile": "2018-03-01-hybrid",
     "contentVersion": "1.0.0.0",
     "parameters": {},
     "variables": {
@@ -54,7 +55,6 @@
             }
         },
         {
-            "apiVersion": "2015-06-15",
             "type": "Microsoft.Network/virtualNetworkGateways",
             "name": "[variables('vnetGatewayName')]",
             "location": "[resourceGroup().location]",
@@ -87,7 +87,6 @@
             }
         },
         {
-            "apiVersion": "2018-07-01",
             "type": "Microsoft.Network/localNetworkGateways",
             "name": "[variables('lngName')]",
             "location": "[resourceGroup().location]",
@@ -101,7 +100,6 @@
             }
         },
         {
-            "apiVersion": "2015-06-15",
             "name": "[variables('connectionName')]",
             "type": "Microsoft.Network/connections",
             "location": "[resourceGroup().location]",
