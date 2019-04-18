@@ -32,16 +32,21 @@ function Start-AllTests {
                 if ($Section.Values.Values) {
                     $Url = $Url + "/" + $Section.Keys
                     Write-Output -InputObject "Starting $($Section.Keys) deployments"
+                    $global:Path += "$($Section.Keys)/"
 
                     foreach ($InnerSection in $Section.Values) {
                         Start-ArmDeployments -Section $InnerSection -Url $Url
                     }
+                    $global:Path = $global:Path.Split("/")[0..-1]
                 }
                 else {
                     foreach ($Deployment in $Section.Keys) {
                         Write-Output -InputObject "Deploying $Deployment"
                         $TemplateUrl = $Url + "/" + $Section[$Deployment] + "/azuredeploy.json"
-                        $global:DeploymentTracker += New-AzureRmResourceGroupDeployment -Name $Deployment -TemplateUri $TemplateUrl -ResourceGroupName $ResourceGroupName -AsJob
+                        $Job = New-AzureRmResourceGroupDeployment -Name $Deployment -TemplateUri $TemplateUrl -ResourceGroupName $ResourceGroupName -AsJob
+                        $Job | Add-Member -Name TestType -MemberType NoteProperty -Value $global:Path.Split("/")[0]
+                        $Job | Add-Member -Name TestArea -MemberType NoteProperty -Value $global:Path.Split("/")[1]
+                        $global:DeploymentTracker += $Job
                     }
                 }
             }
@@ -52,6 +57,7 @@ function Start-AllTests {
         $BaseTemplateUrl = "https://raw.githubusercontent.com/UKCloud/AzureStack/Service-Testing/Users/ARM%20Templates/Service%20Testing"
         $global:ResourceGroupName = "TestService-RG"
         $global:DeploymentTracker = @()
+        $global:Path = ""
 
         $Templates = @{
             UnitTests = @{
@@ -70,13 +76,15 @@ function Start-AllTests {
             }
         }
 
+        $Templates["UnitTests"].ContainsKey("Networking")
         # Create Test Resource Group
         New-AzureRmResourceGroup -Name $ResourceGroupName -Location $Location
 
         Start-ArmDeployments -Section $Templates -Url $BaseTemplateUrl
         while ($DeploymentTracker.State -contains "*Running*") {
-            $DeploymentTracker | Select-Object -Property @{Name = "Deployment Name"; Expression = {$_.Name.Split("'")[3]} }, State, PSBeginTime, PSEndTime | Format-Table
+            $DeploymentTracker | Select-Object -Property TestType, TestArea, @{Name = "Deployment Name"; Expression = {$_.Name.Split("'")[3]} }, State, PSBeginTime, PSEndTime | Format-Table
+            Start-Sleep -Seconds 10
         }
-        $DeploymentTracker | Select-Object -Property @{Name = "Deployment Name"; Expression = {$_.Name.Split("'")[3]} }, State, PSBeginTime, PSEndTime | Format-Table
+        $DeploymentTracker | Select-Object -Property TestType, TestArea, @{Name = "Deployment Name"; Expression = {$_.Name.Split("'")[3]} }, State, PSBeginTime, PSEndTime | Format-Table
     }
 }
