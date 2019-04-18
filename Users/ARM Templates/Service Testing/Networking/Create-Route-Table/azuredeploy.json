@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "variables": {
+        "routeTableName": "Test-RouteTable",
+        "routeName": "Test-Route",
+        "routeAddressPrefix": "10.1.0.0/24",
+        "nextHopType": "None"
+    },
+    "resources": [
+        {
+            "name": "[variables('routeTableName')]",
+            "type": "Microsoft.Network/routeTables",
+            "apiVersion": "2018-08-01",
+            "location": "[resourceGroup().location]",
+            "tags": {},
+            "properties": {
+                "routes": [
+                    {
+                        "name": "[variables('routeName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('routeAddressPrefix')]",
+                            "nextHopType": "[variables('nextHopType')"
+                        }
+                    }
+                ],
+                "disableBgpRoutePropagation": true
+            }
+        }
+    ],
+    "outputs": {}
+}
