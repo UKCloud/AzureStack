@@ -4,8 +4,8 @@
   "apiProfile": "2018-03-01-hybrid",
   "parameters": {},
   "variables": {
-    "nicName": "TestNic",
-    "vnetName": "NICVNet",
+    "nicName": "Test-Nic",
+    "vnetName": "NIC-VNet",
     "addressPrefix": "10.0.1.0/24",
     "subnetName": "NIC-Subnet",
     "subnetPrefix": "10.0.1.0/24",

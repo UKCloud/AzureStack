@@ -2,7 +2,7 @@
   "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "apiProfile": "2018-03-01-hybrid",
-  "parameters": { },
+  "parameters": {},
   "variables": {
     "newZoneName": "[concat(uniqueString(resourceGroup().id), '.ukcloud.com')]",
     "newRecordName": "UKCloud",

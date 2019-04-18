@@ -4,7 +4,7 @@
   "apiProfile": "2018-03-01-hybrid",
   "parameters": {},
   "variables": {
-    "publicIPAddressName": "TestPubIP",
+    "publicIPAddressName": "Test-PubIP",
     "publicIPAddressType": "Dynamic"
   },
   "resources": [

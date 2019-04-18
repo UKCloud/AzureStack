@@ -4,7 +4,7 @@
   "apiProfile": "2018-03-01-hybrid",
   "parameters": {},
   "variables": {
-    "vnetName": "TestVNet",
+    "vnetName": "Test-VNet",
     "addressPrefix": "10.0.0.0/24",
     "subnetName": "Subnet-1",
     "subnetPrefix": "10.0.0.0/24",
