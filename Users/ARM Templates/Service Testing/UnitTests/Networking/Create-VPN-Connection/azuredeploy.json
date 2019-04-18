@@ -8,6 +8,7 @@
         "addressPrefix": "10.0.0.0/24",
         "subnetName": "Subnet-1",
         "subnetPrefix": "10.0.0.0/24",
+        "gatewaySubnetPrefix": "10.0.1.0/24",
         "dnsServer": "192.168.100.2",
         "publicIPAddressName": "Connection-PubIP",
         "publicIPAddressType": "Dynamic",
@@ -36,6 +37,12 @@
                         "name": "[variables('subnetName')]",
                         "properties": {
                             "addressPrefix": "[variables('subnetPrefix')]"
+                        }
+                    },
+                    {
+                        "name": "GatewaySubnet",
+                        "properties": {
+                            "addressPrefix": "[variables('gatewaySubnetPrefix')]"
                         }
                     }
                 ],
