@@ -1,0 +1,28 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "apiProfile": "2018-03-01-hybrid",
+    "parameters": {},
+    "variables": {
+        "lngName": "Test-LNG",
+        "lngAddressSpace": "10.1.0.0/16",
+        "lngGatewayIpAddress": "10.10.10.10"
+    },
+    "resources": [
+        {
+            "apiVersion": "2018-07-01",
+            "type": "Microsoft.Network/localNetworkGateways",
+            "name": "[variables('lngName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "localNetworkAddressSpace": {
+                    "addressPrefixes": [
+                        "[variables('lngAddressSpace')]"
+                    ]
+                },
+                "gatewayIpAddress": "[variables('lngGatewayIpAddress')]"
+            }
+        }
+    ],
+    "outputs": {}
+}
