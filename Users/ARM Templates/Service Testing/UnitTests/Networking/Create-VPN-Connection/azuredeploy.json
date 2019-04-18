@@ -89,7 +89,7 @@
                     "tier": "Basic"
                 },
                 "gatewayType": "Vpn",
-                "vpnType": "PolicyBased",
+                "vpnType": "RouteBased",
                 "enableBgp": "false"
             }
         },
