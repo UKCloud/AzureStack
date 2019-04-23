@@ -219,7 +219,7 @@ Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
 # Install SysInternals
 $CheckSysInternalsInstall = $false
 $Retry = 0
-while (!$CheckSysInternalsInstall -and $Retry -lt 10) {
+while (-not $CheckSysInternalsInstall -and $Retry -lt 10) {
     choco install -y sysinternals
     Start-Sleep 10
     $CheckSysInternalsInstall = choco list -lo | Where-Object {$_ -like "*sysinternals*"}
@@ -289,7 +289,7 @@ Connect-AzureRmAccount -Credential `$Cred -ServicePrincipal -Tenant $TenantID
 # Download Vault Settings
 Write-Output -InputObject 'Downloading vault settings'
 `$Retry = 0
-while (!`$VaultCredPath -and `$Retry -lt 20) {
+while (-not `$VaultCredPath -and `$Retry -lt 20) {
     # Get Vault
     `$SRVaultGet = Get-AzureRmRecoveryServicesVault -Name $VaultName -ResourceGroupName $AzureResourceGroup
     `$VaultCredPath = Get-AzureRmRecoveryServicesVaultSettingsFile -Vault `$SRVaultGet -Path $TempFilesPath
@@ -338,7 +338,7 @@ Install-WindowsFeature -Name Net-Framework-Core
 Write-Output -InputObject "Downloading MySQL .Net connector"
 $CheckMySQLInstall = $false
 $retry = 0
-while (!$CheckMySQLInstall -and $retry -lt 10) {
+while (-not $CheckMySQLInstall -and $retry -lt 10) {
     choco install mysql-connector -y --force
     Start-Sleep 15
     $CheckMySQLInstall = choco list -lo | Where-Object {$_ -like "*mysql-connector*"}
@@ -429,21 +429,21 @@ While ($ProtectedItems.count -ne $VMInfo.Count -and $RetryProtectedItems -lt 120
 }
 
 $RetryResourceGroup = 0
-while (!$SRRG.ResourceId -and $RetryResourceGroup -lt 20) {
+while (-not $SRRG.ResourceId -and $RetryResourceGroup -lt 20) {
     $SRRG = Get-AzureRmResourceGroup -Name $ProtectedItems[0].ID.Split("/")[4]
     Start-Sleep -Seconds 20
     $RetryResourceGroup ++
 }
 
 $RetryStorageAccount = 0
-while (!$StorageAccount.Id -and $RetryStorageAccount -lt 20) {
+while (-not $StorageAccount.Id -and $RetryStorageAccount -lt 20) {
     $StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $SRRG.ResourceGroupName
     Start-Sleep -Seconds 20
     $RetryStorageAccount ++
 }
 
 $RetryVirtualNetwork = 0
-while (!$VirtualNetwork.Id -and $RetryVirtualNetwork -lt 20) {
+while (-not $VirtualNetwork.Id -and $RetryVirtualNetwork -lt 20) {
     $VirtualNetwork = Get-AzureRmVirtualNetwork -ResourceGroupName $SRRG.ResourceGroupName
     Start-Sleep -Seconds 20
     $RetryVirtualNetwork ++
@@ -469,7 +469,7 @@ $ASRFabrics = Get-AzureRmRecoveryServicesAsrFabric
 # Create Accounts Object
 Write-Output -InputObject "Waiting for Protected Item accounts to be populated in public Azure"
 $RetryASRAccounts = 0
-while (!$ASRFabrics[0].FabricSpecificDetails.RunAsAccounts -and $RetryASRAccounts -lt 40) {
+while (-not $ASRFabrics[0].FabricSpecificDetails.RunAsAccounts -and $RetryASRAccounts -lt 40) {
     $ASRFabrics = Get-AzureRmRecoveryServicesAsrFabric
     Start-Sleep -Seconds 60
     $RetryASRAccounts ++
