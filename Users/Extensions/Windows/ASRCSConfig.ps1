@@ -95,60 +95,88 @@
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $true)]
-    [String]$ClientID,
+    [Alias("AppId")]
+    [String]
+    $ClientID,
     [Parameter(Mandatory = $true)]
-    [String]$ClientSecret,
+    [String]
+    $ClientSecret,
     [Parameter(Mandatory = $true)]
-    [String]$TenantID,
+    [Alias("TenantDomain", "Domain")]
+    [String]
+    $TenantID,
     [Parameter(Mandatory = $false)]
-    [String]$ArmEndpoint = "https://management.frn00006.azure.ukcloud.com",
+    [String]
+    $ArmEndpoint = "https://management.frn00006.azure.ukcloud.com",
     [Parameter(Mandatory = $false)]
-    [String]$TempFilesPath = "C:\TempASR\",
+    [String]
+    $TempFilesPath = "C:\TempASR\",
     [Parameter(Mandatory = $false)]
-    [String]$ExtractionPath = "Extracted",
+    [String]
+    $ExtractionPath = "Extracted",
     [Parameter(Mandatory = $true)]
-    [String]$MySQLRootPassword,
+    [String]
+    $MySQLRootPassword,
     [Parameter(Mandatory = $true)]
-    [String]$MySQLUserPassword,
+    [String]
+    $MySQLUserPassword,
     [Parameter(Mandatory = $false)]
-    [String]$VNetName = "SiteRecoveryVNet",
+    [String]
+    $VNetName = "SiteRecoveryVNet",
     [Parameter(Mandatory = $true)]
-    [String]$AzureStorageAccount,
+    [String]
+    $AzureStorageAccount,
     [Parameter(Mandatory = $false)]
-    [String]$SubnetRange = "192.168.1.0/24",
+    [String]
+    $SubnetRange = "192.168.1.0/24",
     [Parameter(Mandatory = $false)]
-    [String]$VNetRange = "192.168.0.0/16",
+    [String]
+    $VNetRange = "192.168.0.0/16",
     [Parameter(Mandatory = $false)]
-    [String]$AzureLocation = "UK West",
+    [String]
+    $AzureLocation = "UK West",
     [Parameter(Mandatory = $false)]
-    [String]$ReplicationPolicyName = "ReplicationPolicy",
+    [String]
+    $ReplicationPolicyName = "ReplicationPolicy",
     [Parameter(Mandatory = $false)]
-    [String]$AzureResourceGroup = "SiteRecoveryTestRG",
+    [String]
+    $AzureResourceGroup = "SiteRecoveryTestRG",
     [Parameter(Mandatory = $false)]
-    [String]$VaultName = "AzureStackVault",
+    [String]
+    $VaultName = "AzureStackVault",
     [Parameter(Mandatory = $true)]
-    [String]$ConfigServerUsername,
+    [String]
+    $ConfigServerUsername,
     [Parameter(Mandatory = $true)]
-    [String]$ConfigServerPassword,
+    [String]
+    $ConfigServerPassword,
     [Parameter(Mandatory = $true)]
-    [String]$EncryptionKey,
+    [String]
+    $EncryptionKey,
     [Parameter(Mandatory = $true)]
-    [String]$WindowsUsername,
+    [String]
+    $WindowsUsername,
     [Parameter(Mandatory = $true)]
-    [String]$WindowsPassword,
+    [String]
+    $WindowsPassword,
     [Parameter(Mandatory = $true)]
-    [String]$LinuxRootPassword,
+    [String]
+    $LinuxRootPassword,
     [Parameter(Mandatory = $true)]
-    [String]$StackResourceGroup
+    [String]
+    $StackResourceGroup
 )
 
 ## Declare MySQL function
 function Invoke-MySQLQuery {
     param(
+        [CmdletBinding()]
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-        [String]$Query,
+        [String]
+        $Query,
         [Parameter(Mandatory = $true)]
-        [String]$MySQLAdminPassword
+        [String]
+        $MySQLAdminPassword
     )
 
     $MySQLAdminUserName = "root"
@@ -157,7 +185,7 @@ function Invoke-MySQLQuery {
     $ConnectionString = "server=" + $MySQLHost + ";port=3306;uid=" + $MySQLAdminUserName + ";pwd=" + $MySQLAdminPassword + ";database=" + $MySQLDatabase
 
     try {
-        [void][System.Reflection.Assembly]::LoadWithPartialName("MySql.Data")
+        [Void][System.Reflection.Assembly]::LoadWithPartialName("MySql.Data")
         $Connection = New-Object MySql.Data.MySqlClient.MySqlConnection
         $Connection.ConnectionString = $ConnectionString
         $Connection.Open()
@@ -168,7 +196,8 @@ function Invoke-MySQLQuery {
         $DataSet.Tables[0]
     }
     catch {
-        Write-Host -Object "ERROR : Unable to run query '$Query' `n$($Error[0])" -ForegroundColor Red
+        Write-Error -Message "Unable to run query: $Query"
+        Write-Error -Message "$($_.Exception.Message)"
     }
     finally {
         $Connection.Close()
@@ -176,20 +205,21 @@ function Invoke-MySQLQuery {
 }
 
 # Install Modules
-Write-Host -Object "Installing Nuget, Azure modules and Choco"
+Write-Output -InputObject "Installing Nuget, Azure modules and Choco"
 Install-PackageProvider -Name Nuget -Force -Confirm:$false
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 Install-Module -Name AzureRM -RequiredVersion 2.4.0 -Force -Confirm:$false
-Install-Module -Name AzureStack -RequiredVersion 1.7.0 -Force -Confirm:$false
+Install-Module -Name AzureStack -RequiredVersion 1.7.1 -Force -Confirm:$false
 Install-Module -Name AzureRM.RecoveryServices -Force -Confirm:$false
 Install-Module -Name AzureRM.RecoveryServices.SiteRecovery -Force -Confirm:$false
-Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString("https://chocolatey.org/install.ps1"))
+Set-ExecutionPolicy Bypass -Scope Process -Force
+Invoke-Expression ((New-Object System.Net.WebClient).DownloadString("https://chocolatey.org/install.ps1"))
 $env:ChocolateyInstall = Convert-Path "$((Get-Command choco).path)\..\.."
 Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
 # Install SysInternals
 $CheckSysInternalsInstall = $false
 $Retry = 0
-while (!$CheckSysInternalsInstall -and $Retry -lt 10) {
+while (-not $CheckSysInternalsInstall -and $Retry -lt 10) {
     choco install -y sysinternals
     Start-Sleep 10
     $CheckSysInternalsInstall = choco list -lo | Where-Object {$_ -like "*sysinternals*"}
@@ -199,7 +229,7 @@ refreshenv
 Get-Module -Name "Azure*" | Remove-Module -Force
 
 # Format Disks
-Write-Host -Object "Formatting Disks"
+Write-Output -InputObject "Formatting Disks"
 Get-Disk -Number 2 | Initialize-Disk -PartitionStyle MBR -PassThru | New-Partition -AssignDriveLetter -UseMaximumSize `
     | Format-Volume -FileSystem NTFS -NewFileSystemLabel "ProcessServerCache" -Confirm:$false
 
@@ -213,42 +243,40 @@ New-Item -ItemType Directory -Path "$($TempFilesPath)$($ExtractionPath)" -Force
 $InstallPath = "F:\ASR"
 
 # Download Installer file
-Write-Host -Object "Downloading setup file"
+Write-Output -InputObject "Downloading setup file"
 $Url = "http://aka.ms/unifiedinstaller_uks"
 $Output = "$($TempFilesPath)MicrosoftAzureSiteRecoveryUnifiedSetup.exe"
 (New-Object System.Net.WebClient).DownloadFile($Url, $Output)
 
 # Create MySQL credentials file
-Write-Host -Object "Creating MySQL credentials file"
+Write-Output -InputObject "Creating MySQL credentials file"
 $SQLCredPath = "$($TempFilesPath)MySQLCredentialsfile.txt"
 Out-File $SQLCredPath -Force -Encoding ascii
 "[MySQLCredentials]" | Add-Content -Path $SQLCredPath
 "MySQLRootPassword = `"$MySQLRootPassword`"" | Add-Content -Path $SQLCredPath
-"MySQLUserPassword = `"$MySQLUserPassword`"" | Add-Content -Path $SQLCredPath
+"MySQLUserPassword = `"$MySQLUserPassword`"" | Add-Content -Path $SQLCredPath -NoNewline
 
 # Extract setup file
-Write-Host -Object "Extracting setup file"
+Write-Output -InputObject "Extracting setup file"
 & "$($TempFilesPath)MicrosoftAzureSiteRecoveryUnifiedSetup.exe" /q /x:"$($TempFilesPath)$($ExtractionPath)"
-Write-Host -Object $("`rExtracting.") -NoNewline
 while (Get-Process -Name MicrosoftAzureSiteRecoveryUnifiedSetup -ErrorAction SilentlyContinue) {
-    Write-Host -Object $("`r.") -NoNewline
     Start-Sleep -Seconds 2
 }
 
 ## Login to public azure
-Write-Host -Object "Logging into public Azure"
+Write-Output -InputObject "Logging into public Azure"
 $CredPass = ConvertTo-SecureString $ClientSecret -AsPlainText -Force
 $Credentials = New-Object System.Management.Automation.PSCredential ($ClientID, $CredPass)
 Connect-AzureRmAccount -Credential $Credentials -ServicePrincipal -Tenant $TenantID
 
 ## Create and configure a vault, then retrieve settings
 # Declare variables
-Write-Host -Object "Setting up vault and retrieving settings"
+Write-Output -InputObject "Setting up vault and retrieving settings"
 # Create resource group
-Write-Host -Object "Creating resource group in public Azure"
+Write-Output -InputObject "Creating resource group in public Azure"
 $SRRG = New-AzureRmResourceGroup -Name $AzureResourceGroup -Location $AzureLocation
 # Create the Vault
-Write-Host -Object "Creating Site Recovery vault"
+Write-Output -InputObject "Creating Site Recovery vault"
 $SRVault = New-AzureRmRecoveryServicesVault -Name $VaultName -ResourceGroupName $SRRG.ResourceGroupName -Location $SRRG.Location
 Set-AzureRmRecoveryServicesBackupProperties -Vault $SRVault -BackupStorageRedundancy LocallyRedundant
 # Set Vault Context
@@ -259,9 +287,9 @@ $ScriptFile = @"
 `$cred = New-Object System.Management.Automation.PSCredential (`$args[0], `$CredPass)
 Connect-AzureRmAccount -Credential `$Cred -ServicePrincipal -Tenant $TenantID
 # Download Vault Settings
-Write-Host -Object 'Downloading vault settings'
+Write-Output -InputObject 'Downloading vault settings'
 `$Retry = 0
-while (!`$VaultCredPath -and `$Retry -lt 20) {
+while (-not `$VaultCredPath -and `$Retry -lt 20) {
     # Get Vault
     `$SRVaultGet = Get-AzureRmRecoveryServicesVault -Name $VaultName -ResourceGroupName $AzureResourceGroup
     `$VaultCredPath = Get-AzureRmRecoveryServicesVaultSettingsFile -Vault `$SRVaultGet -Path $TempFilesPath
@@ -269,7 +297,7 @@ while (!`$VaultCredPath -and `$Retry -lt 20) {
     Start-Sleep -Seconds 5
     `$Retry ++
     if (`$Retry -eq 20) {
-        Write-Host -Object 'Unable to retrieve Vault Credentials file'
+        Write-Output -InputObject 'Unable to retrieve Vault Credentials file'
         break
     }
 }
@@ -277,20 +305,20 @@ while (!`$VaultCredPath -and `$Retry -lt 20) {
 $ScriptFile | Out-File $ScriptPath -Force -Encoding ascii
 
 Powershell.exe -NoProfile -ExecutionPolicy Bypass -Command $ScriptPath $ClientID $ClientSecret
-$VaultCredPath = Get-Content -path "$($TempFilesPath)VaultCredential.txt"
+$VaultCredPath = Get-Content -Path "$($TempFilesPath)VaultCredential.txt"
 # Create a new storage account
-Write-Host -Object "Creating storage account and virtual network on public Azure"
+Write-Output -InputObject "Creating storage account and virtual network on public Azure"
 $StorageAccount = New-AzureRmStorageAccount -Location $SRRG.Location -ResourceGroupName $SRRG.ResourceGroupName -Type "Standard_LRS" -Name ($AzureStorageAccount.ToLower())
 # Create a virtual network
 $SubnetConfig = New-AzureRmVirtualNetworkSubnetConfig -Name "default" -AddressPrefix $SubnetRange
 $VirtualNetwork = New-AzureRmVirtualNetwork -ResourceGroupName $SRRG.ResourceGroupName -Location $SRRG.Location -Name $VNetName -AddressPrefix $VNetRange -Subnet $SubnetConfig
 # Create Replication Policies
-Write-Host -Object "Creating replication and failback policies"
+Write-Output -InputObject "Creating replication and failback policies"
 $ReplicationPolicy = New-AzureRmRecoveryServicesAsrPolicy -VMwareToAzure -Name $ReplicationPolicyName -RecoveryPointRetentionInHours 24 -ApplicationConsistentSnapshotFrequencyInHours 4 -RPOWarningThresholdInMinutes 60
 $FailbackReplicationPolicy = New-AzureRmRecoveryServicesAsrPolicy -AzureToVMware -Name "$($ReplicationPolicyName)-Failback" -RecoveryPointRetentionInHours 24 -ApplicationConsistentSnapshotFrequencyInHours 4 -RPOWarningThresholdInMinutes 60
 
 # Run setup
-Write-Host -Object "Installing Azure Site Recovery Configuration Server"
+Write-Output -InputObject "Installing Azure Site Recovery Configuration Server"
 $ScriptPath2 = "$($TempFilesPath)script2.ps1"
 "& `"$($TempFilesPath)$($ExtractionPath)\UNIFIEDSETUP.EXE`" /AcceptThirdpartyEULA /ServerMode `"CS`" /InstallLocation $InstallPath /MySQLCredsFilePath $SQLCredPath /VaultCredsFilePath $VaultCredPath /EnvType NonVMWare" | Out-File $ScriptPath2 -Force -Encoding ascii
 
@@ -303,24 +331,24 @@ psexec -h -u $ConfigServerUsername -p $ConfigServerPassword cmd /c "Powershell.e
 $EncryptionKey | Out-File -FilePath "C:\ProgramData\Microsoft Azure Site Recovery\private\encryption.key" -Force -NoNewline -Encoding ascii
 
 # Install .Net Framework 3.5
-Write-Host -Object "Installing .Net Framework 3.5"
-Install-WindowsFeature Net-Framework-Core
+Write-Output -InputObject "Installing .Net Framework 3.5"
+Install-WindowsFeature -Name Net-Framework-Core
 
 # Download and install MySQL .Net connector
-Write-Host -Object "Downloading MySQL .Net connector"
+Write-Output -InputObject "Downloading MySQL .Net connector"
 $CheckMySQLInstall = $false
 $retry = 0
-while (!$CheckMySQLInstall -and $retry -lt 10) {
+while (-not $CheckMySQLInstall -and $retry -lt 10) {
     choco install mysql-connector -y --force
     Start-Sleep 15
-    $CheckMySQLInstall = choco list -lo | where {$_ -like "*mysql-connector*"}
+    $CheckMySQLInstall = choco list -lo | Where-Object {$_ -like "*mysql-connector*"}
     $retry ++
 }
 
-Write-Host -Object "Successfully installed MySQL .Net connector"
+Write-Output -InputObject "Successfully installed MySQL .Net connector"
 
 # Declare Variables
-Write-Host -Object "Adding VM accounts to SQL database"
+Write-Output -InputObject "Adding VM accounts to SQL database"
 $FriendlyNameWin = "WindowsAccount"
 $FriendlyNameLinux = "LinuxAccount"
 $UserNameLinux = "root"
@@ -337,7 +365,7 @@ Invoke-MySQLQuery -Query $QueryLinux -MySQLAdminPassword $MySQLRootPassword
 Set-AzureRmRecoveryServicesAsrVaultContext -Vault $SRVault
 # Get Configuration Server
 $RetryASRFabric = 0
-Write-Host -Object "Getting configuration server information"
+Write-Output -InputObject "Getting configuration server information"
 while (-not $ASRFabrics -and $RetryASRFabric -lt 20) {
     $ASRFabrics = Get-AzureRmRecoveryServicesAsrFabric
     Start-Sleep -Seconds 5
@@ -346,26 +374,26 @@ while (-not $ASRFabrics -and $RetryASRFabric -lt 20) {
 
 $ProtectionContainer = Get-AzureRmRecoveryServicesAsrProtectionContainer -Fabric $ASRFabrics[0]
 # Assign policies to configuration server
-Write-Host -Object "Assigning policies to configuration server"
+Write-Output -InputObject "Assigning policies to configuration server"
 $ReplicationPolicy = Get-AzureRmRecoveryServicesAsrPolicy -Name $ReplicationPolicyName
 $FailbackReplicationPolicy = Get-AzureRmRecoveryServicesAsrPolicy -Name "$($ReplicationPolicyName)-Failback"
 $Job_AssociatePolicy = New-AzureRmRecoveryServicesAsrProtectionContainerMapping -Name "ReplicationPolicyAssociation" -PrimaryProtectionContainer $ProtectionContainer -Policy $ReplicationPolicy
 $Job_AssociateFailbackPolicy = New-AzureRmRecoveryServicesAsrProtectionContainerMapping -Name "FailbackPolicyAssociation" -PrimaryProtectionContainer $ProtectionContainer -RecoveryProtectionContainer $ProtectionContainer -Policy $FailbackReplicationPolicy
 
 # Login to Azure Stack
-Write-Host -Object "Logging into Azure Stack"
+Write-Output -InputObject "Logging into Azure Stack"
 $StackEnvironment = Add-AzureRmEnvironment -Name "AzureStack" -ArmEndpoint $ArmEndpoint
 Connect-AzureRmAccount -EnvironmentName "AzureStack" -Credential $Credentials -ServicePrincipal -Tenant $TenantID
 
 # Get info for protected items
-Write-Host -Object "Retrieving VM info from resource group"
+Write-Output -InputObject "Retrieving VM info from resource group"
 $StackLocation = $StackEnvironment.GalleryURL.Split(".")[1]
 $ServerIP = (Get-NetIPAddress | Where-Object {$_.InterfaceAlias -like "*Ethernet*" -and $_.AddressFamily -like "IPv4"}).IPAddress
 $ProtectedRG = Get-AzureRmResourceGroup -Location $StackLocation -Name $StackResourceGroup
 $ProtectedVMs = Get-AzureRmVM -ResourceGroupName $ProtectedRG.ResourceGroupName
 $VMInfo = @()
 foreach ($VM in $ProtectedVMs) {
-    $VMNIC = Get-AzureRmNetworkInterface -ResourceGroupName $ProtectedRG.ResourceGroupName -Name $VM.NetworkProfile.NetworkInterfaces.Id.split("/")[8]
+    $VMNIC = Get-AzureRmNetworkInterface -ResourceGroupName $ProtectedRG.ResourceGroupName -Name $VM.NetworkProfile.NetworkInterfaces.Id.Split("/")[8]
     if ($VMNIC.IpConfigurations.PrivateIpAddress -ne $ServerIP) {
         $VMObj = New-Object -TypeName System.Object
         $VMObj | Add-Member -Name FriendlyName -MemberType NoteProperty -Value $VM.Name
@@ -379,15 +407,15 @@ foreach ($VM in $ProtectedVMs) {
         $VMInfo += $VMObj
     }
 }
-Write-Host -Object "Found the following VMs:"
+Write-Output -InputObject "Found the following VMs:"
 $VMInfo
 
 # Login to public Azure
-Write-Host -Object "Logging into public Azure"
+Write-Output -InputObject "Logging into public Azure"
 Connect-AzureRmAccount -Credential $Credentials -ServicePrincipal -Tenant $TenantID
 
 # Add protected items to vault
-Write-Host -Object "Adding VMs to public Azure as protectable items"
+Write-Output -InputObject "Adding VMs to public Azure as protectable items"
 Set-AzureRmRecoveryServicesAsrVaultContext -Vault $SRVault
 foreach ($VM in $VMInfo) {
     New-AzureRmRecoveryServicesAsrProtectableItem -ProtectionContainer $ProtectionContainer -FriendlyName $VM.FriendlyName -IPAddress $VM.IPAddress -OSType $VM.OSType
@@ -401,47 +429,47 @@ While ($ProtectedItems.count -ne $VMInfo.Count -and $RetryProtectedItems -lt 120
 }
 
 $RetryResourceGroup = 0
-while (!$SRRG.ResourceId -and $RetryResourceGroup -lt 20) {
-    $SRRG = Get-AzureRmResourceGroup -Name $ProtectedItems[0].ID.split("/")[4]
+while (-not $SRRG.ResourceId -and $RetryResourceGroup -lt 20) {
+    $SRRG = Get-AzureRmResourceGroup -Name $ProtectedItems[0].ID.Split("/")[4]
     Start-Sleep -Seconds 20
     $RetryResourceGroup ++
 }
 
 $RetryStorageAccount = 0
-while (!$StorageAccount.Id -and $RetryStorageAccount -lt 20) {
+while (-not $StorageAccount.Id -and $RetryStorageAccount -lt 20) {
     $StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $SRRG.ResourceGroupName
     Start-Sleep -Seconds 20
     $RetryStorageAccount ++
 }
 
 $RetryVirtualNetwork = 0
-while (!$VirtualNetwork.Id -and $RetryVirtualNetwork -lt 20) {
+while (-not $VirtualNetwork.Id -and $RetryVirtualNetwork -lt 20) {
     $VirtualNetwork = Get-AzureRmVirtualNetwork -ResourceGroupName $SRRG.ResourceGroupName
     Start-Sleep -Seconds 20
     $RetryVirtualNetwork ++
 }
 
 if ($RetryResourceGroup -eq 20) {
-    Write-Host -Object "Can't retrieve resource group"
+    Write-Error -Message "Can't retrieve resource group"
     break
 }
 
 if ($RetryStorageAccount -eq 20) {
-    Write-Host -Object "Can't retrieve storage account"
+    Write-Error -Message "Can't retrieve storage account"
     break
 }
 
 if ($RetryVirtualNetwork -eq 20) {
-    Write-Host -Object "Can't retrieve virtual network"
+    Write-Error -Message "Can't retrieve virtual network"
     break
 }
 
 # Update Fabric Object
 $ASRFabrics = Get-AzureRmRecoveryServicesAsrFabric
 # Create Accounts Object
-Write-Host -Object "Waiting for Protected Item accounts to be populated in public Azure"
+Write-Output -InputObject "Waiting for Protected Item accounts to be populated in public Azure"
 $RetryASRAccounts = 0
-while (!$ASRFabrics[0].FabricSpecificDetails.RunAsAccounts -and $RetryASRAccounts -lt 40) {
+while (-not $ASRFabrics[0].FabricSpecificDetails.RunAsAccounts -and $RetryASRAccounts -lt 40) {
     $ASRFabrics = Get-AzureRmRecoveryServicesAsrFabric
     Start-Sleep -Seconds 60
     $RetryASRAccounts ++
@@ -450,11 +478,11 @@ $ProcessServer = $ASRFabrics[0].FabricSpecificDetails.ProcessServers[0]
 $RunAsAccounts = $ASRFabrics[0].FabricSpecificDetails.RunAsAccounts
 
 # Set replicated items
-Write-Host -Object "Setting VMs to be protected"
-$ContainerMapping = Get-ASRProtectionContainerMapping -ProtectionContainer $ProtectionContainer | Where-Object PolicyFriendlyName -eq $ReplicationPolicyName
+Write-Output -InputObject "Setting VMs to be protected"
+$ContainerMapping = Get-ASRProtectionContainerMapping -ProtectionContainer $ProtectionContainer | Where-Object {PolicyFriendlyName -eq $ReplicationPolicyName}
 foreach ($Item in $ProtectedItems) {
     # Remove Azure Stack Temporary Disk
-    [string[]]$Disks = @()
+    [String[]]$Disks = @()
     $DiskNum = 0
     foreach ($DiskName in $Item.Disks) {
         if ($DiskNum -ne 1) {
@@ -465,10 +493,10 @@ foreach ($Item in $ProtectedItems) {
 
     # Set account settings
     if ($Item.OS -like "*LINUX*") {
-        $AdminAccount = $RunAsAccounts | Where-Object {$_.accountName -like "LinuxAccount"}
+        $AdminAccount = $RunAsAccounts | Where-Object {$_.AccountName -like "LinuxAccount"}
     }
     elseif ($Item.OS -like "*WINDOWS*") {
-        $AdminAccount = $RunAsAccounts | Where-Object {$_.accountName -like "WindowsAccount"}
+        $AdminAccount = $RunAsAccounts | Where-Object {$_.AccountName -like "WindowsAccount"}
     }
 
     # Set replication on VM
