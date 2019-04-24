@@ -323,7 +323,7 @@ $ScriptPath2 = "$($TempFilesPath)script2.ps1"
 "& `"$($TempFilesPath)$($ExtractionPath)\UNIFIEDSETUP.EXE`" /AcceptThirdpartyEULA /ServerMode `"CS`" /InstallLocation $InstallPath /MySQLCredsFilePath $SQLCredPath /VaultCredsFilePath $VaultCredPath /EnvType NonVMWare" | Out-File $ScriptPath2 -Force -Encoding ascii
 
 
-psexec -h -u $ConfigServerUsername -p $ConfigServerPassword cmd /c "Powershell.exe -NoProfile -ExecutionPolicy Bypass -Command $ScriptPath2"
+psexec -u -accepteula $ConfigServerUsername -p $ConfigServerPassword -h cmd /c "Powershell.exe -NoProfile -ExecutionPolicy Bypass -Command $ScriptPath2"
 #Powershell.exe -NoProfile -ExecutionPolicy Bypass -Command $ScriptPath2
 #https://stackoverflow.com/questions/41550616/customscriptextension-cannot-run-start-process-access-is-denied
 
