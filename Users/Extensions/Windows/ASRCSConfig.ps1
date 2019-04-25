@@ -479,7 +479,7 @@ $RunAsAccounts = $ASRFabrics[0].FabricSpecificDetails.RunAsAccounts
 
 # Set replicated items
 Write-Output -InputObject "Setting VMs to be protected"
-$ContainerMapping = Get-ASRProtectionContainerMapping -ProtectionContainer $ProtectionContainer | Where-Object {PolicyFriendlyName -eq $ReplicationPolicyName}
+$ContainerMapping = Get-ASRProtectionContainerMapping -ProtectionContainer $ProtectionContainer | Where-Object {$_.PolicyFriendlyName -eq $ReplicationPolicyName}
 foreach ($Item in $ProtectedItems) {
     # Remove Azure Stack Temporary Disk
     [String[]]$Disks = @()
