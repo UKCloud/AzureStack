@@ -322,8 +322,22 @@ Write-Output -InputObject "Installing Azure Site Recovery Configuration Server"
 $ScriptPath2 = "$($TempFilesPath)script2.ps1"
 "& `"$($TempFilesPath)$($ExtractionPath)\UNIFIEDSETUP.EXE`" /AcceptThirdpartyEULA /ServerMode `"CS`" /InstallLocation $InstallPath /MySQLCredsFilePath $SQLCredPath /VaultCredsFilePath $VaultCredPath /EnvType NonVMWare" | Out-File $ScriptPath2 -Force -Encoding ascii
 
-
-psexec -u -accepteula $ConfigServerUsername -p $ConfigServerPassword -h cmd /c "Powershell.exe -NoProfile -ExecutionPolicy Bypass -Command $ScriptPath2"
+$Retry = 0
+$Installed = $false
+while ($Installed -eq $false -and $Retry -lt 5) {
+    psexec -u -accepteula $ConfigServerUsername -p $ConfigServerPassword -h cmd /c "Powershell.exe -NoProfile -ExecutionPolicy Bypass -Command $ScriptPath2"
+    if (Test-Path -Path "C:\MySQL_Database.log") {
+        $Retry++
+        Write-Output -InputObject "Failed to install Azure Site Recovery Configuration Server"
+        if ($Retry -lt 5) {
+            Write-Output -InputObject "Retrying..."
+        }
+    }
+    else {
+        $Installed = $true
+        Write-Output -InputObject "Successfully installed Azure Site Recovery Configuration Server"
+    }
+}
 #Powershell.exe -NoProfile -ExecutionPolicy Bypass -Command $ScriptPath2
 #https://stackoverflow.com/questions/41550616/customscriptextension-cannot-run-start-process-access-is-denied
 
