@@ -326,11 +326,14 @@ $Retry = 0
 $Installed = $false
 while ($Installed -eq $false -and $Retry -lt 5) {
     psexec -u -accepteula $ConfigServerUsername -p $ConfigServerPassword -h cmd /c "Powershell.exe -NoProfile -ExecutionPolicy Bypass -Command $ScriptPath2"
-    if (Test-Path -Path "C:\MySQL_Database.log") {
+    $SqlDatabaseLog = Get-Content -Path "C:\MySQL_Database.log"
+    if ($SqlDatabaseLog -like "*Could not create svsystems user*") {
+        $SqlDatabaseLog = ""
         $Retry++
         Write-Output -InputObject "Failed to install Azure Site Recovery Configuration Server"
         if ($Retry -lt 5) {
             Write-Output -InputObject "Retrying..."
+            Remove-Item -Path "C:\MySQL_Database.log" -Force -Confirm:$false
         }
     }
     else {
