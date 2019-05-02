@@ -244,7 +244,7 @@ $InstallPath = "F:\ASR"
 
 # Download Installer file
 Write-Output -InputObject "Downloading setup file"
-$Url = "http://aka.ms/unifiedinstaller_uks"
+$Url = "https://aka.ms/unifiedinstaller_uks"
 $Output = "$($TempFilesPath)MicrosoftAzureSiteRecoveryUnifiedSetup.exe"
 (New-Object System.Net.WebClient).DownloadFile($Url, $Output)
 
@@ -326,7 +326,9 @@ $Retry = 0
 $Installed = $false
 while ($Installed -eq $false -and $Retry -lt 5) {
     psexec -u -accepteula $ConfigServerUsername -p $ConfigServerPassword -h cmd /c "Powershell.exe -NoProfile -ExecutionPolicy Bypass -Command $ScriptPath2"
-    $SqlDatabaseLog = Get-Content -Path "C:\MySQL_Database.log"
+    if (Test-Path -Path "C:\MySQL_Database.log") {
+        $SqlDatabaseLog = Get-Content -Path "C:\MySQL_Database.log"
+    }
     if ($SqlDatabaseLog -like "*Could not create svsystems user*") {
         $SqlDatabaseLog = ""
         $Retry++
