@@ -61,7 +61,6 @@
             "metadata": {
                 "description": "The root password for the MySQL server created on the Configuration Server"
             },
-            "defaultValue": "Password123!",
             "minLength": 8,
             "maxLength": 16
         },
@@ -70,7 +69,6 @@
             "metadata": {
                 "description": "The user password for the MySQL server created on the Configuration Server"
             },
-            "defaultValue": "Password123!",
             "minLength": 8,
             "maxLength": 16
         },
@@ -191,7 +189,6 @@
             "metadata": {
                 "description": "The encryption key for the MySQL database on the configuration server"
             },
-            "defaultValue": "ExampleEncryptionKey",
             "minLength": 12
         },
         "WindowsUsername": {
