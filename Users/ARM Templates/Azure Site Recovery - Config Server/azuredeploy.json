@@ -15,28 +15,32 @@
             "metadata": {
                 "description": "The app ID of a service principal with write permissions for Azure and Azure Stack"
             },
-            "defaultValue": ""
+            "minLength": 36,
+            "maxLength": 36
         },
         "ClientSecret": {
             "type": "securestring",
             "metadata": {
                 "description": "A password for the service principal specified in the ClientID parameter"
             },
-            "defaultValue": ""
+            "minLength": 1
         },
         "StackArmEndpoint": {
             "type": "string",
             "metadata": {
                 "description": "The ARM endpoint for Azure Stack"
             },
-            "defaultValue": "https://management.frn00006.azure.ukcloud.com"
+            "defaultValue": "https://management.frn00006.azure.ukcloud.com",
+            "minLength": 20
         },
         "ConfigurationServerName": {
             "type": "string",
             "metadata": {
                 "description": "The name of the configuration server VM"
             },
-            "defaultValue": "SRConfigServer"
+            "defaultValue": "SRConfigServer",
+            "minLength": 1,
+            "maxLength": 15
         },
         "TempFilesPath": {
             "type": "string",
@@ -57,70 +61,88 @@
             "metadata": {
                 "description": "The root password for the MySQL server created on the Configuration Server"
             },
-            "defaultValue": "Password123!"
+            "defaultValue": "Password123!",
+            "minLength": 8,
+            "maxLength": 16
         },
         "MySQLUserPassword": {
             "type": "securestring",
             "metadata": {
                 "description": "The user password for the MySQL server created on the Configuration Server"
             },
-            "defaultValue": "Password123!"
+            "defaultValue": "Password123!",
+            "minLength": 8,
+            "maxLength": 16
         },
         "AzureVNetName": {
             "type": "string",
             "metadata": {
                 "description": "The name of the virtual network to be created on public Azure"
             },
-            "defaultValue": "SiteRecoveryVNet"
+            "defaultValue": "SiteRecoveryVNet",
+            "minLength": 2,
+            "maxLength": 64
         },
         "StackVNetName": {
             "type": "string",
             "metadata": {
                 "description": "The name of the existing virtual network to connect the configuration server to on Azure Stack"
             },
-            "defaultValue": "SiteRecoveryVNet"
+            "defaultValue": "SiteRecoveryVNet",
+            "minLength": 2,
+            "maxLength": 64
         },
         "StackSubnetName": {
             "type": "string",
             "metadata": {
                 "description": "The name of the existing virtual network subnet to connect the configuration server to on Azure Stack"
             },
-            "defaultValue": "default"
+            "defaultValue": "default",
+            "minLength": 1
         },
         "AzureStorageAccount": {
             "type": "string",
             "metadata": {
                 "description": "The name of the storage account to be created on public Azure"
             },
-            "defaultValue": "stacksiterecoverysa"
+            "defaultValue": "stacksiterecoverysa",
+            "minLength": 3,
+            "maxLength": 24
         },
         "StackStorageAccount": {
             "type": "string",
             "metadata": {
                 "description": "The name of the storage account to be created on Azure Stack"
             },
-            "defaultValue": "siterecoverycssa"
+            "defaultValue": "siterecoverycssa",
+            "minLength": 3,
+            "maxLength": 24
         },
         "AzureSubnetRange": {
             "type": "string",
             "metadata": {
                 "description": "The subnet range of the virtual network to be created on public Azure"
             },
-            "defaultValue": "192.168.1.0/24"
+            "defaultValue": "192.168.1.0/24",
+            "minLength": 9,
+            "maxLength": 18
         },
         "AzureVNetRange": {
             "type": "string",
             "metadata": {
                 "description": "The address space of the virtual network to be created on public Azure"
             },
-            "defaultValue": "192.168.0.0/16"
+            "defaultValue": "192.168.0.0/16",
+            "minLength": 9,
+            "maxLength": 18
         },
         "AzureLocation": {
             "type": "string",
             "metadata": {
                 "description": "The location of the recovery services vault on public Azure"
             },
-            "defaultValue": "UK West"
+            "defaultValue": "UK West",
+            "minLength": 1
         },
         "ReplicationPolicyName": {
             "type": "string",
@@ -134,35 +156,43 @@
             "metadata": {
                 "description": "The name of the resource group to be created on public Azure"
             },
-            "defaultValue": "SiteRecoveryRG"
+            "defaultValue": "SiteRecoveryRG",
+            "minLength": 1,
+            "maxLength": 90
         },
         "VaultName": {
             "type": "string",
             "metadata": {
                 "description": "The name of the recovery services vault to be created on public Azure"
             },
-            "defaultValue": "AzureStackVault"
+            "defaultValue": "AzureStackVault",
+            "minLength": 2,
+            "maxLength": 50
         },
         "ConfigServerUsername": {
             "type": "string",
             "metadata": {
                 "description": "The username for the configuration server"
             },
-            "defaultValue": "ConfigAdmin"
+            "defaultValue": "ConfigAdmin",
+            "minLength": 1,
+            "maxLength": 15
         },
         "ConfigServerPassword": {
             "type": "securestring",
             "metadata": {
                 "description": "The password for the configuration server"
             },
-            "defaultValue": ""
+            "minLength": 12,
+            "maxLength": 123
         },
         "EncryptionKey": {
             "type": "securestring",
             "metadata": {
                 "description": "The encryption key for the MySQL database on the configuration server"
             },
-            "defaultValue": "ExampleEncryptionKey"
+            "defaultValue": "ExampleEncryptionKey",
+            "minLength": 12
         },
         "WindowsUsername": {
             "type": "string",
@@ -175,15 +205,13 @@
             "type": "securestring",
             "metadata": {
                 "description": "The password of an administrator account on the Windows VMs to be protected"
-            },
-            "defaultValue": ""
+            }
         },
         "LinuxRootPassword": {
             "type": "securestring",
             "metadata": {
                 "description": "The password of the root account on the Linux VMs to be protected"
-            },
-            "defaultValue": ""
+            }
         }
     },
     "variables": {
@@ -347,7 +375,7 @@
                         "fileUris": [ "[variables('scriptFile')]" ]
                     },
                     "protectedSettings": {
-                        "commandToExecute" : "[concat('powershell -ExecutionPolicy Unrestricted -File ASRCSConfig.ps1 -ClientID ',parameters('ClientID'),' -ClientSecret ',parameters('ClientSecret'),' -TenantID ',variables('TenantID'),' -ArmEndpoint ',parameters('StackArmEndpoint'),' -MySQLRootPassword ',parameters('MySQLRootPassword'),' -MySQLUserPassword ',parameters('MySQLUserPassword'),' -AzureStorageAccount ',parameters('AzureStorageAccount'),' -AzureResourceGroup ',parameters('AzureResourceGroup'),' -VaultName ',parameters('VaultName'),' -ConfigServerUsername ',parameters('ConfigServerUsername'),' -ConfigServerPassword ',parameters('ConfigServerPassword'),' -EncryptionKey ',parameters('EncryptionKey'),' -WindowsUsername ',parameters('WindowsUsername'),' -WindowsPassword ',parameters('WindowsPassword'),' -LinuxRootPassword ',parameters('LinuxRootPassword'),' -StackResourceGroup ',variables('ResourceGroupName'))]"
+                        "commandToExecute" : "[concat('powershell -ExecutionPolicy Unrestricted -File ASRCSConfig.ps1 -ClientID ',parameters('ClientID'),' -ClientSecret ',parameters('ClientSecret'),' -TenantID ',variables('TenantID'),' -ArmEndpoint ',parameters('StackArmEndpoint'),' -TempFilesPath ',parameters('TempFilesPath'),' -ExtractionPath ',parameters('ExtractionPath'),' -MySQLRootPassword ',parameters('MySQLRootPassword'),' -MySQLUserPassword ',parameters('MySQLUserPassword'),' -VNetName ',parameters('AzureVNetName'),' -AzureStorageAccount ',parameters('AzureStorageAccount'),' -SubnetRange ',parameters('AzureSubnetRange'),' -VNetRange ',parameters('AzureVNetRange'),' -AzureLocation ',parameters('AzureLocation'),' -ReplicationPolicyName ',parameters('ReplicationPolicyName'),' -AzureResourceGroup ',parameters('AzureResourceGroup'),' -VaultName ',parameters('VaultName'),' -ConfigServerUsername ',parameters('ConfigServerUsername'),' -ConfigServerPassword ',parameters('ConfigServerPassword'),' -EncryptionKey ',parameters('EncryptionKey'),' -WindowsUsername ',parameters('WindowsUsername'),' -WindowsPassword ',parameters('WindowsPassword'),' -LinuxRootPassword ',parameters('LinuxRootPassword'),' -StackResourceGroup ',variables('ResourceGroupName'))]"
                     }
                   }
                 }
