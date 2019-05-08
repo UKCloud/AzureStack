@@ -49,8 +49,14 @@
     .PARAMETER ReplicationPolicyName
         The name of the site recovery replication policy to be created in the recovery services vault. Defaults to: "ReplicationPolicy"
 
+    .PARAMETER ExistingAzureResourceGroup
+        Switch used to indicate if the resource group already exists in public Azure. False indicates that a new resource group should be created. Defaults to: False
+
     .PARAMETER AzureResourceGroup
         The name of the resource group to be created on public Azure. Defaults to: "SiteRecoveryTestRG"
+
+    .PARAMETER ExistingAzureVault
+        Switch used to indicate if the vault already exists in public Azure. False indicates that a new vault should be created. Defaults to: False
 
     .PARAMETER VaultName
         The name of the recovery services vault to be created on public Azure. Defaults to: "AzureStackVault"
@@ -139,8 +145,14 @@ param (
     [String]
     $ReplicationPolicyName = "ReplicationPolicy",
     [Parameter(Mandatory = $false)]
+    [Switch]
+    $ExistingAzureResourceGroup = $false,
+    [Parameter(Mandatory = $false)]
     [String]
     $AzureResourceGroup = "SiteRecoveryTestRG",
+    [Parameter(Mandatory = $false)]
+    [Switch]
+    $ExistingAzureVault = $false,
     [Parameter(Mandatory = $false)]
     [String]
     $VaultName = "AzureStackVault",
@@ -272,13 +284,26 @@ Connect-AzureRmAccount -Credential $Credentials -ServicePrincipal -Tenant $Tenan
 ## Create and configure a vault, then retrieve settings
 # Declare variables
 Write-Output -InputObject "Setting up vault and retrieving settings"
-# Create resource group
-Write-Output -InputObject "Creating resource group in public Azure"
-$SRRG = New-AzureRmResourceGroup -Name $AzureResourceGroup -Location $AzureLocation
-# Create the Vault
+# Create/Get resource group
+if ($ExistingAzureResourceGroup -eq $false) {
+    Write-Output -InputObject "Creating resource group in public Azure"
+    $SRRG = New-AzureRmResourceGroup -Name $AzureResourceGroup -Location $AzureLocation
+}
+else {
+    Write-Output -InputObject "Getting resource group details from public Azure"
+    $SRRG = Get-AzureRmResourceGroup -Name $AzureResourceGroup
+}
+
+# Create/Get the Vault
 Write-Output -InputObject "Creating Site Recovery vault"
-$SRVault = New-AzureRmRecoveryServicesVault -Name $VaultName -ResourceGroupName $SRRG.ResourceGroupName -Location $SRRG.Location
-Set-AzureRmRecoveryServicesBackupProperties -Vault $SRVault -BackupStorageRedundancy LocallyRedundant
+if ($ExistingAzureVault -eq $false) {
+    $SRVault = New-AzureRmRecoveryServicesVault -Name $VaultName -ResourceGroupName $SRRG.ResourceGroupName -Location $SRRG.Location
+    Set-AzureRmRecoveryServicesBackupProperties -Vault $SRVault -BackupStorageRedundancy LocallyRedundant
+}
+else {
+    $SRVault = Get-AzureRmRecoveryServicesVault -Name $VaultName -ResourceGroupName $SRRG.ResourceGroupName
+}
+
 # Set Vault Context
 Set-AzureRmRecoveryServicesAsrVaultContext -Vault $SRVault
 $ScriptPath = "C:\TempASR\script.ps1"
