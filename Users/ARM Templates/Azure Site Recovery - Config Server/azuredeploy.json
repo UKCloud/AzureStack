@@ -10,198 +10,237 @@
         "dateUpdated": "2019-03-08"
     },
     "parameters": {
-        "ClientID": {
+        "Client ID": {
             "type": "string",
             "metadata": {
                 "description": "The app ID of a service principal with write permissions for Azure and Azure Stack"
             },
-            "defaultValue": ""
+            "minLength": 36,
+            "maxLength": 36
         },
-        "ClientSecret": {
+        "Client Secret": {
             "type": "securestring",
             "metadata": {
-                "description": "A password for the service principal specified in the ClientID parameter"
+                "description": "A password for the service principal specified in the Client ID parameter"
             },
-            "defaultValue": ""
+            "minLength": 1
         },
-        "StackArmEndpoint": {
+        "Stack Arm Endpoint": {
             "type": "string",
             "metadata": {
                 "description": "The ARM endpoint for Azure Stack"
             },
-            "defaultValue": "https://management.frn00006.azure.ukcloud.com"
+            "defaultValue": "https://management.frn00006.azure.ukcloud.com",
+            "minLength": 20
         },
-        "ConfigurationServerName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of the configuration server VM"
-            },
-            "defaultValue": "SRConfigServer"
-        },
-        "TempFilesPath": {
-            "type": "string",
-            "metadata": {
-                "description": "Location on configuration server where setup files will be stored"
-            },
-            "defaultValue": "C:\\TempASR\\"
-        },
-        "ExtractionPath": {
-            "type": "string",
-            "metadata": {
-                "description": "Folder within the TempFilesPath where the unified setup will be extracted to"
-            },
-            "defaultValue": "Extracted"
-        },
-        "MySQLRootPassword": {
-            "type": "securestring",
-            "metadata": {
-                "description": "The root password for the MySQL server created on the Configuration Server"
-            },
-            "defaultValue": "Password123!"
-        },
-        "MySQLUserPassword": {
-            "type": "securestring",
-            "metadata": {
-                "description": "The user password for the MySQL server created on the Configuration Server"
-            },
-            "defaultValue": "Password123!"
-        },
-        "AzureVNetName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of the virtual network to be created on public Azure"
-            },
-            "defaultValue": "SiteRecoveryVNet"
-        },
-        "StackVNetName": {
+        "Stack VNet Name": {
             "type": "string",
             "metadata": {
                 "description": "The name of the existing virtual network to connect the configuration server to on Azure Stack"
             },
-            "defaultValue": "SiteRecoveryVNet"
+            "defaultValue": "SiteRecoveryVNet",
+            "minLength": 2,
+            "maxLength": 64
         },
-        "StackSubnetName": {
+        "Stack Subnet Name": {
             "type": "string",
             "metadata": {
                 "description": "The name of the existing virtual network subnet to connect the configuration server to on Azure Stack"
             },
-            "defaultValue": "default"
+            "defaultValue": "default",
+            "minLength": 1
         },
-        "AzureStorageAccount": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of the storage account to be created on public Azure"
-            },
-            "defaultValue": "stacksiterecoverysa"
-        },
-        "StackStorageAccount": {
+        "Stack Storage Account": {
             "type": "string",
             "metadata": {
                 "description": "The name of the storage account to be created on Azure Stack"
             },
-            "defaultValue": "siterecoverycssa"
+            "defaultValue": "siterecoverycssa",
+            "minLength": 3,
+            "maxLength": 24
         },
-        "AzureSubnetRange": {
+        "Azure Resource Group": {
             "type": "string",
             "metadata": {
-                "description": "The subnet range of the virtual network to be created on public Azure"
+                "description": "The name of the resource group on public Azure"
             },
-            "defaultValue": "192.168.1.0/24"
+            "defaultValue": "SiteRecoveryRG",
+            "minLength": 1,
+            "maxLength": 90
         },
-        "AzureVNetRange": {
-            "type": "string",
+        "Existing Azure Resource Group": {
+            "type": "bool",
             "metadata": {
-                "description": "The address space of the virtual network to be created on public Azure"
+                "description": "Select 'true' if the resource group already exists in public Azure"
             },
-            "defaultValue": "192.168.0.0/16"
+            "defaultValue": false
         },
-        "AzureLocation": {
+        "Azure Location": {
             "type": "string",
             "metadata": {
                 "description": "The location of the recovery services vault on public Azure"
             },
-            "defaultValue": "UK West"
+            "defaultValue": "UkWest",
+            "minLength": 6
         },
-        "ReplicationPolicyName": {
+        "Azure VNet Name": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the virtual network to be created on public Azure"
+            },
+            "defaultValue": "SiteRecoveryVNet",
+            "minLength": 2,
+            "maxLength": 64
+        },
+        "Azure Subnet Range": {
+            "type": "string",
+            "metadata": {
+                "description": "The subnet range of the virtual network to be created on public Azure"
+            },
+            "defaultValue": "192.168.1.0/24",
+            "minLength": 9,
+            "maxLength": 18
+        },
+        "Azure VNet Range": {
+            "type": "string",
+            "metadata": {
+                "description": "The address space of the virtual network to be created on public Azure"
+            },
+            "defaultValue": "192.168.0.0/16",
+            "minLength": 9,
+            "maxLength": 18
+        },
+        "Azure Storage Account": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the storage account to be in public Azure"
+            },
+            "defaultValue": "stacksiterecoverysa",
+            "minLength": 3,
+            "maxLength": 24
+        },
+        "Vault Name": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the recovery services vault to be created on public Azure"
+            },
+            "defaultValue": "AzureStackVault",
+            "minLength": 2,
+            "maxLength": 50
+        },
+        "Existing Azure Vault": {
+            "type": "bool",
+            "metadata": {
+                "description": "Select 'true' if the vault already exists in public Azure"
+            },
+            "defaultValue": false
+        },
+        "Replication Policy Name": {
             "type": "string",
             "metadata": {
                 "description": "The name of the site recovery replication policy to be created in the recovery services vault"
             },
             "defaultValue": "ReplicationPolicy"
         },
-        "AzureResourceGroup": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of the resource group to be created on public Azure"
-            },
-            "defaultValue": "SiteRecoveryRG"
-        },
-        "VaultName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of the recovery services vault to be created on public Azure"
-            },
-            "defaultValue": "AzureStackVault"
-        },
-        "ConfigServerUsername": {
+        "Config Server Username": {
             "type": "string",
             "metadata": {
                 "description": "The username for the configuration server"
             },
-            "defaultValue": "ConfigAdmin"
+            "defaultValue": "ConfigAdmin",
+            "minLength": 1,
+            "maxLength": 15
         },
-        "ConfigServerPassword": {
+        "Config Server Password": {
             "type": "securestring",
             "metadata": {
                 "description": "The password for the configuration server"
             },
-            "defaultValue": ""
+            "minLength": 12,
+            "maxLength": 123
         },
-        "EncryptionKey": {
+        "Config Server Name": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the configuration server VM"
+            },
+            "defaultValue": "SRConfigServer",
+            "minLength": 1,
+            "maxLength": 15
+        },
+        "Temporary Files Path": {
+            "type": "string",
+            "metadata": {
+                "description": "Location on configuration server where setup files will be stored"
+            },
+            "defaultValue": "C:\\TempASR\\"
+        },
+        "Extraction Path": {
+            "type": "string",
+            "metadata": {
+                "description": "Folder within the Temporary Files Path where the unified setup will be extracted to"
+            },
+            "defaultValue": "Extracted"
+        },
+        "MySQL Root Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The root password for the MySQL server created on the Configuration Server"
+            },
+            "minLength": 8,
+            "maxLength": 16
+        },
+        "MySQL User Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The user password for the MySQL server created on the Configuration Server"
+            },
+            "minLength": 8,
+            "maxLength": 16
+        },
+        "Encryption Key": {
             "type": "securestring",
             "metadata": {
                 "description": "The encryption key for the MySQL database on the configuration server"
             },
-            "defaultValue": "ExampleEncryptionKey"
+            "minLength": 12
         },
-        "WindowsUsername": {
+        "Windows Username": {
             "type": "string",
             "metadata": {
                 "description": "The username of an administrator account on the Windows VMs to be protected"
             },
             "defaultValue": "Administrator"
         },
-        "WindowsPassword": {
+        "Windows Password": {
             "type": "securestring",
             "metadata": {
                 "description": "The password of an administrator account on the Windows VMs to be protected"
-            },
-            "defaultValue": ""
+            }
         },
-        "LinuxRootPassword": {
+        "Linux Root Password": {
             "type": "securestring",
             "metadata": {
                 "description": "The password of the root account on the Linux VMs to be protected"
-            },
-            "defaultValue": ""
+            }
         }
     },
     "variables": {
         "location": "[resourceGroup().location]",
-        "ResourceGroupName": "[resourceGroup().name]",
-        "TenantID": "[subscription().tenantId]",
+        "resourceGroupName": "[resourceGroup().name]",
+        "tenantId": "[subscription().tenantid]",
         "imagePublisher": "MicrosoftWindowsServer",
         "imageOffer": "WindowsServer",
         "imageSKU" : "2016-Datacenter",
-        "OSDiskName": "osdisk",
+        "osDiskName": "osdisk",
         "nicName": "CSNIC",
-        "NSGName": "SiteRecoveryNSG",
+        "nsgName": "SiteRecoveryNSG",
         "storageAccountType": "Standard_LRS",
         "vmStorageAccountContainerName": "asrconfigservervhds",
         "publicIPAddressName": "SiteRecoveryCSIP",
         "vmSize": "Standard_A8_v2",
-        "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', parameters('StackVNetName'))]",
-        "subnetRef": "[concat(variables('vnetID'),'/subnets/',parameters('StackSubnetName'))]",
+        "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', parameters('Stack VNet Name'))]",
+        "subnetRef": "[concat(variables('vnetID'),'/subnets/',parameters('Stack Subnet Name'))]",
         "ddisk1name": "ProcessServerCacheDisk",
         "ddisk2name": "RetentionDisk",
         "scriptFile": "https://raw.githubusercontent.com/UKCloud/AzureStack/master/Users/Extensions/Windows/ASRCSConfig.ps1"
@@ -209,10 +248,10 @@
     "resources": [
         {
             "type": "Microsoft.Network/networkSecurityGroups",
-            "name": "[variables('NSGName')]",
+            "name": "[variables('nsgName')]",
             "location": "[variables('location')]",
             "tags": {
-                "displayName": "[variables('NSGName')]"
+                "displayName": "[variables('nsgName')]"
             }
         },
         {
@@ -226,7 +265,7 @@
           },
         {
             "type": "Microsoft.Storage/storageAccounts",
-            "name": "[toLower(parameters('StackStorageAccount'))]",
+            "name": "[toLower(parameters('Stack Storage Account'))]",
             "location": "[variables('location')]",
             "properties": {
                 "accountType": "[variables('storageAccountType')]"
@@ -238,7 +277,7 @@
             "location": "[variables('location')]",
             "dependsOn": [
                 "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]",
-                "[concat('Microsoft.Network/networkSecurityGroups/', variables('NSGName'))]"
+                "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
             ],
             "properties": {
                 "ipConfigurations": [
@@ -256,16 +295,16 @@
                     }
                 ],
                 "networkSecurityGroup": {
-                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('NSGName'))]"
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]"
                 }
             }
         },
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[parameters('ConfigurationServerName')]",
+            "name": "[parameters('Config Server Name')]",
             "location": "[variables('location')]",
             "dependsOn": [
-                "[concat('Microsoft.Storage/storageAccounts/', toLower(parameters('StackStorageAccount')))]",
+                "[concat('Microsoft.Storage/storageAccounts/', toLower(parameters('Stack Storage Account')))]",
                 "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
             ],
             "properties": {
@@ -273,9 +312,9 @@
                     "vmSize": "[variables('vmSize')]"
                 },
                 "osProfile": {
-                    "computerName": "[parameters('ConfigurationServerName')]",
-                    "adminUsername": "[parameters('ConfigServerUsername')]",
-                    "adminPassword": "[parameters('ConfigServerPassword')]"
+                    "computerName": "[parameters('Config Server Name')]",
+                    "adminUsername": "[parameters('Config Server Username')]",
+                    "adminPassword": "[parameters('Config Server Password')]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -287,7 +326,7 @@
                     "osDisk": {
                         "name": "osdisk",
                         "vhd": {
-                            "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', parameters('StackStorageAccount')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
+                            "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', toLower(parameters('Stack Storage Account'))), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, variables('vmStorageAccountContainerName'),'/',variables('osDiskName'),'.vhd')]"
                         },
                         "caching": "ReadWrite",
                         "createOption": "FromImage"
@@ -299,7 +338,7 @@
                           "createOption": "Empty",
                           "name": "[variables('ddisk1name')]",
                           "vhd" : {
-                              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', parameters('StackStorageAccount')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, variables('vmStorageAccountContainerName'),'/',variables('ddisk1name'),'.vhd')]"
+                              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', toLower(parameters('Stack Storage Account'))), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, variables('vmStorageAccountContainerName'),'/',variables('ddisk1name'),'.vhd')]"
                           }
                         },
                         {
@@ -308,7 +347,7 @@
                           "createOption": "Empty",
                           "name": "[variables('ddisk2name')]",
                           "vhd" : {
-                            "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', parameters('StackStorageAccount')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, variables('vmStorageAccountContainerName'),'/',variables('ddisk2name'),'.vhd')]"
+                            "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', toLower(parameters('Stack Storage Account'))), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, variables('vmStorageAccountContainerName'),'/',variables('ddisk2name'),'.vhd')]"
                         }
                         }
                       ]
@@ -323,7 +362,7 @@
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('StackStorageAccount')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob]"
+                        "storageUri": "[reference(concat('Microsoft.Storage/storageAccounts/', toLower(parameters('Stack Storage Account'))), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob]"
                     }
                 }
             },
@@ -333,7 +372,7 @@
                   "type": "extensions",
                   "location": "[resourceGroup().location]",
                   "dependsOn": [
-                    "[concat('Microsoft.Compute/virtualMachines/', parameters('ConfigurationServerName'))]"
+                    "[concat('Microsoft.Compute/virtualMachines/', parameters('Config Server Name'))]"
                   ],
                   "tags": {
                     "displayName": "SRSetup"
@@ -347,7 +386,7 @@
                         "fileUris": [ "[variables('scriptFile')]" ]
                     },
                     "protectedSettings": {
-                        "commandToExecute" : "[concat('powershell -ExecutionPolicy Unrestricted -File ASRCSConfig.ps1 -ClientID ',parameters('ClientID'),' -ClientSecret ',parameters('ClientSecret'),' -TenantID ',variables('TenantID'),' -ArmEndpoint ',parameters('StackArmEndpoint'),' -MySQLRootPassword ',parameters('MySQLRootPassword'),' -MySQLUserPassword ',parameters('MySQLUserPassword'),' -AzureStorageAccount ',parameters('AzureStorageAccount'),' -AzureResourceGroup ',parameters('AzureResourceGroup'),' -VaultName ',parameters('VaultName'),' -ConfigServerUsername ',parameters('ConfigServerUsername'),' -ConfigServerPassword ',parameters('ConfigServerPassword'),' -EncryptionKey ',parameters('EncryptionKey'),' -WindowsUsername ',parameters('WindowsUsername'),' -WindowsPassword ',parameters('WindowsPassword'),' -LinuxRootPassword ',parameters('LinuxRootPassword'),' -StackResourceGroup ',variables('ResourceGroupName'))]"
+                        "commandToExecute" : "[concat('powershell -ExecutionPolicy Unrestricted -File ASRCSConfig.ps1 -ClientId ', parameters('Client ID'), ' -ClientSecret ', parameters('Client Secret'), ' -TenantId ', variables('tenantId'), ' -ArmEndpoint ', parameters('Stack Arm Endpoint'), ' -TempFilesPath ', parameters('Temporary Files Path'), ' -ExtractionPath ', parameters('Extraction Path'), ' -MySQLRootPassword ', parameters('MySQL Root Password'), ' -MySQLUserPassword ', parameters('MySQL User Password'), ' -VNetName ', parameters('Azure VNet Name'), ' -AzureStorageAccount ',toLower(parameters('Azure Storage Account')), ' -SubnetRange ', parameters('Azure Subnet Range'), ' -VNetRange ', parameters('Azure VNet Range'), ' -AzureLocation ', parameters('Azure Location'), ' -ReplicationPolicyName ', parameters('Replication Policy Name'), ' -ExistingAzureResourceGroup ', parameters('Existing Azure Resource Group'), ' -AzureResourceGroup ', parameters('Azure Resource Group'), ' -ExistingAzureVault ', parameters('Existing Azure Vault'), ' -VaultName ', parameters('Vault Name'), ' -ConfigServerUsername ', parameters('Config Server Username'), ' -ConfigServerPassword ', parameters('Config Server Password'), ' -EncryptionKey ', parameters('Encryption Key'), ' -WindowsUsername ', parameters('Windows Username'), ' -WindowsPassword ', parameters('Windows Password'), ' -LinuxRootPassword ', parameters('Linux Root Password'), ' -StackResourceGroup ',variables('resourceGroupName'))]"
                     }
                   }
                 }

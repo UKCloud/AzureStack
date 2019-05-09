@@ -55,8 +55,8 @@ The configuration server that is deployed creates all necessary resources on pub
 | ConfigurationServerName | The name of the configuration server VM | SRConfigServer |
 | TempFilesPath | Location on configuration server where setup files will be stored | C:\TempASR\ |
 | ExtractionPath | The name of the folder within the TempFilesPath where the configuration server unified setup will be extracted to | Extracted |
-| MySQLRootPassword | The root password for the MySQL server created on the Configuration Server (Must meet password requirements specified in [below](#MySQL-Password-Requirements)) | |
-| MySQLUserPassword | The user password for the MySQL server created on the Configuration Server (Must meet password requirements specified [below](#MySQL-Password-Requirements)) | |
+| MySQLRootPassword | The root password for the MySQL server created on the Configuration Server (Must meet password requirements specified in [below](#MySQL-Password-Requirements)) | Password123! |
+| MySQLUserPassword | The user password for the MySQL server created on the Configuration Server (Must meet password requirements specified [below](#MySQL-Password-Requirements)) | Password123! |
 | AzureVNetName | The name of the virtual network to be created on public Azure | SiteRecoveryVNet |
 | StackVNetName | The name of the existing virtual network to connect the configuration server to on Azure Stack | SiteRecoveryVNet |
 | StackSubnetName | The name of the existing virtual network subnet to connect the configuration server to on Azure Stack | default |
@@ -64,16 +64,16 @@ The configuration server that is deployed creates all necessary resources on pub
 | StackStorageAccount | The name of the storage account to be created on Azure Stack (Must be unique across Azure Stack)  | siterecoverycssa |
 | AzureSubnetRange | The subnet range of the virtual network to be created on public Azure (In CIDR notation)  | 192.168.1.0/24 |
 | AzureVNetRange | The address space of the virtual network to be created on public Azure (In CIDR notation)  | 192.168.0.0/16 |
-| AzureLocation | The location of the recovery services vault on public Azure  | UK West |
+| AzureLocation | The location of the recovery services vault on public Azure  | UkWest |
 | ReplicationPolicyName | The name of the site recovery replication policy to be created in the recovery services vault  | ReplicationPolicy |
 | AzureResourceGroup | The name of the resource group to be created on public Azure  | SiteRecoveryTestRG |
 | VaultName | The name of the recovery services vault to be created on public Azure  | AzureStackVault |
 | ConfigServerUsername | The username for the configuration server  | ConfigAdmin |
-| ConfigServerPassword | The password for the configuration server | |
+| ConfigServerPassword | The password for the configuration server | Password123! |
 | EncryptionKey | The encryption key for the MySQL database on the configuration server  | ExampleEncryptionKey |
 | WindowsUsername | The username of an administrator account on the Windows VMs to be protected  | Administrator |
-| WindowsPassword | The password of an administrator account on the Windows VMs to be protected | |
-| LinuxRootPassword | The password of the root account on the Linux VMs to be protected | |
+| WindowsPassword | The password of an administrator account on the Windows VMs to be protected | Password123! |
+| LinuxRootPassword | The password of the root account on the Linux VMs to be protected | Password123! |
 
 ## Notes
 
