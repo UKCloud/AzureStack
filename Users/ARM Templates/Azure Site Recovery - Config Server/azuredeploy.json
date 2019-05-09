@@ -326,7 +326,7 @@
                     "osDisk": {
                         "name": "osdisk",
                         "vhd": {
-                            "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', parameters('Stack Storage Account')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
+                            "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', toLower(parameters('Stack Storage Account'))), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
                         },
                         "caching": "ReadWrite",
                         "createOption": "FromImage"
@@ -338,7 +338,7 @@
                           "createOption": "Empty",
                           "name": "[variables('ddisk1name')]",
                           "vhd" : {
-                              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', parameters('Stack Storage Account')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, variables('vmStorageAccountContainerName'),'/',variables('ddisk1name'),'.vhd')]"
+                              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', toLower(parameters('Stack Storage Account'))), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, variables('vmStorageAccountContainerName'),'/',variables('ddisk1name'),'.vhd')]"
                           }
                         },
                         {
@@ -347,7 +347,7 @@
                           "createOption": "Empty",
                           "name": "[variables('ddisk2name')]",
                           "vhd" : {
-                            "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', parameters('Stack Storage Account')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, variables('vmStorageAccountContainerName'),'/',variables('ddisk2name'),'.vhd')]"
+                            "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', toLower(parameters('Stack Storage Account'))), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, variables('vmStorageAccountContainerName'),'/',variables('ddisk2name'),'.vhd')]"
                         }
                         }
                       ]
@@ -362,7 +362,7 @@
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('Stack Storage Account')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob]"
+                        "storageUri": "[reference(concat('Microsoft.Storage/storageAccounts/', toLower(parameters('Stack Storage Account'))), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob]"
                     }
                 }
             },
@@ -386,7 +386,7 @@
                         "fileUris": [ "[variables('scriptFile')]" ]
                     },
                     "protectedSettings": {
-                        "commandToExecute" : "[concat('powershell -ExecutionPolicy Unrestricted -File ASRCSConfig.ps1 -ClientID ',parameters('Client ID'),' -ClientSecret ',parameters('Client Secret'),' -TenantID ',variables('TenantID'),' -ArmEndpoint ',parameters('Stack Arm Endpoint'),' -TempFilesPath ',parameters('Temporary Files Path'),' -ExtractionPath ',parameters('Extraction Path'),' -MySQLRootPassword ',parameters('MySQL Root Password'),' -MySQLUserPassword ',parameters('MySQL User Password'),' -VNetName ',parameters('Azure VNet Name'),' -AzureStorageAccount ',parameters('Azure Storage Account'),' -SubnetRange ',parameters('Azure Subnet Range'),' -VNetRange ',parameters('Azure VNet Range'),' -AzureLocation ',parameters('Azure Location'),' -ReplicationPolicyName ',parameters('Replication Policy Name'),' -ExistingAzureResourceGroup ',parameters('Existing Azure Resource Group'),' -AzureResourceGroup ',parameters('Azure Resource Group'),' -ExistingAzureVault ',parameters('Existing Azure Vault'),' -VaultName ',parameters('Vault Name'),' -ConfigServerUsername ',parameters('Config Server Username'),' -ConfigServerPassword ',parameters('Config Server Password'),' -EncryptionKey ',parameters('Encryption Key'),' -WindowsUsername ',parameters('Windows Username'),' -WindowsPassword ',parameters('Windows Password'),' -LinuxRootPassword ',parameters('Linux Root Password'),' -StackResourceGroup ',variables('ResourceGroupName'))]"
+                        "commandToExecute" : "[concat('powershell -ExecutionPolicy Unrestricted -File ASRCSConfig.ps1 -ClientID ',parameters('Client ID'),' -ClientSecret ',parameters('Client Secret'),' -TenantID ',variables('TenantID'),' -ArmEndpoint ',parameters('Stack Arm Endpoint'),' -TempFilesPath ',parameters('Temporary Files Path'),' -ExtractionPath ',parameters('Extraction Path'),' -MySQLRootPassword ',parameters('MySQL Root Password'),' -MySQLUserPassword ',parameters('MySQL User Password'),' -VNetName ',parameters('Azure VNet Name'),' -AzureStorageAccount ',toLower(parameters('Azure Storage Account')),' -SubnetRange ',parameters('Azure Subnet Range'),' -VNetRange ',parameters('Azure VNet Range'),' -AzureLocation ',parameters('Azure Location'),' -ReplicationPolicyName ',parameters('Replication Policy Name'),' -ExistingAzureResourceGroup ',parameters('Existing Azure Resource Group'),' -AzureResourceGroup ',parameters('Azure Resource Group'),' -ExistingAzureVault ',parameters('Existing Azure Vault'),' -VaultName ',parameters('Vault Name'),' -ConfigServerUsername ',parameters('Config Server Username'),' -ConfigServerPassword ',parameters('Config Server Password'),' -EncryptionKey ',parameters('Encryption Key'),' -WindowsUsername ',parameters('Windows Username'),' -WindowsPassword ',parameters('Windows Password'),' -LinuxRootPassword ',parameters('Linux Root Password'),' -StackResourceGroup ',variables('ResourceGroupName'))]"
                     }
                   }
                 }
