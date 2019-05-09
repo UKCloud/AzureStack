@@ -227,14 +227,14 @@
     },
     "variables": {
         "location": "[resourceGroup().location]",
-        "ResourceGroupName": "[resourceGroup().name]",
-        "TenantID": "[subscription().tenantId]",
+        "resourceGroupName": "[resourceGroup().name]",
+        "tenantId": "[subscription().tenantid]",
         "imagePublisher": "MicrosoftWindowsServer",
         "imageOffer": "WindowsServer",
         "imageSKU" : "2016-Datacenter",
-        "OSDiskName": "osdisk",
+        "osDiskName": "osdisk",
         "nicName": "CSNIC",
-        "NSGName": "SiteRecoveryNSG",
+        "nsgName": "SiteRecoveryNSG",
         "storageAccountType": "Standard_LRS",
         "vmStorageAccountContainerName": "asrconfigservervhds",
         "publicIPAddressName": "SiteRecoveryCSIP",
@@ -248,10 +248,10 @@
     "resources": [
         {
             "type": "Microsoft.Network/networkSecurityGroups",
-            "name": "[variables('NSGName')]",
+            "name": "[variables('nsgName')]",
             "location": "[variables('location')]",
             "tags": {
-                "displayName": "[variables('NSGName')]"
+                "displayName": "[variables('nsgName')]"
             }
         },
         {
@@ -277,7 +277,7 @@
             "location": "[variables('location')]",
             "dependsOn": [
                 "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]",
-                "[concat('Microsoft.Network/networkSecurityGroups/', variables('NSGName'))]"
+                "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
             ],
             "properties": {
                 "ipConfigurations": [
@@ -295,7 +295,7 @@
                     }
                 ],
                 "networkSecurityGroup": {
-                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('NSGName'))]"
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]"
                 }
             }
         },
@@ -326,7 +326,7 @@
                     "osDisk": {
                         "name": "osdisk",
                         "vhd": {
-                            "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', toLower(parameters('Stack Storage Account'))), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
+                            "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', toLower(parameters('Stack Storage Account'))), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, variables('vmStorageAccountContainerName'),'/',variables('osDiskName'),'.vhd')]"
                         },
                         "caching": "ReadWrite",
                         "createOption": "FromImage"
@@ -386,7 +386,7 @@
                         "fileUris": [ "[variables('scriptFile')]" ]
                     },
                     "protectedSettings": {
-                        "commandToExecute" : "[concat('powershell -ExecutionPolicy Unrestricted -File ASRCSConfig.ps1 -ClientID ',parameters('Client ID'),' -ClientSecret ',parameters('Client Secret'),' -TenantID ',variables('TenantID'),' -ArmEndpoint ',parameters('Stack Arm Endpoint'),' -TempFilesPath ',parameters('Temporary Files Path'),' -ExtractionPath ',parameters('Extraction Path'),' -MySQLRootPassword ',parameters('MySQL Root Password'),' -MySQLUserPassword ',parameters('MySQL User Password'),' -VNetName ',parameters('Azure VNet Name'),' -AzureStorageAccount ',toLower(parameters('Azure Storage Account')),' -SubnetRange ',parameters('Azure Subnet Range'),' -VNetRange ',parameters('Azure VNet Range'),' -AzureLocation ',parameters('Azure Location'),' -ReplicationPolicyName ',parameters('Replication Policy Name'),' -ExistingAzureResourceGroup ',parameters('Existing Azure Resource Group'),' -AzureResourceGroup ',parameters('Azure Resource Group'),' -ExistingAzureVault ',parameters('Existing Azure Vault'),' -VaultName ',parameters('Vault Name'),' -ConfigServerUsername ',parameters('Config Server Username'),' -ConfigServerPassword ',parameters('Config Server Password'),' -EncryptionKey ',parameters('Encryption Key'),' -WindowsUsername ',parameters('Windows Username'),' -WindowsPassword ',parameters('Windows Password'),' -LinuxRootPassword ',parameters('Linux Root Password'),' -StackResourceGroup ',variables('ResourceGroupName'))]"
+                        "commandToExecute" : "[concat('powershell -ExecutionPolicy Unrestricted -File ASRCSConfig.ps1 -ClientId ', parameters('Client ID'), ' -ClientSecret ', parameters('Client Secret'), ' -TenantId ', variables('tenantId'), ' -ArmEndpoint ', parameters('Stack Arm Endpoint'), ' -TempFilesPath ', parameters('Temporary Files Path'), ' -ExtractionPath ', parameters('Extraction Path'), ' -MySQLRootPassword ', parameters('MySQL Root Password'), ' -MySQLUserPassword ', parameters('MySQL User Password'), ' -VNetName ', parameters('Azure VNet Name'), ' -AzureStorageAccount ',toLower(parameters('Azure Storage Account')), ' -SubnetRange ', parameters('Azure Subnet Range'), ' -VNetRange ', parameters('Azure VNet Range'), ' -AzureLocation ', parameters('Azure Location'), ' -ReplicationPolicyName ', parameters('Replication Policy Name'), ' -ExistingAzureResourceGroup ', parameters('Existing Azure Resource Group'), ' -AzureResourceGroup ', parameters('Azure Resource Group'), ' -ExistingAzureVault ', parameters('Existing Azure Vault'), ' -VaultName ', parameters('Vault Name'), ' -ConfigServerUsername ', parameters('Config Server Username'), ' -ConfigServerPassword ', parameters('Config Server Password'), ' -EncryptionKey ', parameters('Encryption Key'), ' -WindowsUsername ', parameters('Windows Username'), ' -WindowsPassword ', parameters('Windows Password'), ' -LinuxRootPassword ', parameters('Linux Root Password'), ' -StackResourceGroup ',variables('resourceGroupName'))]"
                     }
                   }
                 }

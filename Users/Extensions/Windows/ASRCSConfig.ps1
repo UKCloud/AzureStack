@@ -6,14 +6,14 @@
         Configures a Windows Server to act as a configuration server for Azure Site Recovery from Azure Stack to Azure.
         Used as part of an ARM template (see links). Requires an Azure Stack and Azure Subscription
 
-    .PARAMETER ClientID
+    .PARAMETER ClientId
         The application ID of a service principal with contributor permissions on Azure Stack and Azure.
         Example: "00000000-0000-0000-0000-000000000000"
 
     .PARAMETER ClientSecret
-        A password of the service principal specified in the ClientID parameter. "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
+        A password of the service principal specified in the ClientId parameter. "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
 
-    .PARAMETER TenantID
+    .PARAMETER TenantId
         The Tenant/Directory ID of your AAD domain. Example: "31537af4-6d77-4bb9-a681-d2394888ea26"
 
     .PARAMETER ArmEndpoint
@@ -83,8 +83,8 @@
         The resource group that the configuration server is in in Azure Stack. Example: "SiteRecovery-RG"
 
     .EXAMPLE
-        powershell -ExecutionPolicy Unrestricted -File ASRCSConfig.ps1 -ClientID "00000000-0000-0000-0000-000000000000" -ClientSecret "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]=" `
-            -TenantID "31537af4-6d77-4bb9-a681-d2394888ea26" -MySQLRootPassword "Password123!" -MySQLUserPassword "Password123!" -AzureStorageAccount "stacksiterecoverysa" `
+        powershell -ExecutionPolicy Unrestricted -File ASRCSConfig.ps1 -ClientId "00000000-0000-0000-0000-000000000000" -ClientSecret "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]=" `
+            -TenantId "31537af4-6d77-4bb9-a681-d2394888ea26" -MySQLRootPassword "Password123!" -MySQLUserPassword "Password123!" -AzureStorageAccount "stacksiterecoverysa" `
             -AzureResourceGroup "SiteRecoveryTestRG" -VaultName "AzureStackVault" -ConfigServerUsername "ConfigAdmin" -ConfigServerPassword "Password123!" -EncryptionKey "ExampleEncryptionKey" `
             -WindowsUsername "Administrator" -WindowsPassword "Password123!" -LinuxRootPassword "Password123!" -StackResourceGroup "SiteRecovery-RG"
 
@@ -103,14 +103,14 @@ param (
     [Parameter(Mandatory = $true)]
     [Alias("AppId")]
     [String]
-    $ClientID,
+    $ClientId,
     [Parameter(Mandatory = $true)]
     [String]
     $ClientSecret,
     [Parameter(Mandatory = $true)]
     [Alias("TenantDomain", "Domain")]
     [String]
-    $TenantID,
+    $TenantId,
     [Parameter(Mandatory = $false)]
     [String]
     $ArmEndpoint = "https://management.frn00006.azure.ukcloud.com",
@@ -280,8 +280,8 @@ while (Get-Process -Name MicrosoftAzureSiteRecoveryUnifiedSetup -ErrorAction Sil
 ## Login to public azure
 Write-Output -InputObject "Logging into public Azure"
 $CredPass = ConvertTo-SecureString $ClientSecret -AsPlainText -Force
-$Credentials = New-Object System.Management.Automation.PSCredential ($ClientID, $CredPass)
-Connect-AzureRmAccount -Credential $Credentials -ServicePrincipal -Tenant $TenantID
+$Credentials = New-Object System.Management.Automation.PSCredential ($ClientId, $CredPass)
+Connect-AzureRmAccount -Credential $Credentials -ServicePrincipal -Tenant $TenantId
 
 ## Create and configure a vault, then retrieve settings
 # Declare variables
@@ -312,7 +312,7 @@ $ScriptPath = "C:\TempASR\script.ps1"
 $ScriptFile = @"
 `$CredPass = ConvertTo-SecureString `$args[1] -AsPlainText -Force
 `$cred = New-Object System.Management.Automation.PSCredential (`$args[0], `$CredPass)
-Connect-AzureRmAccount -Credential `$Cred -ServicePrincipal -Tenant $TenantID
+Connect-AzureRmAccount -Credential `$Cred -ServicePrincipal -Tenant $TenantId
 # Download Vault Settings
 Write-Output -InputObject 'Downloading vault settings'
 `$Retry = 0
@@ -331,7 +331,7 @@ while (-not `$VaultCredPath -and `$Retry -lt 20) {
 "@
 $ScriptFile | Out-File $ScriptPath -Force -Encoding ascii
 
-Powershell.exe -NoProfile -ExecutionPolicy Bypass -Command $ScriptPath $ClientID $ClientSecret
+Powershell.exe -NoProfile -ExecutionPolicy Bypass -Command $ScriptPath $ClientId $ClientSecret
 $VaultCredPath = Get-Content -Path "$($TempFilesPath)VaultCredential.txt"
 # Create a new storage account
 Write-Output -InputObject "Creating storage account and virtual network on public Azure"
@@ -429,7 +429,7 @@ $Job_AssociateFailbackPolicy = New-AzureRmRecoveryServicesAsrProtectionContainer
 # Login to Azure Stack
 Write-Output -InputObject "Logging into Azure Stack"
 $StackEnvironment = Add-AzureRmEnvironment -Name "AzureStack" -ArmEndpoint $ArmEndpoint
-Connect-AzureRmAccount -EnvironmentName "AzureStack" -Credential $Credentials -ServicePrincipal -Tenant $TenantID
+Connect-AzureRmAccount -EnvironmentName "AzureStack" -Credential $Credentials -ServicePrincipal -Tenant $TenantId
 
 # Get info for protected items
 Write-Output -InputObject "Retrieving VM info from resource group"
@@ -458,7 +458,7 @@ $VMInfo
 
 # Login to public Azure
 Write-Output -InputObject "Logging into public Azure"
-Connect-AzureRmAccount -Credential $Credentials -ServicePrincipal -Tenant $TenantID
+Connect-AzureRmAccount -Credential $Credentials -ServicePrincipal -Tenant $TenantId
 
 # Add protected items to vault
 Write-Output -InputObject "Adding VMs to public Azure as protectable items"
