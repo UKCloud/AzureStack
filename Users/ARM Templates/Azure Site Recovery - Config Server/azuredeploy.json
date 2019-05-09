@@ -81,7 +81,7 @@
                 "description": "The location of the recovery services vault on public Azure"
             },
             "defaultValue": "UkWest",
-            "minLength": 1
+            "minLength": 6
         },
         "Azure VNet Name": {
             "type": "string",
