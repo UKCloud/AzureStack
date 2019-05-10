@@ -27,7 +27,6 @@ $AzsCredentials = New-Object -TypeName System.Management.Automation.PSCredential
 ## Sign in to your environment
 Login-AzureRmAccount -Credential $AzsCredentials -EnvironmentName "AzureStackUser"
 
-
 # Deploy the ARM template
 $ResourceGroupName = "<Resource Group Name>"
 New-AzureRmResourceGroup -Name $ResourceGroupName -Location "frn00006"
