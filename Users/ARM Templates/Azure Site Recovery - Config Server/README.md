@@ -17,11 +17,11 @@ The configuration server that is deployed creates all necessary resources on pub
 - A service principal with contributor permissions on both subscriptions
 
 - For any VMs which you wish to be protected, be sure to add the relevant custom script extension. These are required as specified in the [Azure Stack Site Recovery documentation](https://docs.microsoft.com/en-us/azure/site-recovery/azure-stack-site-recovery#step-1-prepare-azure-stack-vms). The URLs for these custom scripts are as follows:
-  - Windows: https://raw.githubusercontent.com/UKCloud/AzureStack/master/Extensions/Windows/VMSetupForSR.ps1
+  - Windows: https://raw.githubusercontent.com/UKCloud/AzureStack/master/Users/Extensions/Windows/VMSetupForSR.ps1
   
     This extension disables Remote User Access control and allows WMI and File and Printer sharing on the firewall.
   
-  - Linux: https://raw.githubusercontent.com/UKCloud/AzureStack/master/Extensions/Linux/SetRootPassword.sh
+  - Linux: https://raw.githubusercontent.com/UKCloud/AzureStack/master/Users/Extensions/Linux/SetRootPassword.sh
 
     This extension sets the root password to the input parameter, as root access is required for Azure Site Recovery.
 
@@ -91,4 +91,4 @@ Password must conform to all of the following rules:
 
 ## See Also
 
-PowerShell scripts for fail over and fail back can be found here: [Azure Site Recovery PowerShell Scripts](https://github.com/UKCloud/AzureStack/tree/master/PowerShell/Azure%20Site%20Recovery)
+PowerShell scripts for fail over and fail back can be found here: [Azure Site Recovery PowerShell Scripts](https://github.com/UKCloud/AzureStack/tree/master/Users/PowerShell%20Modules/Azure%20Site%20Recovery)
