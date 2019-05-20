@@ -1,6 +1,6 @@
 # Deployment of a Configuration Server for Azure Site Recovery
 
-<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2FUKCloud%2FAzureStack%2Fmaster%2FARM%20Templates%2FConfigServer-SiteRecovery%2Fazuredeploy.json" target="_blank">
+<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2FUKCloud%2FAzureStack%2Fmaster%2FUsers%2FARM%20Templates%2FAzure%20Site%20Recovery%20-%20Config%20Server%2Fazuredeploy.json" target="_blank">
     <img src="http://armviz.io/visualizebutton.png"/>
 </a>
 
