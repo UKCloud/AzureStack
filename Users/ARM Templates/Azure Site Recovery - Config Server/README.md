@@ -50,7 +50,6 @@ The configuration server that is deployed creates all necessary resources on pub
 |-------|-------------|---------|
 | ClientID | The application ID of a service principal with contributor permissions on Azure Stack and Azure | 00000000-0000-0000-0000-000000000000 |
 | ClientSecret | A password of the service principal specified in the ClientID parameter | ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jkx]= |
-| TenantID | The Tenant/Directory ID of your AAD domain | 31537af4-6d77-4bb9-a681-d2394888ea26 |
 | StackArmEndpoint | The Azure Resource Manager endpoint for Azure Stack | https://management.frn00006.azure.ukcloud.com |
 | ConfigurationServerName | The name of the configuration server VM | SRConfigServer |
 | TempFilesPath | Location on configuration server where setup files will be stored | C:\TempASR\ |
