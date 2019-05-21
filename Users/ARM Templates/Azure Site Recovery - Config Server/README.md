@@ -90,4 +90,4 @@ Password must conform to all of the following rules:
 
 ## See Also
 
-PowerShell scripts for fail over and fail back can be found here: [Azure Site Recovery PowerShell Scripts](https://github.com/UKCloud/AzureStack/tree/master/PowerShell/Azure%20Site%20Recovery)
+PowerShell scripts for fail over and fail back can be found here: [Azure Site Recovery PowerShell Scripts](https://github.com/UKCloud/AzureStack/tree/master/Users/PowerShell%20Modules/Azure%20Site%20Recovery)
