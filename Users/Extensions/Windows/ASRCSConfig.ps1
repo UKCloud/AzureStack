@@ -104,78 +104,102 @@ param (
     [Alias("AppId")]
     [String]
     $ClientId,
+
     [Parameter(Mandatory = $true)]
     [String]
     $ClientSecret,
+
     [Parameter(Mandatory = $true)]
     [Alias("TenantDomain", "Domain")]
     [String]
     $TenantId,
+
     [Parameter(Mandatory = $false)]
     [String]
     $ArmEndpoint = "https://management.frn00006.azure.ukcloud.com",
+
     [Parameter(Mandatory = $false)]
     [String]
     $TempFilesPath = "C:\TempASR\",
+
     [Parameter(Mandatory = $false)]
     [String]
     $ExtractionPath = "Extracted",
+
     [Parameter(Mandatory = $true)]
     [String]
     $MySQLRootPassword,
+
     [Parameter(Mandatory = $true)]
     [String]
     $MySQLUserPassword,
+
     [Parameter(Mandatory = $false)]
     [String]
     $VNetName = "SiteRecoveryVNet",
+
     [Parameter(Mandatory = $true)]
     [String]
     $AzureStorageAccount,
+
     [Parameter(Mandatory = $false)]
     [String]
     $SubnetRange = "192.168.1.0/24",
+
     [Parameter(Mandatory = $false)]
     [String]
     $VNetRange = "192.168.0.0/16",
+
     [Parameter(Mandatory = $false)]
     [String]
     $AzureLocation = "UK West",
+
     [Parameter(Mandatory = $false)]
     [String]
     $ReplicationPolicyName = "ReplicationPolicy",
+
     [Parameter(Mandatory = $false)]
-    [ValidateSet("true","false")]
+    [ValidateSet("true", "false")]
     [String]
     $ExistingAzureResourceGroup = "false",
+
     [Parameter(Mandatory = $false)]
     [String]
     $AzureResourceGroup = "SiteRecoveryTestRG",
+
     [Parameter(Mandatory = $false)]
-    [ValidateSet("true","false")]
+    [ValidateSet("true", "false")]
     [String]
     $ExistingAzureVault = "false",
+
     [Parameter(Mandatory = $false)]
     [String]
     $VaultName = "AzureStackVault",
+
     [Parameter(Mandatory = $true)]
     [String]
     $ConfigServerUsername,
+
     [Parameter(Mandatory = $true)]
     [String]
     $ConfigServerPassword,
+
     [Parameter(Mandatory = $true)]
     [String]
     $EncryptionKey,
+
     [Parameter(Mandatory = $true)]
     [String]
     $WindowsUsername,
+
     [Parameter(Mandatory = $true)]
     [String]
     $WindowsPassword,
+
     [Parameter(Mandatory = $true)]
     [String]
     $LinuxRootPassword,
+
     [Parameter(Mandatory = $true)]
     [String]
     $StackResourceGroup
@@ -188,6 +212,7 @@ function Invoke-MySQLQuery {
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [String]
         $Query,
+
         [Parameter(Mandatory = $true)]
         [String]
         $MySQLAdminPassword
@@ -236,7 +261,7 @@ $Retry = 0
 while (-not $CheckSysInternalsInstall -and $Retry -lt 10) {
     choco install -y sysinternals
     Start-Sleep 10
-    $CheckSysInternalsInstall = choco list -lo | Where-Object -FilterScript {$_ -like "*sysinternals*"}
+    $CheckSysInternalsInstall = choco list -lo | Where-Object -FilterScript { $_ -like "*sysinternals*" }
     $Retry ++
 }
 refreshenv
@@ -245,10 +270,10 @@ Get-Module -Name "Azure*" | Remove-Module -Force
 # Format Disks
 Write-Output -InputObject "Formatting Disks"
 Get-Disk -Number 2 | Initialize-Disk -PartitionStyle MBR -PassThru | New-Partition -AssignDriveLetter -UseMaximumSize `
-    | Format-Volume -FileSystem NTFS -NewFileSystemLabel "ProcessServerCache" -Confirm:$false
+| Format-Volume -FileSystem NTFS -NewFileSystemLabel "ProcessServerCache" -Confirm:$false
 
 Get-Disk -Number 3 | Initialize-Disk -PartitionStyle MBR -PassThru | New-Partition -AssignDriveLetter -UseMaximumSize `
-    | Format-Volume -FileSystem NTFS -NewFileSystemLabel "RetentionDisk" -Confirm:$false
+| Format-Volume -FileSystem NTFS -NewFileSystemLabel "RetentionDisk" -Confirm:$false
 
 # Create Folders
 New-Item -ItemType Directory -Path "$($TempFilesPath)$($ExtractionPath)" -Force
@@ -387,7 +412,7 @@ $retry = 0
 while (-not $CheckMySQLInstall -and $retry -lt 10) {
     choco install mysql-connector -y --force
     Start-Sleep 15
-    $CheckMySQLInstall = choco list -lo | Where-Object -FilterScript {$_ -like "*mysql-connector*"}
+    $CheckMySQLInstall = choco list -lo | Where-Object -FilterScript { $_ -like "*mysql-connector*" }
     $retry ++
 }
 
@@ -434,7 +459,7 @@ Connect-AzureRmAccount -EnvironmentName "AzureStack" -Credential $Credentials -S
 # Get info for protected items
 Write-Output -InputObject "Retrieving VM info from resource group"
 $StackLocation = $StackEnvironment.GalleryURL.Split(".")[1]
-$ServerIP = (Get-NetIPAddress | Where-Object -FilterScript {$_.InterfaceAlias -like "*Ethernet*" -and $_.AddressFamily -like "IPv4"}).IPAddress
+$ServerIP = (Get-NetIPAddress | Where-Object -FilterScript { $_.InterfaceAlias -like "*Ethernet*" -and $_.AddressFamily -like "IPv4" }).IPAddress
 $ProtectedRG = Get-AzureRmResourceGroup -Location $StackLocation -Name $StackResourceGroup
 $ProtectedVMs = Get-AzureRmVM -ResourceGroupName $ProtectedRG.ResourceGroupName
 $VMInfo = @()
@@ -525,7 +550,7 @@ $RunAsAccounts = $ASRFabrics[0].FabricSpecificDetails.RunAsAccounts
 
 # Set replicated items
 Write-Output -InputObject "Setting VMs to be protected"
-$ContainerMapping = Get-ASRProtectionContainerMapping -ProtectionContainer $ProtectionContainer | Where-Object -FilterScript {$_.PolicyFriendlyName -eq $ReplicationPolicyName}
+$ContainerMapping = Get-ASRProtectionContainerMapping -ProtectionContainer $ProtectionContainer | Where-Object -FilterScript { $_.PolicyFriendlyName -eq $ReplicationPolicyName }
 foreach ($Item in $ProtectedItems) {
     # Remove Azure Stack Temporary Disk
     [String[]]$Disks = @()
@@ -539,10 +564,10 @@ foreach ($Item in $ProtectedItems) {
 
     # Set account settings
     if ($Item.OS -like "*LINUX*") {
-        $AdminAccount = $RunAsAccounts | Where-Object -FilterScript {$_.AccountName -like "LinuxAccount"}
+        $AdminAccount = $RunAsAccounts | Where-Object -FilterScript { $_.AccountName -like "LinuxAccount" }
     }
     elseif ($Item.OS -like "*WINDOWS*") {
-        $AdminAccount = $RunAsAccounts | Where-Object -FilterScript {$_.AccountName -like "WindowsAccount"}
+        $AdminAccount = $RunAsAccounts | Where-Object -FilterScript { $_.AccountName -like "WindowsAccount" }
     }
 
     # Set replication on VM

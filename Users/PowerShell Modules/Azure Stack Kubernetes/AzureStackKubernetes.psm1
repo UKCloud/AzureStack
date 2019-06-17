@@ -23,29 +23,43 @@ function Start-AzsAks {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
-        [String]$ArmEndpoint = "https://management.frn00006.azure.ukcloud.com",
-        [Parameter(Mandatory = $true, ParameterSetName="MFA")]
-        [Switch]$MFA,
-        [Parameter(Mandatory = $true, ParameterSetName="ServicePrincipal")]
+        [String]
+        $ArmEndpoint = "https://management.frn00006.azure.ukcloud.com",
+
+        [Parameter(Mandatory = $true, ParameterSetName = "MFA")]
+        [Switch]
+        $MFA,
+
+        [Parameter(Mandatory = $true, ParameterSetName = "ServicePrincipal")]
         [Alias("ServicePrincipal")]
-        [String]$ClientId,
-        [Parameter(Mandatory = $true, ParameterSetName="ServicePrincipal")]
-        [String]$ClientSecret,
-        [Parameter(Mandatory = $true, ParameterSetName="ServicePrincipal")]
-        [Alias("TenantDomain","Domain")]
-        [String]$TenantID,
-        [Parameter(Mandatory = $true, ParameterSetName="GivenCreds")]
-        [String]$Username,
-        [Parameter(Mandatory = $true, ParameterSetName="GivenCreds")]
-        [String]$Password
+        [String]
+        $ClientId,
+
+        [Parameter(Mandatory = $true, ParameterSetName = "ServicePrincipal")]
+        [String]
+        $ClientSecret,
+
+        [Parameter(Mandatory = $true, ParameterSetName = "ServicePrincipal")]
+        [Alias("TenantDomain", "Domain")]
+        [String]
+        $TenantID,
+
+        [Parameter(Mandatory = $true, ParameterSetName = "GivenCreds")]
+        [String]
+        $Username,
+
+        [Parameter(Mandatory = $true, ParameterSetName = "GivenCreds")]
+        [String]
+        $Password
     )
     process {
         try {
-            $CheckForSSH = Get-WindowsCapability -Online | Where-Object -FilterScript {$_.Name -like '*OpenSSH*' -and $_.Name -like "*Client*"}
+            $CheckForSSH = Get-WindowsCapability -Online | Where-Object -FilterScript { $_.Name -like '*OpenSSH*' -and $_.Name -like "*Client*" }
             if ($CheckForSSH.State -notlike "*Installed*") {
                 Add-WindowsCapability -Online -Name $CheckForSSH.Name
             }
-        } catch {
+        }
+        catch {
             Write-Host "Not executing as administrator, unable to check if OpenSSH is installed" -ForegroundColor Red
         }
         # Azure Powershell way to check if we are logged in as User
@@ -68,7 +82,8 @@ function Start-AzsAks {
             $PasswordSecure = ConvertTo-SecureString $Password -AsPlainText -Force
             $UserCredentials = New-Object System.Management.Automation.PSCredential ($Username, $PasswordSecure)
             Connect-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $Credentials
-        } else {
+        }
+        else {
             $Credentials = Get-Credential
             Connect-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $UserCredentials
         }
@@ -108,12 +123,17 @@ function Get-AzsAksCredentials {
 
     [CmdletBinding()]
     param (
-        [parameter(Mandatory = $true)]
-        [String]$PrivateKeyLocation,
-        [parameter(Mandatory = $true)]
-        [String]$ResourceGroupName,
-        [parameter(Mandatory = $false)]
-        [String]$OutFile = "Config"
+        [Parameter(Mandatory = $true)]
+        [String]
+        $PrivateKeyLocation,
+
+        [Parameter(Mandatory = $true)]
+        [String]
+        $ResourceGroupName,
+
+        [Parameter(Mandatory = $false)]
+        [String]
+        $OutFile = "Config"
     )
 
     begin {
@@ -134,10 +154,10 @@ function Get-AzsAksCredentials {
     }
 
     process {
-        $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript {$_.Name -like "*master*"}).IpAddress
-        $MasterNodes = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript {$_.Name -like "*master*"}
+        $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript { $_.Name -like "*master*" }).IpAddress
+        $MasterNodes = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript { $_.Name -like "*master*" }
         $Username = $MasterNodes[0].OSProfile.AdminUsername
-        Invoke-Command -ScriptBlock {param ($PrivateKeyLocation, $Username, $IPAddress, $OutFile) ssh -i $PrivateKeyLocation $Username@$IPAddress kubectl config view --flatten | Out-File $OutFile} -ArgumentList $PrivateKeyLocation, $Username, $IPAddress, $OutFile
+        Invoke-Command -ScriptBlock { param ($PrivateKeyLocation, $Username, $IPAddress, $OutFile) ssh -i $PrivateKeyLocation $Username@$IPAddress kubectl config view --flatten | Out-File $OutFile } -ArgumentList $PrivateKeyLocation, $Username, $IPAddress, $OutFile
     }
 }
 
@@ -172,7 +192,7 @@ function New-AzsAks {
         The application ID of a service principal with contributor permissions on Azure Stack. Example: "00000000-0000-0000-0000-000000000000"
 
     .PARAMETER ClientSecret
-        A secret of the service principal specified in the ServicePrincipal parameter. Example: "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
+        A secret of the service principal specified in the ServicePrincipal Parameter. Example: "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
 
     .PARAMETER AgentPoolProfileCount
         The number of nodes in the Kubernetes agent node pool. Defaults to 3.
@@ -209,37 +229,64 @@ function New-AzsAks {
 
     [CmdletBinding()]
     param (
-        [parameter(Mandatory = $false)]
-        [String]$DeploymentName = "AKSClusterDeployment",
-        [parameter(Mandatory = $true)]
-        [String]$ResourceGroupName,
-        [parameter(Mandatory = $false)]
-        [String]$Location = "frn00006",
-        [parameter(Mandatory = $true)]
-        [String]$SSHKeyPath,
-        [parameter(Mandatory = $false)]
-        [String]$AdminUsername = "azureuser",
-        [parameter(Mandatory = $false)]
-        [String]$DNSPrefix,
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
+        [String]
+        $DeploymentName = "AKSClusterDeployment",
+
+        [Parameter(Mandatory = $true)]
+        [String]
+        $ResourceGroupName,
+
+        [Parameter(Mandatory = $false)]
+        [String]
+        $Location = "frn00006",
+
+        [Parameter(Mandatory = $true)]
+        [String]
+        $SSHKeyPath,
+
+        [Parameter(Mandatory = $false)]
+        [String]
+        $AdminUsername = "azureuser",
+
+        [Parameter(Mandatory = $false)]
+        [String]
+        $DNSPrefix,
+
+        [Parameter(Mandatory = $true)]
         [Alias("ClientId")]
-        [String]$ServicePrincipal,
-        [parameter(Mandatory = $true)]
-        [String]$ClientSecret,
-        [parameter(Mandatory = $false)]
-        [int]$AgentPoolProfileCount = 3,
-        [parameter(Mandatory = $false)]
-        [String]$AgentPoolProfileVMSize = "Standard_D2_v2",
-        [parameter(Mandatory = $false)]
-        [int]$MasterPoolProfileCount = 3,
-        [parameter(Mandatory = $false)]
-        [String]$MasterPoolProfileVMSize = "Standard_D2_v2",
-        [parameter(Mandatory = $false)]
+        [String]
+        $ServicePrincipal,
+
+        [Parameter(Mandatory = $true)]
+        [String]
+        $ClientSecret,
+
+        [Parameter(Mandatory = $false)]
+        [Int]
+        $AgentPoolProfileCount = 3,
+
+        [Parameter(Mandatory = $false)]
+        [String]
+        $AgentPoolProfileVMSize = "Standard_D2_v2",
+
+        [Parameter(Mandatory = $false)]
+        [Int]
+        $MasterPoolProfileCount = 3,
+
+        [Parameter(Mandatory = $false)]
+        [String]
+        $MasterPoolProfileVMSize = "Standard_D2_v2",
+
+        [Parameter(Mandatory = $false)]
         [ValidateSet("blobdisk", "manageddisk")]
-        [String]$StorageProfile = "manageddisk",
-        [parameter(Mandatory = $false)]
+        [String]
+        $StorageProfile = "manageddisk",
+
+        [Parameter(Mandatory = $false)]
         [ValidateSet("1.7", "1.8", "1.9", "1.10", "1.11")]
-        [String]$KubernetesAzureCloudProviderVersion = "1.11"
+        [String]
+        $KubernetesAzureCloudProviderVersion = "1.11"
     )
 
     begin {
@@ -301,8 +348,9 @@ function Remove-AzsAks {
 
     [CmdletBinding()]
     param (
-        [parameter(Mandatory = $true)]
-        [String]$ResourceGroupName
+        [Parameter(Mandatory = $true)]
+        [String]
+        $ResourceGroupName
     )
 
     begin {
@@ -355,8 +403,9 @@ function Get-AzsAks {
 
     [CmdletBinding()]
     param (
-        [parameter(Mandatory = $false, DontShow = $true)]
-        [String]$ResourceGroupName
+        [Parameter(Mandatory = $false, DontShow = $true)]
+        [String]
+        $ResourceGroupName
     )
 
     begin {
@@ -378,18 +427,19 @@ function Get-AzsAks {
 
     process {
         if ($ResourceGroupName) {
-            $FirstMasterVMs = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript {$_.Name -like "k8s-master*" -and $_.Name -like "*0"}
-        } else {
-            $FirstMasterVMs = Get-AzureRmVM | Where-Object -FilterScript {$_.Name -like "k8s-master*" -and $_.Name -like "*0"}
+            $FirstMasterVMs = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript { $_.Name -like "k8s-master*" -and $_.Name -like "*0" }
+        }
+        else {
+            $FirstMasterVMs = Get-AzureRmVM | Where-Object -FilterScript { $_.Name -like "k8s-master*" -and $_.Name -like "*0" }
         }
         $ArrayOfClusters = @()
         foreach ($VM in $FirstMasterVMs) {
-            $PoolVMs = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript {$_.Name -like "*k8s*" -and $_.Name -notlike "*master*"}
+            $PoolVMs = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.Name -like "*k8s*" -and $_.Name -notlike "*master*" }
             $PoolName = (($PoolVMs[0].Name).Split("-"))[1]
-            $MasterVMs = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript {$_.Name -like "*k8s*" -and $_.Name -like "*master*"}
-            $CreationVM = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript {$_.Name -like "vmd*"}
-            $DNSName = (Get-AzureRmPublicIpAddress -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript {$_.Name -like "k8s*"}).IpAddress
-            $KubernetesDeployment = Get-AzureRmResourceGroupDeployment -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript {$_.TemplateLink}
+            $MasterVMs = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.Name -like "*k8s*" -and $_.Name -like "*master*" }
+            $CreationVM = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.Name -like "vmd*" }
+            $DNSName = (Get-AzureRmPublicIpAddress -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.Name -like "k8s*" }).IpAddress
+            $KubernetesDeployment = Get-AzureRmResourceGroupDeployment -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.TemplateLink }
             $KubernetesCluster = [PSCustomObject]@{
                 "Resource group"         = $VM.ResourceGroupName
                 "Kubernetes version"     = $VM.Tags.orchestrator
@@ -433,7 +483,7 @@ function Start-AzsAksScale {
         The application ID of a service principal with contributor permissions on Azure Stack. Example: "00000000-0000-0000-0000-000000000000"
 
     .PARAMETER ClientSecret
-        A secret of the service principal specified in the ServicePrincipal parameter. Example: "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
+        A secret of the service principal specified in the ServicePrincipal Parameter. Example: "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
 
     .PARAMETER NewNodeCount
         The number of nodes to scale the node pool to. Example: "5"
@@ -458,20 +508,33 @@ function Start-AzsAksScale {
 
     [CmdletBinding()]
     param (
-        [parameter(Mandatory = $true)]
-        [String]$ResourceGroupName,
-        [parameter(Mandatory = $true)]
-        [String]$PrivateKeyLocation,
-        [parameter(Mandatory = $false)]
-        [String]$Location = "frn00006",
-        [parameter(Mandatory = $true)]
-        [String]$ServicePrincipal,
-        [parameter(Mandatory = $true)]
-        [String]$ClientSecret,
-        [parameter(Mandatory = $true)]
-        [int]$NewNodeCount,
-        [parameter(Mandatory = $false)]
-        [string]$PoolName = "linuxpool2"
+        [Parameter(Mandatory = $true)]
+        [String]
+        $ResourceGroupName,
+
+        [Parameter(Mandatory = $true)]
+        [String]
+        $PrivateKeyLocation,
+
+        [Parameter(Mandatory = $false)]
+        [String]
+        $Location = "frn00006",
+
+        [Parameter(Mandatory = $true)]
+        [String]
+        $ServicePrincipal,
+
+        [Parameter(Mandatory = $true)]
+        [String]
+        $ClientSecret,
+
+        [Parameter(Mandatory = $true)]
+        [Int]
+        $NewNodeCount,
+
+        [Parameter(Mandatory = $false)]
+        [String]
+        $PoolName = "linuxpool2"
     )
 
     begin {
@@ -492,20 +555,20 @@ function Start-AzsAksScale {
     }
 
     process {
-        $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript {$_.Name -notlike "*k8s*"}
-        $ResourceNameSuffix = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript {$_.Name -like "*k8s*" -and $_.Name -notlike "*master*"})[0].Tags["resourceNameSuffix"]
+        $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript { $_.Name -notlike "*k8s*" }
+        $ResourceNameSuffix = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript { $_.Name -like "*k8s*" -and $_.Name -notlike "*master*" })[0].Tags["resourceNameSuffix"]
         $Tags = $CreationVM.Tags
         if (!$Tags["poolName"]) {
-            $Tags += @{poolName = "CreationVM"}
+            $Tags += @{poolName = "CreationVM" }
         }
         if (!$Tags["resourceNameSuffix"]) {
-            $Tags += @{resourceNameSuffix = $ResourceNameSuffix}
+            $Tags += @{resourceNameSuffix = $ResourceNameSuffix }
         }
-        $CreationVM.Plan = @{"name" = " "}
+        $CreationVM.Plan = @{"name" = " " }
         $CreationVM | Set-AzureRmResource -Tag $Rags -Force | Out-Null
-        $MasterFQDN = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript {$_.Name -like "*master*"}).DnsSettings.Fqdn
+        $MasterFQDN = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript { $_.Name -like "*master*" }).DnsSettings.Fqdn
         $Username = $CreationVM.OSProfile.AdminUsername
-        $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript {$_.Name -like "vmd*"}).IpAddress
+        $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript { $_.Name -like "vmd*" }).IpAddress
         $ScaleCommand = "/var/lib/waagent/custom-script/download/0/acs-engine/bin/acs-engine scale"
         $SubscriptionID = (Get-AzureRmContext).Subscription.Id
         $DeploymentDirectory = "/var/lib/waagent/custom-script/download/0/acs-engine/_output/" + $MasterFQDN.Split(".")[0]
@@ -516,8 +579,8 @@ function Start-AzsAksScale {
         } -ArgumentList $PrivateKeyLocation, $Username, $IPAddress, $ScaleCommand, $ResourceGroupName, $Location, $ServicePrincipal, $ClientSecret, $SubscriptionID, $NewNodeCount, $DeploymentDirectory, $MasterFQDN, $PoolName
 
         # Actual clean-up as the command (sometimes, completely at random) can't do it
-        $PoolVMs = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript {$_.Name -like "*$PoolName*"}
-        $PoolNICs = Get-AzureRmNetworkInterface -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript {$_.Name -like "*$PoolName*"}
+        $PoolVMs = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript { $_.Name -like "*$PoolName*" }
+        $PoolNICs = Get-AzureRmNetworkInterface -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript { $_.Name -like "*$PoolName*" }
         if (!!$PoolVMs[0].StorageProfile.OsDisk.ManagedDisk) {
             foreach ($MDID in $PoolVMs.StorageProfile.OsDisk.ManagedDisk.Id) {
                 $NodeNumber = [convert]::ToInt32(($MDID.Split("-")[-1][0]), 10)
@@ -558,8 +621,9 @@ function Show-AzsAks {
 
     [CmdletBinding()]
     param (
-        [parameter(Mandatory = $true)]
-        [String]$ResourceGroupName
+        [Parameter(Mandatory = $true)]
+        [String]
+        $ResourceGroupName
     )
 
     process {
@@ -592,8 +656,8 @@ function Get-AzsAksVersions {
     process {
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         $URL = "https://api.github.com/repos/msazurestackworkloads/acs-engine/contents/examples/azurestack"
-        $Branch = @{"ref" = "acs-engine-v0209-1809"}
-        $GitHubFiles = (Invoke-WebRequest -URI $URL -Body $Branch -Method GET -UseBasicParsing | ConvertFrom-Json).name | Where-Object -FilterScript {$_ -like "*kubernetes*"}
+        $Branch = @{"ref" = "acs-engine-v0209-1809" }
+        $GitHubFiles = (Invoke-WebRequest -URI $URL -Body $Branch -Method GET -UseBasicParsing | ConvertFrom-Json).name | Where-Object -FilterScript { $_ -like "*kubernetes*" }
         $Versions = @()
         foreach ($Filename in $GitHubFiles) {
             $VersionNum = [PSCustomObject] @{
@@ -601,7 +665,7 @@ function Get-AzsAksVersions {
             }
             $Versions += $VersionNum
         }
-        $Versions = $Versions | Sort-Object -Property @{Expression = {[convert]::ToInt32(($_.VersionNumber -split "\.")[-1])}}
+        $Versions = $Versions | Sort-Object -Property @{Expression = { [convert]::ToInt32(($_.VersionNumber -split "\.")[-1]) } }
         $Versions
     }
 }
@@ -628,7 +692,7 @@ function Start-AzsAksUpgrade {
         The application ID of a service principal with contributor permissions on Azure Stack. Example: "00000000-0000-0000-0000-000000000000"
 
     .PARAMETER ClientSecret
-        A secret of the service principal specified in the ServicePrincipal parameter. Example: "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
+        A secret of the service principal specified in the ServicePrincipal Parameter. Example: "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
 
     .PARAMETER KubernetesUpgradeVersion
         The version of Kubernetes to upgrade the cluster to. Available versions can be found using Get-AzsAksUpgradeVersions. Example: "1.11.2"
@@ -650,18 +714,29 @@ function Start-AzsAksUpgrade {
 
     [CmdletBinding()]
     param (
-        [parameter(Mandatory = $true)]
-        [String]$ResourceGroupName,
-        [parameter(Mandatory = $true)]
-        [String]$PrivateKeyLocation,
-        [parameter(Mandatory = $false)]
-        [String]$Location = "frn00006",
-        [parameter(Mandatory = $true)]
-        [String]$ServicePrincipal,
-        [parameter(Mandatory = $true)]
-        [String]$ClientSecret,
-        [parameter(Mandatory = $true)]
-        [String]$KubernetesUpgradeVersion
+        [Parameter(Mandatory = $true)]
+        [String]
+        $ResourceGroupName,
+
+        [Parameter(Mandatory = $true)]
+        [String]
+        $PrivateKeyLocation,
+
+        [Parameter(Mandatory = $false)]
+        [String]
+        $Location = "frn00006",
+
+        [Parameter(Mandatory = $true)]
+        [String]
+        $ServicePrincipal,
+
+        [Parameter(Mandatory = $true)]
+        [String]
+        $ClientSecret,
+
+        [Parameter(Mandatory = $true)]
+        [String]
+        $KubernetesUpgradeVersion
     )
 
     begin {
@@ -682,27 +757,28 @@ function Start-AzsAksUpgrade {
     }
 
     process {
-        $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript {$_.Name -like "vmd*"}
-        $ResourceNameSuffix = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript {$_.Name -like "*k8s*" -and $_.Name -notlike "*master*"})[0].Tags["resourceNameSuffix"]
+        $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript { $_.Name -like "vmd*" }
+        $ResourceNameSuffix = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript { $_.Name -like "*k8s*" -and $_.Name -notlike "*master*" })[0].Tags["resourceNameSuffix"]
         $Tags = $CreationVM.Tags
         if (!$tags["poolName"]) {
-            $Tags += @{poolName = "CreationVM"}
+            $Tags += @{poolName = "CreationVM" }
         }
         if (!$tags["resourceNameSuffix"]) {
-            $Tags += @{resourceNameSuffix = $ResourceNameSuffix}
+            $Tags += @{resourceNameSuffix = $ResourceNameSuffix }
         }
-        $CreationVM.Plan = @{"name" = " "}
+        $CreationVM.Plan = @{"name" = " " }
         $CreationVM | Set-AzureRmResource -Tag $Tags -Force | Out-Null
-        $MasterFQDN = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript {$_.Name -like "*master*"}).DnsSettings.Fqdn
+        $MasterFQDN = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript { $_.Name -like "*master*" }).DnsSettings.Fqdn
         $Username = $CreationVM.OSProfile.AdminUsername
-        $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript {$_.Name -like "vmd*"}).IpAddress
+        $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript { $_.Name -like "vmd*" }).IpAddress
         $ScaleCommand = "/var/lib/waagent/custom-script/download/0/acs-engine/bin/acs-engine upgrade"
         $SubscriptionID = (Get-AzureRmContext).Subscription.Id
         $DeploymentDirectory = "/var/lib/waagent/custom-script/download/0/acs-engine/_output/" + $MasterFQDN.Split(".")[0]
-        $CurrentVersion = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript {$_.Name -like "*k8s*" -and $_.Name -like "*master*"})[0].Tags["orchestrator"].Split(":")[1]
+        $CurrentVersion = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript { $_.Name -like "*k8s*" -and $_.Name -like "*master*" })[0].Tags["orchestrator"].Split(":")[1]
         if ($CurrentVersion -eq $KubernetesUpgradeVersion) {
             Write-Host "Can't upgrade Kubernetes version - Cluster is already running version $CurrentVersion" -ForegroundColor Red
-        } else {
+        }
+        else {
             Invoke-Command -ScriptBlock {
                 param ($PrivateKeyLocation, $Username, $IPAddress, $ScaleCommand, $ResourceGroupName, $Location, $ServicePrincipal, $ClientSecret, $SubscriptionID, $DeploymentDirectory, $MasterFQDN, $KubernetesAzureCloudProviderVersion)
                 ssh -i $PrivateKeyLocation $Username@$IPAddress sudo $ScaleCommand --resource-group $ResourceGroupName --auth-method client_secret --azure-env AzureStackCloud --location $Location --client-id $ServicePrincipal `
@@ -745,12 +821,17 @@ function Get-AzsAksUpgradeVersions {
 
     [CmdletBinding()]
     param (
-        [parameter(Mandatory = $true)]
-        [String]$ResourceGroupName,
-        [parameter(Mandatory = $true)]
-        [String]$PrivateKeyLocation,
-        [parameter(Mandatory = $false)]
-        [String]$Location = "frn00006"
+        [Parameter(Mandatory = $true)]
+        [String]
+        $ResourceGroupName,
+
+        [Parameter(Mandatory = $true)]
+        [String]
+        $PrivateKeyLocation,
+
+        [Parameter(Mandatory = $false)]
+        [String]
+        $Location = "frn00006"
     )
 
     begin {
@@ -771,10 +852,10 @@ function Get-AzsAksUpgradeVersions {
     }
 
     process {
-        $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript {$_.Name -like "vmd*"}
-        $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript {$_.Name -like "vmd*"}).IpAddress
+        $CreationVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript { $_.Name -like "vmd*" }
+        $IPAddress = (Get-AzureRmPublicIpAddress -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript { $_.Name -like "vmd*" }).IpAddress
         $Username = $CreationVM.OSProfile.AdminUsername
-        $FirstMasterVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript {$_.Name -like "k8s-master*" -and $_.Name -like "*0"}
+        $FirstMasterVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName | Where-Object -FilterScript { $_.Name -like "k8s-master*" -and $_.Name -like "*0" }
         $CurrentVersion = $FirstMasterVM.Tags["orchestrator"].Split(":")[1]
         $Command = "/var/lib/waagent/custom-script/download/0/acs-engine/bin/acs-engine orchestrators"
         Write-Host "Current Kubernetes version is: $CurrentVersion" -ForegroundColor Green

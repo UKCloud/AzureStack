@@ -88,10 +88,12 @@ param (
     [Alias("AppId")]
     [String]
     $ClientId,
+
     [Parameter(Mandatory = $true)]
     [Alias("SecretKey")]
     [String]
     $ClientSecret,
+
     [Parameter(Mandatory = $true)]
     [ValidatePattern('^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$')] # RegEx to enforce that domain name is passed as a parameter
     [String]
@@ -101,15 +103,19 @@ param (
     [Parameter(Mandatory = $false)]
     [String]
     $AzureResourceGroup = "AzureStackBackupRG",
+
     [Parameter(Mandatory = $true)]
     [String]
     $VaultName,
+
     [Parameter(Mandatory = $false)]
     [String]
     $AzureLocation = "UK West",
+
     [Parameter(Mandatory = $false)]
     [Switch]
     $ExistingRG,
+
     [Parameter(Mandatory = $false)]
     [Switch]
     $ExistingVault,
@@ -118,6 +124,7 @@ param (
     [Parameter(Mandatory = $false)]
     [String]
     $TempFilesPath = "C:\temp",
+
     [Parameter(Mandatory = $true)]
     [ValidateLength(16, 40)]
     [String]
@@ -128,20 +135,25 @@ param (
     [ValidateCount(1, 7)]
     [DayOfWeek[]]
     $BackupDays,
+
     [Parameter(Mandatory = $true, ParameterSetName = "Configure")]
     [ValidateCount(1, 3)]
     [TimeSpan[]]
     $BackupTimes,
+
     [Parameter(Mandatory = $false, ParameterSetName = "Configure")]
     [Int]
     $RetentionLength = 7,
+
     [Parameter(Mandatory = $false, ParameterSetName = "Configure")]
-    [ValidateScript({ Test-Path -Path $_ })]
+    [ValidateScript( { Test-Path -Path $_ })]
     [String[]]
     $FoldersToBackup,
+
     [Parameter(Mandatory = $false, ParameterSetName = "Configure")]
     [Switch]
     $BackupNow,
+
     [Parameter(Mandatory = $true, ParameterSetName = "NoConfigure")]
     [Switch]
     $NoSchedule

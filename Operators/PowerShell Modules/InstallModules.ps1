@@ -22,7 +22,7 @@ function Install-CustomModule {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
         [Parameter(Mandatory = $false, HelpMessage = "Path to local repository that contains modules folder")]
-        [ValidateScript({ (Test-Path $_) })]
+        [ValidateScript( { (Test-Path $_) })]
         [String]
         $LocalRepoPath = "..\"
     )
