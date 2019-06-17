@@ -21,7 +21,8 @@ function Get-AzsMarketplaceImages {
     param (
         [Parameter(Mandatory = $false)]
         [Alias("AllProperties")]
-        [Switch]$ListDetails
+        [Switch]
+        $ListDetails
     )
 
     begin {
@@ -44,7 +45,7 @@ function Get-AzsMarketplaceImages {
 
     process {
         # Find activation resource group
-        $ActivationRG = Get-AzureRmResourceGroup | Where-Object { $_.ResourceGroupName -like "*activation*" } | Select-Object -ExpandProperty ResourceGroupName
+        $ActivationRG = Get-AzureRmResourceGroup | Where-Object -FilterScript { $_.ResourceGroupName -like "*activation*" } | Select-Object -ExpandProperty ResourceGroupName
         #$ActivationRG = "azurestack-activation"
 
         # Find Activation Details
@@ -55,10 +56,10 @@ function Get-AzsMarketplaceImages {
 
         # Return/Print downloaded image array
         if ($ListDetails) {
-            $GetProducts | Select-Object -Property @{Name = 'DownloadName'; Expression = { (($_.Name) -replace "default/", "") }}, GalleryItemIdentity, DisplayName, PublisherDisplayName, PublisherIdentifier, Offer, OfferVersion, Sku, @{Name = "SizeInMB"; Expression = { ([Math]::Round(($_.PayloadLength / 1MB), 2)) }}, @{Name = "SizeInGB"; Expression = { ([Math]::Round(($_.PayloadLength / 1GB), 2)) }}, @{Name = "ProductVersionNumber"; Expression = { $_.ProductProperties.Version }}, ProvisioningState, Description
+            $GetProducts | Select-Object -Property @{Name = 'DownloadName'; Expression = { (($_.Name) -replace "default/", "") } }, GalleryItemIdentity, DisplayName, PublisherDisplayName, PublisherIdentifier, Offer, OfferVersion, Sku, @{Name = "SizeInMB"; Expression = { ([Math]::Round(($_.PayloadLength / 1MB), 2)) } }, @{Name = "SizeInGB"; Expression = { ([Math]::Round(($_.PayloadLength / 1GB), 2)) } }, @{Name = "ProductVersionNumber"; Expression = { $_.ProductProperties.Version } }, ProvisioningState, Description
         }
         else {
-            $GetProducts | Select-Object -Property DisplayName, @{Name = 'DownloadName'; Expression = { (($_.Name) -replace "default/", "") }}, PublisherIdentifier, Offer, OfferVersion, Sku, ProductKind, ProductProperties
+            $GetProducts | Select-Object -Property DisplayName, @{Name = 'DownloadName'; Expression = { (($_.Name) -replace "default/", "") } }, PublisherIdentifier, Offer, OfferVersion, Sku, ProductKind, ProductProperties
         }
     }
 }
@@ -101,7 +102,7 @@ function Remove-AzsMarketplaceImagesAll {
 
     process {
         # Find activation resource group
-        $ActivationRG = Get-AzureRmResourceGroup | Where-Object { $_.ResourceGroupName -like "*activation*" } | Select-Object -ExpandProperty ResourceGroupName
+        $ActivationRG = Get-AzureRmResourceGroup | Where-Object -FilterScript { $_.ResourceGroupName -like "*activation*" } | Select-Object -ExpandProperty ResourceGroupName
         #$ActivationRG = "azurestack-activation"
 
         # Find activation details
@@ -180,7 +181,7 @@ function Remove-AzsMarketplaceImages {
 
     process {
         # Find Activation Resource Group
-        $ActivationRG = Get-AzureRmResourceGroup | Where-Object { $_.ResourceGroupName -like "*activation*" } | Select-Object -ExpandProperty ResourceGroupName
+        $ActivationRG = Get-AzureRmResourceGroup | Where-Object -FilterScript { $_.ResourceGroupName -like "*activation*" } | Select-Object -ExpandProperty ResourceGroupName
         #$ActivationRG = "azurestack-activation"
 
         # Find Activation Details
@@ -268,10 +269,12 @@ function Import-AzsMarketplaceImages {
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ValueFromPipeline = $true)]
         [Alias("Filter")]
         $ImagesToDownload, # = "custom*script*extension"
+
         [Parameter(Mandatory = $false)]
         [Alias("AllProperties")]
         [Switch]
         $ListDetails,
+
         [Parameter(Mandatory = $false)]
         [Switch]
         $Force
@@ -297,7 +300,7 @@ function Import-AzsMarketplaceImages {
 
     process {
         # Find Activation Resource Group
-        $ActivationRG = Get-AzureRmResourceGroup | Where-Object { $_.ResourceGroupName -like "*activation*" } | Select-Object -ExpandProperty ResourceGroupName
+        $ActivationRG = Get-AzureRmResourceGroup | Where-Object -FilterScript { $_.ResourceGroupName -like "*activation*" } | Select-Object -ExpandProperty ResourceGroupName
         #$ActivationRG = "azurestack-activation"
 
         # Find Activation Details
@@ -310,17 +313,17 @@ function Import-AzsMarketplaceImages {
 
         # Iterate through Array of Names to find the latest Image
         foreach ($DownloadItem in $ImagesToDownload) {
-            $LatestImage = Get-AzsAzureBridgeProduct -ActivationName $ActivationDetails.Name -ResourceGroupName $ActivationRG | Where-Object { $_.Name -like "*$DownloadItem*" } | Select-Object -First 1
+            $LatestImage = Get-AzsAzureBridgeProduct -ActivationName $ActivationDetails.Name -ResourceGroupName $ActivationRG | Where-Object -FilterScript { $_.Name -like "*$DownloadItem*" } | Select-Object -First 1
             # Create Custom Object to populate $ArrayOfDownloadItemsArray so we can pass it to Download function
             $OurObject = [PSCustomObject]@{
-                DownloadName             = $LatestImage | Select-Object -Property @{Name = 'DownloadName'; Expression = { (($_.Name) -replace "default/", "") }} | Select-Object -ExpandProperty DownloadName
+                DownloadName             = $LatestImage | Select-Object -Property @{Name = 'DownloadName'; Expression = { (($_.Name) -replace "default/", "") } } | Select-Object -ExpandProperty DownloadName
                 GalleryItemIdentity      = $LatestImage | Select-Object -ExpandProperty GalleryItemIdentity
                 DisplayName              = $LatestImage | Select-Object -ExpandProperty DisplayName
                 PublisherDisplayName     = $LatestImage | Select-Object -ExpandProperty PublisherDisplayName
                 PublisherIdentifier      = $LatestImage | Select-Object -ExpandProperty PublisherIdentifier
-                SizeInMB                 = $LatestImage | Select-Object -Property @{Name = "SizeInMB"; Expression = { ([Math]::Round(($_.PayloadLength / 1MB), 2)) }} | Select-Object -ExpandProperty SizeInMB
-                SizeInGB                 = $LatestImage | Select-Object -Property @{Name = "SizeInGB"; Expression = { ([Math]::Round(($_.PayloadLength / 1GB), 2)) }} | Select-Object -ExpandProperty SizeInGB
-                ProductPropertiesVersion = $LatestImage | Select-Object -Property @{Name = "ProductVersionNumber"; Expression = { $_.ProductProperties.Version }} | Select-Object -ExpandProperty ProductPropertiesVersion
+                SizeInMB                 = $LatestImage | Select-Object -Property @{Name = "SizeInMB"; Expression = { ([Math]::Round(($_.PayloadLength / 1MB), 2)) } } | Select-Object -ExpandProperty SizeInMB
+                SizeInGB                 = $LatestImage | Select-Object -Property @{Name = "SizeInGB"; Expression = { ([Math]::Round(($_.PayloadLength / 1GB), 2)) } } | Select-Object -ExpandProperty SizeInGB
+                ProductPropertiesVersion = $LatestImage | Select-Object -Property @{Name = "ProductVersionNumber"; Expression = { $_.ProductProperties.Version } } | Select-Object -ExpandProperty ProductPropertiesVersion
                 Offer                    = $LatestImage | Select-Object -ExpandProperty Offer
                 OfferVersion             = $LatestImage | Select-Object -ExpandProperty OfferVersion
                 Sku                      = $LatestImage | Select-Object -ExpandProperty Sku
@@ -379,6 +382,7 @@ function Get-AzsAvailableMarketplaceImages {
         [Alias("AllProperties")]
         [Switch]
         $ListDetails,
+
         [Parameter(Mandatory = $false)]
         [Switch]
         $LatestImages
@@ -404,7 +408,7 @@ function Get-AzsAvailableMarketplaceImages {
 
     process {
         # Find Activation Resource Group
-        $ActivationRG = Get-AzureRmResourceGroup | Where-Object { $_.ResourceGroupName -like "*activation*" } | Select-Object -ExpandProperty ResourceGroupName
+        $ActivationRG = Get-AzureRmResourceGroup | Where-Object -FilterScript { $_.ResourceGroupName -like "*activation*" } | Select-Object -ExpandProperty ResourceGroupName
         #$ActivationRG = "azurestack-activation"
 
         # Find Activation Details
@@ -418,7 +422,7 @@ function Get-AzsAvailableMarketplaceImages {
             $LatestImagesArray = @()
             foreach ($Table in $ListOfImages.Values) {
                 $NewestVersionNumber = ($Table.ProductProperties.Version | Measure-Object -Maximum).Maximum
-                $NewestVersion = $Table | Where-Object { $_.ProductProperties.Version -eq $NewestVersionNumber }
+                $NewestVersion = $Table | Where-Object -FilterScript { $_.ProductProperties.Version -eq $NewestVersionNumber }
                 $LatestImagesArray += $NewestVersion
             }
             $ListOfImages = $LatestImagesArray
@@ -432,14 +436,14 @@ function Get-AzsAvailableMarketplaceImages {
             foreach ($Image in $ListOfImages) {
                 # Create Custom Object to populate $ArrayOfDownloadItemsArray so we can pass it to Download function
                 $OurObject = [PSCustomObject]@{
-                    DownloadName             = $Image | Select-Object -Property @{Name = 'DownloadName'; Expression = { (($_.Name) -replace "default/", "") }} | Select-Object -ExpandProperty DownloadName
+                    DownloadName             = $Image | Select-Object -Property @{Name = 'DownloadName'; Expression = { (($_.Name) -replace "default/", "") } } | Select-Object -ExpandProperty DownloadName
                     GalleryItemIdentity      = $Image | Select-Object -ExpandProperty GalleryItemIdentity
                     DisplayName              = $Image | Select-Object -ExpandProperty DisplayName
                     PublisherDisplayName     = $Image | Select-Object -ExpandProperty PublisherDisplayName
                     PublisherIdentifier      = $Image | Select-Object -ExpandProperty PublisherIdentifier
-                    SizeInMB                 = $Image | Select-Object -Property @{Name = "SizeInMB"; Expression = { ([Math]::Round(($_.PayloadLength / 1MB), 2)) }} | Select-Object -ExpandProperty SizeInMB
-                    SizeInGB                 = $Image | Select-Object -Property @{Name = "SizeInGB"; Expression = { ([Math]::Round(($_.PayloadLength / 1GB), 2)) }} | Select-Object -ExpandProperty SizeInGB
-                    ProductPropertiesVersion = $Image | Select-Object -Property @{Name = "ProductVersionNumber"; Expression = { $_.ProductProperties.Version }} | Select-Object -ExpandProperty ProductPropertiesVersion
+                    SizeInMB                 = $Image | Select-Object -Property @{Name = "SizeInMB"; Expression = { ([Math]::Round(($_.PayloadLength / 1MB), 2)) } } | Select-Object -ExpandProperty SizeInMB
+                    SizeInGB                 = $Image | Select-Object -Property @{Name = "SizeInGB"; Expression = { ([Math]::Round(($_.PayloadLength / 1GB), 2)) } } | Select-Object -ExpandProperty SizeInGB
+                    ProductPropertiesVersion = $Image | Select-Object -Property @{Name = "ProductVersionNumber"; Expression = { $_.ProductProperties.Version } } | Select-Object -ExpandProperty ProductPropertiesVersion
                     Offer                    = $Image | Select-Object -ExpandProperty Offer
                     OfferVersion             = $Image | Select-Object -ExpandProperty OfferVersion
                     Sku                      = $Image | Select-Object -ExpandProperty Sku
@@ -504,7 +508,7 @@ function Update-AzsMarketplaceImages {
 
     process {
         # Find activation resource group
-        $ActivationRG = Get-AzureRmResourceGroup | Where-Object { $_.ResourceGroupName -like "*activation*" } | Select-Object -ExpandProperty ResourceGroupName
+        $ActivationRG = Get-AzureRmResourceGroup | Where-Object -FilterScript { $_.ResourceGroupName -like "*activation*" } | Select-Object -ExpandProperty ResourceGroupName
         #$ActivationRG = "azurestack-activation"
 
         # Find Activation Details
@@ -514,7 +518,7 @@ function Update-AzsMarketplaceImages {
         $CurrentImages = Get-AzsMarketplaceImages
 
         # Get a list of available images
-        $AvailableImages = Get-AzsAzureBridgeProduct -ActivationName $ActivationDetails.Name -ResourceGroupName $ActivationRG | Select-Object -Property DisplayName, @{Name = 'DownloadName'; Expression = { (($_.Name) -replace "default/", "") }}, PublisherIdentifier, Offer, OfferVersion, Sku, ProductKind, ProductProperties
+        $AvailableImages = Get-AzsAzureBridgeProduct -ActivationName $ActivationDetails.Name -ResourceGroupName $ActivationRG | Select-Object -Property DisplayName, @{Name = 'DownloadName'; Expression = { (($_.Name) -replace "default/", "") } }, PublisherIdentifier, Offer, OfferVersion, Sku, ProductKind, ProductProperties
 
         # Declare empty array for storing info of images to be downloaded
         $ImagesToBeDownloaded = @()
@@ -523,21 +527,21 @@ function Update-AzsMarketplaceImages {
             # If image is a virtual machine...
             if ($Image.ProductKind -like "*virtualMachine*") {
                 # Find new image which matches publisher, offer and sku
-                $NewestVersion = $AvailableImages | Where-Object { ($_.PublisherIdentifier -like $Image.PublisherIdentifier) -and ($_.Offer -like $Image.Offer) -and ($_.Sku -like $Image.Sku) }
+                $NewestVersion = $AvailableImages | Where-Object -FilterScript { ($_.PublisherIdentifier -like $Image.PublisherIdentifier) -and ($_.Offer -like $Image.Offer) -and ($_.Sku -like $Image.Sku) }
                 # If multiple match, refine by Display Name
                 if ($NewestVersion.Count) {
-                    $NewestVersion = $NewestVersion | Where-Object { $_.DisplayName -like $Image.DisplayName }
+                    $NewestVersion = $NewestVersion | Where-Object -FilterScript { $_.DisplayName -like $Image.DisplayName }
                     # If multiple still match, find the one with the newest version number
                     if ($NewestVersion.Count) {
                         $NewestVersionNumber = ($NewestVersion.ProductProperties.Version | Measure-Object -Maximum).Maximum
-                        $NewestVersion = $NewestVersion | Where-Object { $_.ProductProperties.Version -eq $NewestVersionNumber }
+                        $NewestVersion = $NewestVersion | Where-Object -FilterScript { $_.ProductProperties.Version -eq $NewestVersionNumber }
                     }
                 }
             }
             # If image is a virtual machine extension...
             elseif ($Image.ProductKind -like "*virtualMachineExtension*") {
                 # Find new image which matches publisher and display name
-                $NewestVersion = $AvailableImages | Where-Object { ($_.PublisherIdentifier -like $Image.PublisherIdentifier) -and ($_.DisplayName -like $Image.DisplayName) }
+                $NewestVersion = $AvailableImages | Where-Object -FilterScript { ($_.PublisherIdentifier -like $Image.PublisherIdentifier) -and ($_.DisplayName -like $Image.DisplayName) }
             }
 
             # If the image is a newer version than the currently installed image, add it to the array
@@ -610,6 +614,7 @@ function Remove-AzsMarketplaceDuplicateImages {
         [Parameter(Mandatory = $false)]
         [Switch]
         $ListDetails,
+
         [Parameter(Mandatory = $false)]
         [Switch]
         $Force
@@ -635,7 +640,7 @@ function Remove-AzsMarketplaceDuplicateImages {
 
     process {
         # Find activation resource group
-        $ActivationRG = Get-AzureRmResourceGroup | Where-Object { $_.ResourceGroupName -like "*activation*" } | Select-Object -ExpandProperty ResourceGroupName
+        $ActivationRG = Get-AzureRmResourceGroup | Where-Object -FilterScript { $_.ResourceGroupName -like "*activation*" } | Select-Object -ExpandProperty ResourceGroupName
         #$ActivationRG = "azurestack-activation"
 
         # Find Activation Details
@@ -650,7 +655,7 @@ function Remove-AzsMarketplaceDuplicateImages {
         foreach ($Table in $ListOfImages.Values) {
             if ($Table.Count) {
                 $NewestVersionNumber = ($Table.ProductProperties.Version | Measure-Object -Maximum).Maximum
-                $NewestVersion = $Table | Where-Object { $_.ProductProperties.Version -ne $NewestVersionNumber }
+                $NewestVersion = $Table | Where-Object -FilterScript { $_.ProductProperties.Version -ne $NewestVersionNumber }
                 $ImagesToBeDeleted += $NewestVersion
             }
         }
@@ -662,14 +667,14 @@ function Remove-AzsMarketplaceDuplicateImages {
             foreach ($Image in $ImagesToBeDeleted) {
                 # Create Custom Object to populate $ArrayOfDownloadItemsArray so we can pass it to Download function
                 $OurObject = [PSCustomObject]@{
-                    DownloadName             = $Image | Select-Object -Property @{Name = 'DownloadName'; Expression = { (($_.Name) -replace "default/", "") }} | Select-Object -ExpandProperty DownloadName
+                    DownloadName             = $Image | Select-Object -Property @{Name = 'DownloadName'; Expression = { (($_.Name) -replace "default/", "") } } | Select-Object -ExpandProperty DownloadName
                     GalleryItemIdentity      = $Image | Select-Object -ExpandProperty GalleryItemIdentity
                     DisplayName              = $Image | Select-Object -ExpandProperty DisplayName
                     PublisherDisplayName     = $Image | Select-Object -ExpandProperty PublisherDisplayName
                     PublisherIdentifier      = $Image | Select-Object -ExpandProperty PublisherIdentifier
-                    SizeInMB                 = $Image | Select-Object -Property @{Name = "SizeInMB"; Expression = { ([Math]::Round(($_.PayloadLength / 1MB), 2)) }} | Select-Object -ExpandProperty SizeInMB
-                    SizeInGB                 = $Image | Select-Object -Property @{Name = "SizeInGB"; Expression = { ([Math]::Round(($_.PayloadLength / 1GB), 2)) }} | Select-Object -ExpandProperty SizeInGB
-                    ProductPropertiesVersion = $Image | Select-Object -Property @{Name = "ProductVersionNumber"; Expression = { $_.ProductProperties.Version }} | Select-Object -ExpandProperty ProductPropertiesVersion
+                    SizeInMB                 = $Image | Select-Object -Property @{Name = "SizeInMB"; Expression = { ([Math]::Round(($_.PayloadLength / 1MB), 2)) } } | Select-Object -ExpandProperty SizeInMB
+                    SizeInGB                 = $Image | Select-Object -Property @{Name = "SizeInGB"; Expression = { ([Math]::Round(($_.PayloadLength / 1GB), 2)) } } | Select-Object -ExpandProperty SizeInGB
+                    ProductPropertiesVersion = $Image | Select-Object -Property @{Name = "ProductVersionNumber"; Expression = { $_.ProductProperties.Version } } | Select-Object -ExpandProperty ProductPropertiesVersion
                     Offer                    = $Image | Select-Object -ExpandProperty Offer
                     OfferVersion             = $Image | Select-Object -ExpandProperty OfferVersion
                     Sku                      = $Image | Select-Object -ExpandProperty Sku
@@ -709,13 +714,13 @@ function Get-AzsMarketplaceUpdateStatus {
         Get current status of marketplace update - downloads/deletions of images.
 
     .PARAMETER SmtpServer
-        SmtpServer to relay emails through - defaults to our O365 relay.
+        SmtpServer to relay emails through.
 
     .PARAMETER Recipient
-        Email address of the first recipient - defaults to MSFT Teams Update channel.
+        Email address of the first recipient.
 
     .PARAMETER Recipient2
-        Email address of the second recipient - defaults to cblack@ukcloud.com.
+        Email address of the second recipient.
 
     .PARAMETER ProgressInterval
         How often check progress. Defaults to 30.
@@ -730,15 +735,6 @@ function Get-AzsMarketplaceUpdateStatus {
     .EXAMPLE
         Get-AzsMarketplaceUpdateStatus
 
-    .EXAMPLE
-        Get-AzsMarketplaceUpdateStatus -SmtpServer "ukcloud-com.mail.protection.outlook.com" -Recipient "551f9304.ukcloud.com@emea.teams.ms" -Recipient2 "user@ukcloud.com"
-
-    .EXAMPLE
-        Get-AzsMarketplaceUpdateStatus -SmtpServer "ukcloud-com.mail.protection.outlook.com" -Recipient "551f9304.ukcloud.com@emea.teams.ms" -Recipient2 "user@ukcloud.com" -ProgressInterval "15"
-
-    .EXAMPLE
-        Get-AzsMarketplaceUpdateStatus -SmtpServer "ukcloud-com.mail.protection.outlook.com" -Recipient "551f9304.ukcloud.com@emea.teams.ms" -Recipient2 "user@ukcloud.com" -ProgressInterval "15" -SendEmail:$false
-
     .NOTES
         It will have to be run after the Update-AzsMarketplaceImages function.
         We need to do it so that we only keep the latest images in our marketplace.
@@ -747,18 +743,26 @@ function Get-AzsMarketplaceUpdateStatus {
     #>
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
-        [Parameter(Mandatory = $false)]
-        $SmtpServer = "ukcloud-com.mail.protection.outlook.com",
-        [Parameter(Mandatory = $false)]
-        $Recipient = "551f9304.ukcloud.com@emea.teams.ms",
-        [Parameter(Mandatory = $false)]
-        $Recipient2 = "cblack@ukcloud.com",
+        [Parameter(Mandatory = $true)]
+        $SmtpServer,
+
+        [Parameter(Mandatory = $true)]
+        $Recipient,
+
+        [Parameter(Mandatory = $true)]
+        $Recipient2,
+
+        [Parameter(Mandatory = $true)]
+        $From,
+
         [Parameter(Mandatory = $false)]
         [Int]
         $ProgressInterval = 30,
+
         [Parameter(Mandatory = $false)]
         [Int]
         $RetryDelay = 120,
+
         [Parameter(Mandatory = $false)]
         [Switch]
         $SendEmail = $true
@@ -783,25 +787,22 @@ function Get-AzsMarketplaceUpdateStatus {
     }
 
     process {
-        # Email variables
-        $From = "AzureStackMarketplaceStatus@ukcloud.com"
-
         # Get Azure Stack region information
         $AzsUpdateLocation = Get-AzsUpdateLocation
 
         # Find activation resource group
-        $ActivationRG = Get-AzureRmResourceGroup | Where-Object { $_.ResourceGroupName -like "*activation*" } | Select-Object -ExpandProperty ResourceGroupName
+        $ActivationRG = Get-AzureRmResourceGroup | Where-Object -FilterScript { $_.ResourceGroupName -like "*activation*" } | Select-Object -ExpandProperty ResourceGroupName
         #$ActivationRG = "azurestack-activation"
 
         # Find Activation Details
         $ActivationDetails = Get-AzsAzureBridgeActivation -ResourceGroupName $ActivationRG
 
         # Get a list of currently downloading images
-        $ListOfImages = Get-AzsAzureBridgeDownloadedProduct -ActivationName $ActivationDetails.Name -ResourceGroupName $ActivationRG | Where-Object { $_.ProvisioningState -notlike "Succeeded" -and $_.ProvisioningState -notlike "Failed" }
+        $ListOfImages = Get-AzsAzureBridgeDownloadedProduct -ActivationName $ActivationDetails.Name -ResourceGroupName $ActivationRG | Where-Object -FilterScript { $_.ProvisioningState -notlike "Succeeded" -and $_.ProvisioningState -notlike "Failed" }
         $ProgressCount = 0
         $ListOfDownloads = $ListOfImages.Name
         while ($ListOfImages.ProvisioningState -contains "Downloading" -or $ListOfImages.ProvisioningState -contains "Deleting") {
-            $ListOfImages = Get-AzsAzureBridgeDownloadedProduct -ActivationName $ActivationDetails.Name -ResourceGroupName $ActivationRG | Where-Object { $ListOfDownloads -contains $_.Name } | Select-Object -Property DisplayName, GalleryItemIdentity, @{Name = "ProductVersionNumber"; Expression = { $_.ProductProperties.Version }} , ProductKind, @{Name = "SizeInGB"; Expression = { ([Math]::Round(($_.PayloadLength / 1GB), 2)) } }, ProvisioningState  | Sort-Object -Property ProductKind, DisplayName
+            $ListOfImages = Get-AzsAzureBridgeDownloadedProduct -ActivationName $ActivationDetails.Name -ResourceGroupName $ActivationRG | Where-Object -FilterScript { $ListOfDownloads -contains $_.Name } | Select-Object -Property DisplayName, GalleryItemIdentity, @{Name = "ProductVersionNumber"; Expression = { $_.ProductProperties.Version } } , ProductKind, @{Name = "SizeInGB"; Expression = { ([Math]::Round(($_.PayloadLength / 1GB), 2)) } }, ProvisioningState | Sort-Object -Property ProductKind, DisplayName
             $ListOfImages | Format-Table -AutoSize
             if ((($ProgressCount -eq 0) -or ($ListOfImages.ProvisioningState -notcontains "Downloading" -and $ListOfImages.ProvisioningState -notcontains "Deleting" -and $ListOfImages.ProvisioningState -notcontains "DeletePending" -and $ListOfImages.ProvisioningState -notcontains "DownloadPending")) -and ($SendEmail)) {
                 if ($ListOfImages.ProvisioningState -contains "Downloading") {
@@ -994,7 +995,7 @@ Get-AzsMarketplaceImages |  Remove-AzsMarketplaceImages -WhatIf -Verbose
 
 Get-AzsMarketplaceImages -ListDetails
 
-$Image = $CurrentImages | Where-Object { $_.DownloadName -like "*microsoft.datacenter-core-1709-with-containers-smalldisk-payg-1709.30.20180717*" }
-$CurrentImages = $CurrentImages | Where-Object { $_.Offer -like "*SolutionTemplateOffer*" }
-$AvailableImages | Where-Object { $_.Offer -like "*SolutionTemplateOffer*" } | Select PublisherIdentifier, DisplayName, GalleryItemIdentity
+$Image = $CurrentImages | Where-Object -FilterScript { $_.DownloadName -like "*microsoft.datacenter-core-1709-with-containers-smalldisk-payg-1709.30.20180717*" }
+$CurrentImages = $CurrentImages | Where-Object -FilterScript { $_.Offer -like "*SolutionTemplateOffer*" }
+$AvailableImages | Where-Object -FilterScript { $_.Offer -like "*SolutionTemplateOffer*" } | Select PublisherIdentifier, DisplayName, GalleryItemIdentity
 #>

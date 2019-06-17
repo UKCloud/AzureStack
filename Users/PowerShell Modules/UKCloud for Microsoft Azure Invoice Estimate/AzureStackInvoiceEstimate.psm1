@@ -48,20 +48,24 @@ function Get-AzureStackInvoiceEstimate {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
-        [ValidateScript({ if (-not (Test-Path -Path $_)) { New-Item -ItemType Directory -Path $_ -Force } else { $true } })]
+        [ValidateScript( { if (-not (Test-Path -Path $_)) { New-Item -ItemType Directory -Path $_ -Force } else { $true } })]
         [String]
         $Destination,
+
         [Parameter(Mandatory = $false)]
         [String]
         $FileName = "AzureStack-Invoice.csv",
+
         [Parameter(Mandatory = $true)]
         [DateTime]
         $StartDate,
+
         [Parameter(Mandatory = $true)]
         [DateTime]
         $EndDate,
+
         [Parameter(Mandatory = $false)]
-        [ValidateScript({ Test-Path -Path $_ })]
+        [ValidateScript( { Test-Path -Path $_ })]
         [String]
         $SQLFilePath
     )
@@ -94,10 +98,10 @@ function Get-AzureStackInvoiceEstimate {
             $SQLVMArray = Import-Csv -Path $SQLFilePath
 
             # Declare SQL hash table
-            [HashTable]$SQLEntVMs = @{}
+            [HashTable]$SQLEntVMs = @{ }
 
             # Check whether CSV data is in correct format
-            $IncorrectSQLVersion = $SQLVMArray | Where-Object { $_.SQLVersion -notlike "STD" -and $_.SQLVersion -notlike "ENT" }
+            $IncorrectSQLVersion = $SQLVMArray | Where-Object -FilterScript { $_.SQLVersion -notlike "STD" -and $_.SQLVersion -notlike "ENT" }
 
             if ($IncorrectSQLVersion) {
                 Write-Warning -Message "WARNING! SQL CSV contained the following incorrect SQL versions. Please ensure that hhe version is either 'STD' (standard) or 'ENT' (enterprise)."
@@ -246,7 +250,7 @@ function Get-AzureStackInvoiceEstimate {
                     }
                     # Figure out SQL licensing
                     if ($SQLVMArray.VMName -contains $ResourceName) {
-                        $SQLVM = $SQLVMArray | Where-Object { $_.VMName -like $ResourceName }
+                        $SQLVM = $SQLVMArray | Where-Object -FilterScript { $_.VMName -like $ResourceName }
                         $Record | Add-Member -Name SQLVersion -MemberType NoteProperty -Value $SQLVM.SQLVersion
                         if ($SQLVM.SQLVersion -like "ENT") {
                             $SQLVM | Add-Member -Name NumberOfCores -MemberType NoteProperty -Value $Record.NumberOfCores
@@ -349,25 +353,25 @@ function Get-AzureStackInvoiceEstimate {
 
         if ($Destination) {
             $InvoiceObject = [PSCustomObject]@{
-                'SubscriptionDisplayName'              = $($Sub.Name)
-                'SubscriptionID'                       = $($Sub.SubscriptionId)
-                'Total-Windows-vCPU-usage(Core/Hour)'  = $WinVMCount
-                'Total-Linux-vCPU-usage(Core/Hour)'    = $LinuxVMCount
-                'Total-RAM-usage(GB/Hour)'             = $RamCount
-                'Total-Storage-usage(GB/hour)'         = $StorageCount
-                'Total-SQL-Std-(0-4-vCPU)-hours'       = $SQLStdSmall
-                'Total-SQL-Std-(5+-vCPU)-hours'        = $SQLStdLarge
-                'Total-SQL-Ent-(0-4-vCPU)-licences'    = $SQLEntSmall
-                'Total-SQL-Ent-(5+-vCPU)-licences'     = $SQLEntLarge
-                'Total-vCPU-cost(£)'                   = $([Math]::Round($VirtualCpuCost, 2))
-                'Total-RAM-cost(£)'                    = $([Math]::Round($RamCost, 2))
-                'Total-Storage-cost(£)'                = $([Math]::Round($StorageCost, 2))
-                'Total-Windows-Licence-cost(£)'        = $([Math]::Round($WindowsLicenceCost, 2))
-                'Total-SQL-Std-(0-4-vCPU)-cost(£)'     = $([Math]::Round($SQLStdSmallCost, 2))
-                'Total-SQL-Std-(5+-vCPU)-cost(£)'      = $([Math]::Round($SQLStdLargeCost, 2))
-                'Total-SQL-Ent-(0-4-vCPU)-cost(£)'     = $([Math]::Round($SQLEntSmallCost, 2))
-                'Total-SQL-Ent-(5+-vCPU)-cost(£)'      = $([Math]::Round($SQLEntLargeCost, 2))
-                'Invoice-Total(£)'                     = $([Math]::Round($TotalCost, 2))
+                'SubscriptionDisplayName'             = $($Sub.Name)
+                'SubscriptionID'                      = $($Sub.SubscriptionId)
+                'Total-Windows-vCPU-usage(Core/Hour)' = $WinVMCount
+                'Total-Linux-vCPU-usage(Core/Hour)'   = $LinuxVMCount
+                'Total-RAM-usage(GB/Hour)'            = $RamCount
+                'Total-Storage-usage(GB/hour)'        = $StorageCount
+                'Total-SQL-Std-(0-4-vCPU)-hours'      = $SQLStdSmall
+                'Total-SQL-Std-(5+-vCPU)-hours'       = $SQLStdLarge
+                'Total-SQL-Ent-(0-4-vCPU)-licences'   = $SQLEntSmall
+                'Total-SQL-Ent-(5+-vCPU)-licences'    = $SQLEntLarge
+                'Total-vCPU-cost(£)'                  = $([Math]::Round($VirtualCpuCost, 2))
+                'Total-RAM-cost(£)'                   = $([Math]::Round($RamCost, 2))
+                'Total-Storage-cost(£)'               = $([Math]::Round($StorageCost, 2))
+                'Total-Windows-Licence-cost(£)'       = $([Math]::Round($WindowsLicenceCost, 2))
+                'Total-SQL-Std-(0-4-vCPU)-cost(£)'    = $([Math]::Round($SQLStdSmallCost, 2))
+                'Total-SQL-Std-(5+-vCPU)-cost(£)'     = $([Math]::Round($SQLStdLargeCost, 2))
+                'Total-SQL-Ent-(0-4-vCPU)-cost(£)'    = $([Math]::Round($SQLEntSmallCost, 2))
+                'Total-SQL-Ent-(5+-vCPU)-cost(£)'     = $([Math]::Round($SQLEntLargeCost, 2))
+                'Invoice-Total(£)'                    = $([Math]::Round($TotalCost, 2))
             }
 
             if (-not $SQLVMArray) {

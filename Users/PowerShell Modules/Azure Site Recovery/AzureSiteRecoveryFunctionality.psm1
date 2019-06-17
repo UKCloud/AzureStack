@@ -29,9 +29,12 @@ function Test-AzureSiteRecoveryFailOver {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [String]$VaultName,
+        [String]
+        $VaultName,
+
         [Parameter(Mandatory = $false)]
-        [Switch]$Confirmation
+        [Switch]
+        $Confirmation
     )
 
     begin {
@@ -240,9 +243,12 @@ function Start-AzureSiteRecoveryFailOver {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [String]$VaultName,
+        [String]
+        $VaultName,
+
         [Parameter(Mandatory = $false)]
-        [Switch]$SkipTest
+        [Switch]
+        $SkipTest
     )
 
     begin {
@@ -478,34 +484,59 @@ function Start-AzureSiteRecoveryFailBack {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [String]$AzureResourceGroup,
+        [String]
+        $AzureResourceGroup,
+
         [Parameter(Mandatory = $true)]
         [Alias("ServicePrincipal")]
-        [String]$ClientId,
+        [String]
+        $ClientId,
+
         [Parameter(Mandatory = $true)]
-        [String]$ClientSecret,
+        [String]
+        $ClientSecret,
+
         [Parameter(Mandatory = $false)]
-        [String]$ArmEndpoint = "https://management.frn00006.azure.ukcloud.com",
+        [String]
+        $ArmEndpoint = "https://management.frn00006.azure.ukcloud.com",
+
         [Parameter(Mandatory = $true)]
-        [String]$StackResourceGroup,
+        [String]
+        $StackResourceGroup,
+
         [Parameter(Mandatory = $true)]
         [ValidatePattern("^[a-z0-9]+$", Options = "None")]
-        [String]$StackStorageAccount,
+        [String]
+        $StackStorageAccount,
+
         [Parameter(Mandatory = $true)]
         [ValidatePattern("^[a-z0-9]+$", Options = "None")]
-        [String]$StackStorageContainer,
+        [String]
+        $StackStorageContainer,
+
         [Parameter(Mandatory = $false)]
-        [String]$VNetName = "myVNetwork",
+        [String]
+        $VNetName = "myVNetwork",
+
         [Parameter(Mandatory = $false)]
-        [String]$SubnetName = "default",
+        [String]
+        $SubnetName = "default",
+
         [Parameter(Mandatory = $false)]
-        [String]$VNetRange = "192.168.0.0/16",
+        [String]
+        $VNetRange = "192.168.0.0/16",
+
         [Parameter(Mandatory = $false)]
-        [String]$SubnetRange = "192.168.1.0/24",
+        [String]
+        $SubnetRange = "192.168.1.0/24",
+
         [Parameter(Mandatory = $false)]
-        [String]$NSGName = "myNSG",
+        [String]
+        $NSGName = "myNSG",
+
         [Parameter(Mandatory = $false)]
-        [Switch]$UseStorageAccount
+        [Switch]
+        $UseStorageAccount
     )
 
     begin {
