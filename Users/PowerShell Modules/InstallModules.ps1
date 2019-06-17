@@ -20,7 +20,7 @@ function Install-CustomModule {
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]
-    param(
+    param (
         [Parameter(Mandatory = $false, HelpMessage = "Path to local repository that contains modules folder")]
         [ValidateScript({ (Test-Path $_) })]
         [String]
@@ -32,7 +32,7 @@ function Install-CustomModule {
     $ModulesNotInstalled = @()
 
     # Find modules directory in local repository
-    $GetModuleDirectory = Get-ChildItem -Path $LocalRepoPath | Where-Object { $_.Name -like "*modules*" }
+    $GetModuleDirectory = Get-ChildItem -Path $LocalRepoPath | Where-Object -FilterScript { $_.Name -like "*modules*" }
     $GetModuleDirectory
 
     # Find each module folder in modules directory

@@ -242,7 +242,7 @@ while (!`$VaultCredPath -and `$Retry -lt 20) {
 
         ## Set drives to be backed up, excluding the temporary storage
         if (-not $FoldersToBackup) {
-            $Drives = Get-PSDrive -PSProvider "Microsoft.PowerShell.Core\FileSystem" | Where-Object { $_.Used -gt 0 -and $_.Description -notlike "Temporary Storage" } | Select-Object -ExpandProperty Root
+            $Drives = Get-PSDrive -PSProvider "Microsoft.PowerShell.Core\FileSystem" | Where-Object -FilterScript { $_.Used -gt 0 -and $_.Description -notlike "Temporary Storage" } | Select-Object -ExpandProperty Root
             $FileInclusions = New-OBFileSpec -FileSpec @($Drives)
         }
         else {

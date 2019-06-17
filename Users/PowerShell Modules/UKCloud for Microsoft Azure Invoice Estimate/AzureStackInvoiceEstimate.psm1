@@ -97,7 +97,7 @@ function Get-AzureStackInvoiceEstimate {
             [HashTable]$SQLEntVMs = @{}
 
             # Check whether CSV data is in correct format
-            $IncorrectSQLVersion = $SQLVMArray | Where-Object { $_.SQLVersion -notlike "STD" -and $_.SQLVersion -notlike "ENT" }
+            $IncorrectSQLVersion = $SQLVMArray | Where-Object -FilterScript { $_.SQLVersion -notlike "STD" -and $_.SQLVersion -notlike "ENT" }
 
             if ($IncorrectSQLVersion) {
                 Write-Warning -Message "WARNING! SQL CSV contained the following incorrect SQL versions. Please ensure that hhe version is either 'STD' (standard) or 'ENT' (enterprise)."
@@ -246,7 +246,7 @@ function Get-AzureStackInvoiceEstimate {
                     }
                     # Figure out SQL licensing
                     if ($SQLVMArray.VMName -contains $ResourceName) {
-                        $SQLVM = $SQLVMArray | Where-Object { $_.VMName -like $ResourceName }
+                        $SQLVM = $SQLVMArray | Where-Object -FilterScript { $_.VMName -like $ResourceName }
                         $Record | Add-Member -Name SQLVersion -MemberType NoteProperty -Value $SQLVM.SQLVersion
                         if ($SQLVM.SQLVersion -like "ENT") {
                             $SQLVM | Add-Member -Name NumberOfCores -MemberType NoteProperty -Value $Record.NumberOfCores
