@@ -192,7 +192,7 @@ function New-AzsAks {
         The application ID of a service principal with contributor permissions on Azure Stack. Example: "00000000-0000-0000-0000-000000000000"
 
     .PARAMETER ClientSecret
-        A secret of the service principal specified in the ServicePrincipal Parameter. Example: "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
+        A secret of the service principal specified in the ServicePrincipal parameter. Example: "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
 
     .PARAMETER AgentPoolProfileCount
         The number of nodes in the Kubernetes agent node pool. Defaults to 3.
@@ -483,7 +483,7 @@ function Start-AzsAksScale {
         The application ID of a service principal with contributor permissions on Azure Stack. Example: "00000000-0000-0000-0000-000000000000"
 
     .PARAMETER ClientSecret
-        A secret of the service principal specified in the ServicePrincipal Parameter. Example: "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
+        A secret of the service principal specified in the ServicePrincipal parameter. Example: "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
 
     .PARAMETER NewNodeCount
         The number of nodes to scale the node pool to. Example: "5"
@@ -692,7 +692,7 @@ function Start-AzsAksUpgrade {
         The application ID of a service principal with contributor permissions on Azure Stack. Example: "00000000-0000-0000-0000-000000000000"
 
     .PARAMETER ClientSecret
-        A secret of the service principal specified in the ServicePrincipal Parameter. Example: "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
+        A secret of the service principal specified in the ServicePrincipal parameter. Example: "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
 
     .PARAMETER KubernetesUpgradeVersion
         The version of Kubernetes to upgrade the cluster to. Available versions can be found using Get-AzsAksUpgradeVersions. Example: "1.11.2"
