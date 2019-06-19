@@ -40,7 +40,7 @@ Once it is installed you can just invoke the commands and PowerShell will load t
 
     ```PowerShell
     New-AzsAks -ResourceGroupName "AKS-RG" -SSHKeyPath "C:\AzureStack\KuberenetesKey.pub" `
-        -ServicePrincipal "00000000-0000-0000-0000-000000000000" -ClientSecret "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]=" -storageProfile "blobdisk"
+        -ServicePrincipal "00000000-0000-0000-0000-000000000000" -ClientSecret "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
     ```
 
 * List all Kubernetes clusters in the current subscription:
