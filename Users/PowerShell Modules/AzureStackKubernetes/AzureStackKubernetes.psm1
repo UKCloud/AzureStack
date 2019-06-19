@@ -309,7 +309,7 @@ function New-AzsAks {
     process {
         $ServicePrincipalSecure = ConvertTo-SecureString $ServicePrincipal -AsPlainText -Force
         $ClientSecretSecure = ConvertTo-SecureString $ClientSecret -AsPlainText -Force
-        $KubernetesTemplateURI = "https://raw.githubusercontent.com/msazurestackworkloads/azurestack-gallery/master/acsengine-kubernetes/k8s-marketplaceitem-1809/template/DeploymentTemplates/azuredeploy.json"
+        $KubernetesTemplateURI = "https://raw.githubusercontent.com/msazurestackworkloads/azurestack-gallery/master/kubernetes/template/DeploymentTemplates/azuredeploy.json"
         $SSHKey = Get-Content -Path $SSHKeyPath -Raw
         if (!$DNSPrefix) {
             $DNSPrefix = $ResourceGroupName.ToLower()
