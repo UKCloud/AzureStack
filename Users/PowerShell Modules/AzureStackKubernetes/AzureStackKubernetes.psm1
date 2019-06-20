@@ -430,7 +430,7 @@ function Get-AzsAks {
             $MasterVMs = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.Name -like "*k8s*" -and $_.Name -like "*master*" }
             $CreationVM = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.Name -like "vmd*" }
             $Networking = (Get-AzureRmPublicIpAddress -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.Name -like "k8s*" })
-            $FrontEndLoadBalancer = (Get-AzureRmLoadBalancer -ResourceGroupName $VM.ResourceGroupName -Name $VM.ResourceGroupName)
+            $FrontEndLoadBalancer = (Get-AzureRmLoadBalancer -ResourceGroupName $VM.ResourceGroupName -Name $VM.ResourceGroupName -ErrorAction "SilentlyContinue")
             if (-not $FrontEndLoadBalancer) {
                 $FrontEndIp  = "LoadBalancer not deployed"
             }
