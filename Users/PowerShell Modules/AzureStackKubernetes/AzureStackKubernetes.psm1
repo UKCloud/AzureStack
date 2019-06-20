@@ -444,8 +444,8 @@ function Get-AzsAks {
                 "Slave node VM size"     = $KubernetesDeployment.Parameters.agentPoolProfileVMSize.Value
                 "Slave pool name"        = $PoolName
                 "Admin Username"         = $KubernetesDeployment.Parameters.linuxAdminUsername.Value
-                "FQDN"                   = $Networking.DnsSettings.Fqdn
-                "PublicIP"               = $Networking.IpAddress
+                "BackEndFQDN"            = $Networking.DnsSettings.Fqdn
+                "BackEndPublicIP"        = $Networking.IpAddress
                 "FrontEndPublicIp"       = $FrontEndIp.IpAddress
                 "Creation VM Name"       = $CreationVM.Name
             }
