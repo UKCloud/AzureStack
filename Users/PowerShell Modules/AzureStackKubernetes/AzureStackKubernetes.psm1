@@ -430,6 +430,8 @@ function Get-AzsAks {
             $MasterVMs = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.Name -like "*k8s*" -and $_.Name -like "*master*" }
             $CreationVM = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.Name -like "vmd*" }
             $Networking = (Get-AzureRmPublicIpAddress -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.Name -like "k8s*" })
+            $FrontEndLoadBalancer = (Get-AzureRmLoadBalancer -ResourceGroupName $VM.ResourceGroupName -Name $VM.ResourceGroupName)
+            $FrontEndIp = (Get-AzureRmPublicIpAddress -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.Name -like "*$($FrontEndLoadBalancer.FrontendIpConfigurations.Name)*" })
             $KubernetesDeployment = Get-AzureRmResourceGroupDeployment -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.TemplateLink }
             $KubernetesCluster = [PSCustomObject]@{
                 "Resource group"         = $VM.ResourceGroupName
@@ -442,8 +444,9 @@ function Get-AzsAks {
                 "Slave node VM size"     = $KubernetesDeployment.Parameters.agentPoolProfileVMSize.Value
                 "Slave pool name"        = $PoolName
                 "Admin Username"         = $KubernetesDeployment.Parameters.linuxAdminUsername.Value
-                "FQDN"                   = $Networking.DnsSettings.Fqdn
-                "PublicIP"               = $Networking.IpAddress
+                "BackEndFQDN"            = $Networking.DnsSettings.Fqdn
+                "BackEndPublicIP"        = $Networking.IpAddress
+                "FrontEndPublicIp"       = $FrontEndIp.IpAddress
                 "Creation VM Name"       = $CreationVM.Name
             }
             $ArrayOfClusters += $KubernetesCluster
