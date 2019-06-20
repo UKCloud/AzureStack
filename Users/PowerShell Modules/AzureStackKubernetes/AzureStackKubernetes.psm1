@@ -431,7 +431,12 @@ function Get-AzsAks {
             $CreationVM = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.Name -like "vmd*" }
             $Networking = (Get-AzureRmPublicIpAddress -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.Name -like "k8s*" })
             $FrontEndLoadBalancer = (Get-AzureRmLoadBalancer -ResourceGroupName $VM.ResourceGroupName -Name $VM.ResourceGroupName)
-            $FrontEndIp = (Get-AzureRmPublicIpAddress -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.Name -like "*$($FrontEndLoadBalancer.FrontendIpConfigurations.Name)*" })
+            if (-not $FrontEndLoadBalancer) {
+                $FrontEndIp  = "LoadBalancer not deployed"
+            }
+            else {
+                $FrontEndIp = (Get-AzureRmPublicIpAddress -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.Name -like "*$($FrontEndLoadBalancer.FrontendIpConfigurations.Name)*" }).IpAddress
+            }
             $KubernetesDeployment = Get-AzureRmResourceGroupDeployment -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.TemplateLink }
             $KubernetesCluster = [PSCustomObject]@{
                 "Resource group"         = $VM.ResourceGroupName
@@ -446,7 +451,7 @@ function Get-AzsAks {
                 "Admin Username"         = $KubernetesDeployment.Parameters.linuxAdminUsername.Value
                 "BackEndFQDN"            = $Networking.DnsSettings.Fqdn
                 "BackEndPublicIP"        = $Networking.IpAddress
-                "FrontEndPublicIp"       = $FrontEndIp.IpAddress
+                "FrontEndPublicIp"       = $FrontEndIp
                 "Creation VM Name"       = $CreationVM.Name
             }
             $ArrayOfClusters += $KubernetesCluster
