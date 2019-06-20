@@ -206,16 +206,12 @@ function New-AzsAks {
     .PARAMETER MasterPoolProfileVMSize
         The VM size of the nodes in the Kubernetes master node pool. Defaults to "Standard_D2_v2"
 
-    .PARAMETER StorageProfile
-        The type of storage to use. Can be either "blobdisk" for storage accounts, or "manageddisk" for managed disks. Defaults to "manageddisk"
-
     .PARAMETER KubernetesAzureCloudProviderVersion
         The version of kubernetes to use for creating the cluster. Run Get-AzsAksVersions to list available versions. Defaults to the latest version
 
     .EXAMPLE
         New-AzsAks -ResourceGroupName "AKS-RG" -SSHKeyPath "C:\AzureStack\KubernetesKey.pub" `
             -ServicePrincipal "00000000-0000-0000-0000-000000000000" -ClientSecret "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]=" `
-            -storageProfile "blobdisk"
 
     .NOTES
         This cmdlet requires you to be logged into Azure Stack to run successfully.
@@ -279,11 +275,6 @@ function New-AzsAks {
         $MasterPoolProfileVMSize = "Standard_D2_v2",
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet("blobdisk", "manageddisk")]
-        [String]
-        $StorageProfile = "manageddisk",
-
-        [Parameter(Mandatory = $false)]
         [ValidateSet("1.7", "1.8", "1.9", "1.10", "1.11")]
         [String]
         $KubernetesAzureCloudProviderVersion = "1.11"
@@ -318,7 +309,7 @@ function New-AzsAks {
         New-AzureRmResourceGroup -Name $ResourceGroupName -Location $location
         New-AzureRmResourceGroupDeployment -Name $DeploymentName -ResourceGroupName $ResourceGroupName -TemplateUri $KubernetesTemplateURI -sshPublicKey $SSHKey -masterProfileDnsPrefix $DNSPrefix `
             -servicePrincipalClientId $ServicePrincipalSecure -servicePrincipalClientSecret $ClientSecretSecure -agentPoolProfileCount $AgentPoolProfileCount -agentPoolProfileVMSize $AgentPoolProfileVMSize `
-            -masterPoolProfileCount $MasterPoolProfileCount -masterPoolProfileVMSize $MasterPoolProfileVMSize -storageProfile $StorageProfile -kubernetesAzureCloudProviderVersion $KubernetesAzureCloudProviderVersion -Verbose
+            -masterPoolProfileCount $MasterPoolProfileCount -masterPoolProfileVMSize $MasterPoolProfileVMSize -kubernetesAzureCloudProviderVersion $KubernetesAzureCloudProviderVersion -Verbose
 
     }
 }
@@ -438,21 +429,21 @@ function Get-AzsAks {
             $PoolName = (($PoolVMs[0].Name).Split("-"))[1]
             $MasterVMs = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.Name -like "*k8s*" -and $_.Name -like "*master*" }
             $CreationVM = Get-AzureRmVM -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.Name -like "vmd*" }
-            $DNSName = (Get-AzureRmPublicIpAddress -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.Name -like "k8s*" }).IpAddress
+            $Networking = (Get-AzureRmPublicIpAddress -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.Name -like "k8s*" })
             $KubernetesDeployment = Get-AzureRmResourceGroupDeployment -ResourceGroupName $VM.ResourceGroupName | Where-Object -FilterScript { $_.TemplateLink }
             $KubernetesCluster = [PSCustomObject]@{
                 "Resource group"         = $VM.ResourceGroupName
                 "Kubernetes version"     = $VM.Tags.orchestrator
-                "ACS engine version"     = $VM.Tags.acsengineVersion
+                "AKS engine version"     = $VM.Tags.aksEngineVersion
                 "Deployment Timestamp"   = $KubernetesDeployment.Timestamp
                 "Number of Master nodes" = $MasterVMs.Count
                 "Number of Slave nodes"  = $PoolVMs.Count
                 "Master node VM size"    = $KubernetesDeployment.Parameters.masterPoolProfileVMSize.Value
                 "Slave node VM size"     = $KubernetesDeployment.Parameters.agentPoolProfileVMSize.Value
                 "Slave pool name"        = $PoolName
-                "Storage Type"           = $KubernetesDeployment.Parameters.storageProfile.Value
                 "Admin Username"         = $KubernetesDeployment.Parameters.linuxAdminUsername.Value
-                "FQDN"                   = $DNSName.DnsSettings.Fqdn
+                "FQDN"                   = $Networking.DnsSettings.Fqdn
+                "PublicIP"               = $Networking.IpAddress
                 "Creation VM Name"       = $CreationVM.Name
             }
             $ArrayOfClusters += $KubernetesCluster
