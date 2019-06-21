@@ -1,0 +1,8 @@
+FROM centos
+
+RUN yum install net-tools wget unzip git httpd -y ;
+RUN yum install mod_ssl openssl -y;
+RUN git clone https://github.com/UKCloud/documentation ; cp -rf documentation/docs/* /var/www/html/
+CMD ["/usr/sbin/apachectl", "-DFOREGROUND"]
+EXPOSE 80
+EXPOSE 443
