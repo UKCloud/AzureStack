@@ -60,17 +60,15 @@ $WebAppEndpointOnServiceFabric = $NewServiceFabricClusterEndpoint -replace "1900
 $Deployed = $false
 do {
     try {
-        ((Invoke-WebRequest -Uri "http://$WebAppEndpointOnServiceFabric" -UseBasicParsing).StatusCode -ne 200)
+        [Void]((Invoke-WebRequest -Uri "http://$WebAppEndpointOnServiceFabric" -UseBasicParsing).StatusCode -ne 200)
         $Deployed = $true
     }
     catch {
-        Write-Error -Message "Waiting for the App to deploy still..."
+        Write-Output -InputObject "Sleeping until web App is ready..."
+        Start-Sleep -Seconds 5
     }
 }
-while (-not $Deployed) {
-    Write-Output -InputObject "Sleeping until web app is ready..."
-    Start-Sleep -Seconds 5
-}
+while (-not $Deployed)
 
 Import-Module -Name "Selenium"
 $Firefox_Options = New-Object -TypeName "OpenQA.Selenium.Firefox.FirefoxOptions"
