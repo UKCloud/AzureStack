@@ -17,7 +17,7 @@ catch {
     break
 }
 
-# Check Selenium is installed, if not download it.
+# Check whether Selenium is installed, if not download it.
 try {
     $SeleniumCheck = Get-Module -Name "Selenium"
     if (-not $SeleniumCheck) {
