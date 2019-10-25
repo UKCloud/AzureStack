@@ -19,7 +19,7 @@ catch {
 
 # Check Selenium is installed, if not download it.
 try {
-    $SeleniumCheck = Get-Module -Name Selenium
+    $SeleniumCheck = Get-Module -Name "Selenium"
     if (-not $SeleniumCheck) {
         Install-Module -Name Selenium
         Import-Module -Name Selenium
