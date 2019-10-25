@@ -21,8 +21,8 @@ catch {
 try {
     $SeleniumCheck = Get-Module -Name "Selenium"
     if (-not $SeleniumCheck) {
-        Install-Module -Name Selenium
-        Import-Module -Name Selenium
+        Install-Module -Name "Selenium"
+        Import-Module -Name "Selenium"
     }
 }
 catch {
