@@ -16,9 +16,9 @@ catch {
     break
 }
 
-# Check selenium is installed, if not download it.
+# Check Selenium is installed, if not download it.
 try {
-    $SeleniumCheck = Get-Module -Name selenium 
+    $SeleniumCheck = Get-Module -Name Selenium
     if (-not $SeleniumCheck) {
         Install-Module -Name Selenium
         Import-Module -Name Selenium
@@ -66,22 +66,22 @@ $VmPassword = "azsdemopw1!!"
 try {
     Write-Output -InputObject "Creating SPN in Azure Public and waiting 30 seconds... `n"
     # Log in to your public Azure Subscription and Azure AD you will be creating your SPN on
-    Connect-AzureAD -Credential $PublicAzureAdminCred -TenantId $TenantDomain -ErrorAction "stop" | Out-Null
-    Connect-AzureRmAccount -Credential $PublicAzureAdminCred -ErrorAction "stop" | Out-Null
+    Connect-AzureAD -Credential $PublicAzureAdminCred -TenantId $TenantDomain -ErrorAction "Stop" | Out-Null
+    Connect-AzureRmAccount -Credential $PublicAzureAdminCred -ErrorAction "Stop" | Out-Null
 
     # List subscriptions
-    $AzureSub = Get-AzureRmSubscription -ErrorAction "stop" | Select-Object -Property SubscriptionId, TenantId
+    $AzureSub = Get-AzureRmSubscription -ErrorAction "Stop" | Select-Object -Property SubscriptionId, TenantId
 
     # Set context to be your active Subscription
-    Get-AzureRmSubscription -SubscriptionId $AzureSub.SubscriptionId -TenantId $AzureSub.TenantId -ErrorAction "stop"| Set-AzureRmContext | Out-Null
+    Get-AzureRmSubscription -SubscriptionId $AzureSub.SubscriptionId -TenantId $AzureSub.TenantId -ErrorAction "Stop"| Set-AzureRmContext | Out-Null
 
     # Create an Azure AD application
     $App = New-AzureADApplication -DisplayName $AppName -HomePage $AppURL -IdentifierUris $AppURL
     $AppPassword = New-AzureADApplicationPasswordCredential -ObjectId $App.ObjectId -Value $AppPassword
 
     # Create a Service Principal Name (SPN) for the application you created earlier.
-    New-AzureADServicePrincipal -AppId $App.AppId -ErrorAction "stop" | Out-Null
-    
+    New-AzureADServicePrincipal -AppId $App.AppId -ErrorAction "Stop" | Out-Null
+
     # Requires a few seconds for the SPN to be created
     Start-Sleep -Seconds 30
 
@@ -140,7 +140,7 @@ $Req.ResourceAccess = $Acc1, $Acc2, $Acc3, $Acc4, $Acc5, $Acc6, $Acc7, $Acc8, $A
 
 # Set permissions for the SPN
 try {
-    Set-AzureADApplication -ObjectId $App.ObjectId -RequiredResourceAccess $Req -ErrorAction "stop"
+    Set-AzureADApplication -ObjectId $App.ObjectId -RequiredResourceAccess $Req -ErrorAction "Stop"
     Write-Output -InputObject "Successfully set permissions for SPN: $AppName`n"
 }
 catch {
@@ -157,17 +157,17 @@ try {
     $AzsCredAdmin = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $AzsUsernameAdmin, $AzsUserPasswordAdmin
 
     # Add the Azure Stack environment and login
-    Add-AzureRmEnvironment -Name "AzureStackUser" -ArmEndpoint $ArmEndpoint -ErrorAction "stop" | Out-Null
-    Connect-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $AzsCredAdmin -ErrorAction "stop" | Out-Null
+    Add-AzureRmEnvironment -Name "AzureStackUser" -ArmEndpoint $ArmEndpoint -ErrorAction "Stop" | Out-Null
+    Connect-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $AzsCredAdmin -ErrorAction "Stop" | Out-Null
 
     # Get Azure Stack Subscription details
-    $AzureStackSub = Get-AzureRmSubscription -ErrorAction "stop" | Select-Object -Property SubscriptionId, TenantId
+    $AzureStackSub = Get-AzureRmSubscription -ErrorAction "Stop" | Select-Object -Property SubscriptionId, TenantId
 
     # Get location of Azure Stack
     $Location = (Get-AzureRmLocation).Location
 
     # Get SPN details from Azure AD
-    $AzsApp = Get-AzureRmADApplication -DisplayNameStartWith "$($App.DisplayName)" -ErrorAction "stop"
+    $AzsApp = Get-AzureRmADApplication -DisplayNameStartWith "$($App.DisplayName)" -ErrorAction "Stop"
     Write-Output -InputObject "Successfully retrieved SPN: $($App.DisplayName) from Azure Stack domain: $TenantDomain`n"
 
     # Set the SPN a role in Azure Stack e.g. Contributor
@@ -199,7 +199,7 @@ Write-Output -InputObject "SPN setup finished"
 
 
 ######################## Selenium ##################################
-# Open the docs using selenium #STRINGS MAY NOT WORK, IF SO REMOVE QUOTES
+# Open the docs using Selenium #STRINGS MAY NOT WORK, IF SO REMOVE QUOTES
 $Firefox_Options = New-Object -TypeName "OpenQA.Selenium.Firefox.FirefoxOptions"
 $Firefox_Options.LogLevel = 6
 $Driver = New-Object -TypeName "OpenQA.Selenium.Firefox.FirefoxDriver" -ArgumentList $Firefox_Options
@@ -236,7 +236,7 @@ Send-SeKeys -Element $VmPassword -Keys $TFVars.VmPassword
 
 # Get data from template files
 $TfMainFileCodeBlock.Text[2] | Set-Content -Path ".\AzureStack\main.tf"
-$TfMainFileCodeBlock.Text[4] | Set-Content -Path ".\AzureStack\terraform.tfvars" 
+$TfMainFileCodeBlock.Text[4] | Set-Content -Path ".\AzureStack\terraform.tfvars"
 $TfMainFileCodeBlock.Text[5] | Set-Content -Path ".\AzureStack\variables.tf"
 
 # USE IF SELENIUM FAILS: Write-Output -InputObject "$OutputTFVarsAzureStack"
