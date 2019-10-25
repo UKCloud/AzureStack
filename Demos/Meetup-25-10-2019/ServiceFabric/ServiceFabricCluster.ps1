@@ -38,8 +38,15 @@ $NewCert = New-Certificate -CertPath $FilePath -AppName $ResourceGroupName
 $NewKeyVaultSecret = New-AzsKeyVaultSecret -VaultName $($NewKeyVault.VaultName) -KeyVaultSecretName $KeyVaultSecretName -PfxFilePath $($NewCert.PfxFilePath)
 
 $CertThumbprint = $($NewKeyVaultSecret.Thumbprint)
-$SourceVaultValue = $($NewKeyVaultSecret.KeyVaultID)
-$CertUrl = $($NewKeyVaultSecret.SecretID)
+$SourceVaultValue = $($NewKeyVaultSecret.KeyVaultId)
+$CertUrl = $($NewKeyVaultSecret.SecretId)
+
+if ($CertThumbprint -and $SourceVaultValue -and $CertUrl) {
+    Write-Output -InputObject "Ready to deploy Service Farbric cluster!"
+}
+else {
+    Write-Error -Message "Abandon all hope!"
+}
 
 $StopWatch = [Diagnostics.StopWatch]::StartNew()
 $NewServiceFabricClusterEndpoint = New-AzsSFCluster -ResourceGroupName $ResourceGroupName -AdminUserName $AdminUserName -AdminPassword $AdminPassword -SourceVaultValue $SourceVaultValue -ClusterCertificateUrlValue $CertUrl -ClusterCertficateThumbprint $CertThumbprint -ServerCertficateUrlValue $CertUrl -ServerCertficateThumbprint $CertThumbprint -AdminClientCertificateThumbprint $CertThumbprint
