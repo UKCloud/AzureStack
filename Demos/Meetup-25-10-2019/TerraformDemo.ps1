@@ -46,7 +46,7 @@ $AppURL = "https://tf$UniqueId-demo.app"
 $AppPassword = 'Password123!'
 
 ## Azure (Stack) credentials
-$PasswordString = 'Password123!!'
+$PasswordString = 'meetupdemo123!!'
 
 ## Role assignment
 $PublicAzureRole = "Contributor"
@@ -78,6 +78,9 @@ try {
 
     # Set context to be your active Subscription
     Get-AzureRmSubscription -SubscriptionId $AzureSub.SubscriptionId -TenantId $AzureSub.TenantId -ErrorAction "Stop"| Set-AzureRmContext | Out-Null
+
+    # Register resource providers
+    $AzureRmResourceProviders = Get-AzureRmResourceProvider -ListAvailable | Select-Object -Property ProviderNamespace | Where-Object { $_ -like "*Network*" } | Register-AzureRmResourceProvider
 
     # Create an Azure AD application
     $App = New-AzureADApplication -DisplayName $AppName -HomePage $AppURL -IdentifierUris $AppURL
@@ -278,10 +281,10 @@ $SshPassword = ((Get-Content .\AzureStack\terraform.tfvars | Select-String -Patt
 
 ## Connect to the VM in Azure Public
 # .\terraform.exe init .\AzurePublic
-$AzureVMPublicIp = ((.\terraform.exe state show -state=".\AzurePublic\state" azurerm_public_ip.public-ip[0] | Select-String  -SimpleMatch "ip_address") -Split "=")[1] -replace "`"" -replace " "
-$AzureVMPublicIp2 = ((.\terraform.exe state show -state=".\AzurePublic\state" azurerm_public_ip.public-ip[1] | Select-String  -SimpleMatch "ip_address") -Split "=")[1] -replace "`"" -replace " "
-$AzVM1 = echo y | plink -v  $SshUsername@$AzureVMPublicIp -pw $SshPassword "hostnamectl && uptime"
-$AzVM2 = echo y | plink -v  $SshUsername@$AzureVMPublicIp2 -pw $SshPassword "hostnamectl && uptime"
+$AzureVMPublicIp = ((.\terraform.exe state show -state=".\AzurePublic\state" azurerm_public_ip.public-ip[0] | Select-String -SimpleMatch "ip_address") -Split "=")[1] -replace "`"" -replace " "
+$AzureVMPublicIp2 = ((.\terraform.exe state show -state=".\AzurePublic\state" azurerm_public_ip.public-ip[1] | Select-String -SimpleMatch "ip_address") -Split "=")[1] -replace "`"" -replace " "
+$AzVM1 = echo y | plink -v $SshUsername@$AzureVMPublicIp -pw $SshPassword "hostnamectl && uptime"
+$AzVM2 = echo y | plink -v $SshUsername@$AzureVMPublicIp2 -pw $SshPassword "hostnamectl && uptime"
 
 Write-Output -InputObject "`t------ AzVM1 ------"
 Write-Output -InputObject $AzVM1
@@ -291,10 +294,10 @@ Write-Output -InputObject $AzVM2
 
 ## Connect to the VM in Azure Stack
 .\terraform.exe init .\AzureStack | Out-Null
-$AzsVMPublicIp = ((.\terraform.exe state show -state=".\AzureStack\state" azurestack_public_ip.public-ip[0] | Select-String  -SimpleMatch "ip_address") -Split "=")[1] -replace "`"" -replace " "
-$AzsVMPublicIp2 = ((.\terraform.exe state show -state=".\AzureStack\state" azurestack_public_ip.public-ip[1] | Select-String  -SimpleMatch "ip_address") -Split "=")[1] -replace "`"" -replace " "
-$AzsVM1 = echo y | plink -v  $SshUsername@$AzsVMPublicIp -pw $SshPassword "hostnamectl && uptime"
-$AzsVM2 = echo y | plink -v  $SshUsername@$AzsVMPublicIp2 -pw $SshPassword "hostnamectl && uptime"
+$AzsVMPublicIp = ((.\terraform.exe state show -state=".\AzureStack\state" azurestack_public_ip.public-ip[0] | Select-String -SimpleMatch "ip_address") -Split "=")[1] -replace "`"" -replace " "
+$AzsVMPublicIp2 = ((.\terraform.exe state show -state=".\AzureStack\state" azurestack_public_ip.public-ip[1] | Select-String -SimpleMatch "ip_address") -Split "=")[1] -replace "`"" -replace " "
+$AzsVM1 = echo y | plink -v $SshUsername@$AzsVMPublicIp -pw $SshPassword "hostnamectl && uptime"
+$AzsVM2 = echo y | plink -v $SshUsername@$AzsVMPublicIp2 -pw $SshPassword "hostnamectl && uptime"
 
 Write-Output -InputObject "`t------ AzsVM1 ------"
 Write-Output -InputObject $AzsVM1
