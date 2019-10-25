@@ -43,17 +43,21 @@ Get-AzureRmContext | Remove-AzureRmContext -Force
 [String]$UniqueId = Get-Random -Maximum "100"
 $AppName = "TF-Demo" + $UniqueId
 $AppURL = "https://tf$UniqueId-demo.app"
-$AppPassword = ''
-$PasswordString = ''
+$AppPassword = 'Password123!'
+
+## Azure (Stack) credentials
+$PasswordString = 'Password123!!'
+
+## Role assignment
 $PublicAzureRole = "Contributor"
 $AzureStackRole = "Contributor"
 
 # Setup Azure credentials
-$TenantDomain = ""
-$PublicAzureAdminUsername = "" + "@" + $TenantDomain
+$TenantDomain = "meetuponboardingtest01.onmicrosoft.com"
+$PublicAzureAdminUsername = "admin" + "@" + $TenantDomain
 $PublicAzureAdminPassword = ConvertTo-SecureString -String $PasswordString -AsPlainText -Force
 $PublicAzureAdminCred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $PublicAzureAdminUsername, $PublicAzureAdminPassword
-$ArmEndpoint = ""
+$ArmEndpoint = "https://management.frn00006.azure.ukcloud.com"
 
 # Selenium VM variables
 $RgName = "testrga" + $UniqueId
@@ -152,7 +156,7 @@ catch {
 # Login to Azure Stack and assign a role to the SPN
 try {
     # Set the Azure Stack credentials
-    $AzsUsernameAdmin = "" + "@" + $TenantDomain
+    $AzsUsernameAdmin = "admin" + "@" + $TenantDomain
     $AzsUserPasswordAdmin = ConvertTo-SecureString -String $PasswordString -AsPlainText -Force
     $AzsCredAdmin = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $AzsUsernameAdmin, $AzsUserPasswordAdmin
 
