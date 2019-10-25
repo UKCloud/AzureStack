@@ -70,18 +70,24 @@ do {
 }
 while (-not $Deployed)
 
+Write-Output -InputObject "Voting web App is now ready!"
+
+# Populate voting inside the App
 Import-Module -Name "Selenium"
 $Firefox_Options = New-Object -TypeName "OpenQA.Selenium.Firefox.FirefoxOptions"
 $Firefox_Options.LogLevel = 6
 $Driver = New-Object -TypeName "OpenQA.Selenium.Firefox.FirefoxDriver" -ArgumentList $Firefox_Options
 Enter-SeUrl -Driver $Driver -Url "http://$WebAppEndpointOnServiceFabric"
+Start-Sleep -Milliseconds 50
 
 $VotingOptions = @("Azure Stack", "AWS Outposts", "Google Anthos", "UKCloud", "Azure Stack is not a brand... it is a way of life!", "Chicken Noodles", "Happy Azure Stacking", "Thank you for coming!")
 
 foreach ($VotingOption in $VotingOptions) {
     $Element = Find-SeElement -Driver $Driver -Id "txtAdd"
+    Start-Sleep -Milliseconds 50
     Send-SeKeys -Element $Element -Keys $VotingOption
     $ElementClick = Find-SeElement -Driver $Driver -Id "btnAdd"
+    Start-Sleep -Milliseconds 50
     Invoke-SeClick -Element $ElementClick -Driver $Driver
 }
 
