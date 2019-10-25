@@ -26,3 +26,10 @@ $LongVar3 = "I Love Azure Stack maybe still."
 $LongVar4 = "I Love Azure Stack who knows why."
 $LongVar5 = "I Love Azure Stack - Ignite?"
 $LongVar6 = "I Love Azure Stack - how about Traffic Manager MSFT?"
+
+
+# Service Fabric Repos
+[System.Diagnostics.Process]::Start("chrome.exe", "https://systemgallery.blob.frn00006.azure.ukcloud.com/dev20161101-microsoft-windowsazure-gallery/Microsoft.ServiceFabricCluster.1.0.3/DeploymentTemplates/MainTemplate.json") | Out-Null
+[System.Diagnostics.Process]::Start("chrome.exe", "https://github.com/Azure-Samples/service-fabric-dotnet-quickstart") | Out-Null
+# https://systemgallery.blob.frn00006.azure.ukcloud.com/dev20161101-microsoft-windowsazure-gallery/Microsoft.ServiceFabricCluster.1.0.3/DeploymentTemplates/MainTemplate.json
+# https://github.com/Azure-Samples/service-fabric-dotnet-quickstart# Fabric quickstart .net application sample. Contribute to Azure-Samples/service-fabric-dotnet-quickstart development by creating an account on GitHub.github.com
