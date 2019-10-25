@@ -1,4 +1,5 @@
 ######################## Misc Set up ##################################
+$StopWatch = [Diagnostics.StopWatch]::StartNew()
 # Set up folders and files for demo
 try {
     # folders
@@ -305,3 +306,5 @@ Write-Output -InputObject "`t------ AzsVM2 ------"
 Write-Output -InputObject $AzsVM2
 
 ######################## End VM Display/Testing ##########################
+$StopWatch.Stop()
+Write-Output -InputObject "Terraform demo took $($StopWatch.Elapsed) to execute."
