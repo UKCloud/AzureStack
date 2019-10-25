@@ -57,8 +57,17 @@ $ServiceFabricDashboardEndpoint = $NewServiceFabricClusterEndpoint -replace "190
 & "$FilePath\Voting\Scripts\Deploy-FabricApplication.ps1" -ApplicationPackagePath "$FilePath\Voting\pkg\Debug" -PublishProfileFile "$FilePath\Voting\PublishProfiles\Cloud.xml" -DeployOnly:$false -ApplicationParameter:@{ } -UnregisterUnusedApplicationVersionsAfterUpgrade $false -OverrideUpgradeBehavior "None" -OverwriteBehavior "SameAppTypeAndVersion" -SkipPackageValidation:$false -ErrorAction "Stop"
 # Open Web app.
 $WebAppEndpointOnServiceFabric = $NewServiceFabricClusterEndpoint -replace "19000", "8080"
-
-while ((Invoke-WebRequest -Uri "http://$WebAppEndpointOnServiceFabric" -UseBasicParsing).StatusCode -ne 200) {
+$Deployed = $false
+do {
+    try {
+        ((Invoke-WebRequest -Uri "http://$WebAppEndpointOnServiceFabric" -UseBasicParsing).StatusCode -ne 200)
+        $Deployed = $true
+    }
+    catch {
+        Write-Error -Message "Waiting for the App to deploy still..."
+    }
+}
+while (-not $Deployed) {
     Write-Output -InputObject "Sleeping until web app is ready..."
     Start-Sleep -Seconds 5
 }
