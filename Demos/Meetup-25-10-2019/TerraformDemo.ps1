@@ -209,7 +209,7 @@ $Firefox_Options.LogLevel = 6
 $Driver = New-Object -TypeName "OpenQA.Selenium.Firefox.FirefoxDriver" -ArgumentList $Firefox_Options
 
 # Open web page
-Enter-SeUrl -Url "" -Driver $Driver
+Enter-SeUrl -Url "https://docs.ukcloud.com/articles/azure/azs-how-create-vm-terraform.html?tabs=tabid-1%2Ctabid-a" -Driver $Driver
 # Change tab to linux vm
 
 # Get the form elements from the docs page
