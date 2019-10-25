@@ -33,3 +33,11 @@ $LongVar6 = "I Love Azure Stack - how about Traffic Manager MSFT?"
 [System.Diagnostics.Process]::Start("chrome.exe", "https://github.com/Azure-Samples/service-fabric-dotnet-quickstart") | Out-Null
 # https://systemgallery.blob.frn00006.azure.ukcloud.com/dev20161101-microsoft-windowsazure-gallery/Microsoft.ServiceFabricCluster.1.0.3/DeploymentTemplates/MainTemplate.json
 # https://github.com/Azure-Samples/service-fabric-dotnet-quickstart# Fabric quickstart .net application sample. Contribute to Azure-Samples/service-fabric-dotnet-quickstart development by creating an account on GitHub.github.com
+
+<# Pre-requisites for Service Fabric code to work:
+1. PowerShell 5+ and lots of modules ;-)
+2. Visual Studio (not VSCode)
+3. Service Fabric SDK | described here -> https://docs.microsoft.com/en-us/azure-stack/user/azure-stack-solution-template-service-fabric-cluster?view=azs-1908 - found here -> https://docs.microsoft.com/en-gb/azure/service-fabric/service-fabric-get-started#install-the-sdk-and-tools
+4. Valid Azure Stack subscription
+5. Git tools
+#>
