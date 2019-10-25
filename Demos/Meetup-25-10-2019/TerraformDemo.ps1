@@ -111,7 +111,7 @@ do {
     catch {
         if ($Retry -le 10) {
             $Retry++
-            Write-Output -Message "Cannot retrieve Microsoft Cloud Agreement from the Partner Center API, retrying... - retry count: $Retry`n"
+            Write-Output -Message "Waiting for Azure AD to populate SPN attributes inside Graph, retrying... - retry count: $Retry`n"
             Start-Sleep -Seconds 5
         }
         else {
