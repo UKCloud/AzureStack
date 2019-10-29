@@ -8,7 +8,7 @@ $StackArmEndpoint = "https://management.frn00006.azure.ukcloud.com"
 Add-AzureRmEnvironment -Name "AzureStackUser" -ArmEndpoint $StackArmEndpoint
 
 # Create your Credentials
-$AzsUsername = "admin@meetuponboardingtest01.onmicrosoft.com"
+$AzsUsername = "admin@meetuponboardingdemo01.onmicrosoft.com"
 $AzsPassword = 'meetupdemo123!!'
 $AzsUserPassword = ConvertTo-SecureString -String $AzsPassword -AsPlainText -Force
 $AzsCred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $AzsUsername, $AzsUserPassword
@@ -85,16 +85,16 @@ $Firefox_Options = New-Object -TypeName "OpenQA.Selenium.Firefox.FirefoxOptions"
 $Firefox_Options.LogLevel = 6
 $Driver = New-Object -TypeName "OpenQA.Selenium.Firefox.FirefoxDriver" -ArgumentList $Firefox_Options
 Enter-SeUrl -Driver $Driver -Url "http://$WebAppEndpointOnServiceFabric"
-Start-Sleep -Milliseconds 50
+Start-Sleep -Seconds 1
 
 $VotingOptions = @("Azure Stack", "AWS Outposts", "Google Anthos", "UKCloud", "Azure Stack is not a brand... it is a way of life!", "Chicken Noodles", "Happy Azure Stacking", "Thank you for coming!")
 
 foreach ($VotingOption in $VotingOptions) {
     $Element = Find-SeElement -Driver $Driver -Id "txtAdd"
-    Start-Sleep -Milliseconds 50
+    Start-Sleep -Seconds 1
     Send-SeKeys -Element $Element -Keys $VotingOption
     $ElementClick = Find-SeElement -Driver $Driver -Id "btnAdd"
-    Start-Sleep -Milliseconds 50
+    Start-Sleep -Seconds 1
     Invoke-SeClick -Element $ElementClick -Driver $Driver
 }
 
