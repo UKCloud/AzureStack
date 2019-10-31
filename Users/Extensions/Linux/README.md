@@ -33,3 +33,15 @@ This extension changes the root password of a Linux VM to the specified value. T
 `sh ChangePassword.sh <Password>`
 
 **Example**: `sh ChangePassword.sh Password123!`
+
+## DeprovisionVM.sh
+
+### Overview
+
+This extension automatically deprovisions a Linux VM. Once this script has been run an image can be created from the VM.
+
+### Command Structure
+
+`sh DeprovisionVM.sh`
+
+**Example**: `sh DeprovisionVM.sh`

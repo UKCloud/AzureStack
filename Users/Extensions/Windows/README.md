@@ -101,3 +101,13 @@ This extension configures the Microsoft Azure Recovery Services agent on a windo
 | FoldersToBackup | A comma separated list of folders to backup. By default backs up all drives excluding temporary storage. | C:\Users, C:\Important |
 | BackupNow | Switch used to specify that the server should backup once the MARS agent is installed. | |
 | NoSchedule | Switch used to specify that the schedule configuration step can be skipped. | |
+
+## SysprepVM.ps1
+
+### Overview
+
+This extension deprovisions a Windows VM using the sysprep tool. Once it has been run the VM can be used to create a custom image.
+
+### Arguments
+
+`powershell -ExecutionPolicy Unrestricted -File SysprepVM.ps1`
