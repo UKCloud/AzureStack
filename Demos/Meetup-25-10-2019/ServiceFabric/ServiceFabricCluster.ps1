@@ -4,7 +4,7 @@
 # Declare endpoint
 $StackArmEndpoint = "https://management.frn00006.azure.ukcloud.com"
 
-## Add environment
+# Add environment
 Add-AzureRmEnvironment -Name "AzureStackUser" -ArmEndpoint $StackArmEndpoint
 
 # Create your Credentials
@@ -13,7 +13,7 @@ $AzsPassword = 'meetupdemo123!!'
 $AzsUserPassword = ConvertTo-SecureString -String $AzsPassword -AsPlainText -Force
 $AzsCred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $AzsUsername, $AzsUserPassword
 
-## Login
+# Login
 Connect-AzureRmAccount -EnvironmentName "AzureStackUser" -Credential $AzsCred
 
 # Obtain unique value
@@ -31,11 +31,10 @@ $AdminPassword = "Password1234!"
 $FilePath = "C:\temp\Test$($UniqueId)"
 
 
-### PowerShell Stuff ###
 $NewKeyVault = New-AzsKeyVault -ResourceGroupName $ResourceGroupNameKV -VaultName $VaultName
 $NewCert = New-Certificate -CertPath $FilePath -AppName $ResourceGroupName
-# Supply Cmdlet default value.
-$NewKeyVaultSecret = New-AzsKeyVaultSecret -VaultName $($NewKeyVault.VaultName) -KeyVaultSecretName $KeyVaultSecretName -PfxFilePath $($NewCert.PfxFilePath)
+# Supply cmdlet default value.
+$NewKeyVaultSecret = New-AzsKeyVaultSecret -VaultName $NewKeyVault.VaultName -KeyVaultSecretName $KeyVaultSecretName -PfxFilePath $NewCert.PfxFilePath
 
 $CertThumbprint = $($NewKeyVaultSecret.Thumbprint)
 $SourceVaultValue = $($NewKeyVaultSecret.KeyVaultId)
@@ -53,16 +52,16 @@ $NewServiceFabricClusterEndpoint = New-AzsSFCluster -ResourceGroupName $Resource
 $StopWatch.Stop()
 Write-Output -InputObject "New-AzsSFCluster deployment cmdlet took $($StopWatch.Elapsed) to execute."
 
-Publish-ServiceFabricAppWithVisualStudio -FilePath $FilePath -SolutionPath $FilePath\Voting.sln
+Publish-ServiceFabricAppWithVisualStudio -FilePath $FilePath -SolutionPath "$FilePath\Voting.sln"
 Set-XML -ServiceFabricClusterUrl $NewServiceFabricClusterEndpoint -CertThumbprint $CertThumbprint -FilePath $FilePath
 Connect-ServiceFabricCluster -ConnectionEndpoint $NewServiceFabricClusterEndpoint -X509Credential -ServerCertThumbprint $CertThumbprint -FindType FindByThumbprint -FindValue $CertThumbprint -StoreLocation "CurrentUser" -StoreName "My" -Verbose
 # Replace endpoint to be dashboard.
 $ServiceFabricDashboardEndpoint = $NewServiceFabricClusterEndpoint -replace "19000", "19080"
-# Open Service Fabric cluster dashboard.
+# Open Service Fabric Cluster dashboard.
 [System.Diagnostics.Process]::Start("chrome.exe", "https://$ServiceFabricDashboardEndpoint") | Out-Null
-# Deploy the web app to fabric.
+# Deploy the web app to the Service Fabric.
 & "$FilePath\Voting\Scripts\Deploy-FabricApplication.ps1" -ApplicationPackagePath "$FilePath\Voting\pkg\Debug" -PublishProfileFile "$FilePath\Voting\PublishProfiles\Cloud.xml" -DeployOnly:$false -ApplicationParameter:@{ } -UnregisterUnusedApplicationVersionsAfterUpgrade $false -OverrideUpgradeBehavior "None" -OverwriteBehavior "SameAppTypeAndVersion" -SkipPackageValidation:$false -ErrorAction "Stop"
-# Open Web app.
+# Open the web app.
 $WebAppEndpointOnServiceFabric = $NewServiceFabricClusterEndpoint -replace "19000", "8080"
 $Deployed = $false
 do {
@@ -79,7 +78,7 @@ while (-not $Deployed)
 
 Write-Output -InputObject "Voting web App is now ready!"
 
-# Populate voting inside the App
+# Populate voting inside the web app.
 Import-Module -Name "Selenium"
 $Firefox_Options = New-Object -TypeName "OpenQA.Selenium.Firefox.FirefoxOptions"
 $Firefox_Options.LogLevel = 6
