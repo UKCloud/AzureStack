@@ -152,6 +152,8 @@ function New-Certificate {
         
     }   
 }
+
+
 function New-AzsKeyVaultSecret {
     <#
     .SYNOPSIS
@@ -196,6 +198,7 @@ function New-AzsKeyVaultSecret {
         $Password
     )
 
+
     function Get-ThumbprintFromPfx {
         <#
         .SYNOPSIS
@@ -212,7 +215,7 @@ function New-AzsKeyVaultSecret {
         
         .EXAMPLE
             [SecureString]$Password = "SomeSecretPassword" | ConvertTo-SecureString -AsPlainText -Force
-            Get-ThumbprintFromPfx -PfxFilePath -PfxFilePath "C:\Temp\TestVM.frn00006.cloudapp.azure.com.pfx" -Password $Password
+            Get-ThumbprintFromPfx -PfxFilePath "C:\Temp\TestVM.frn00006.cloudapp.azure.com.pfx" -Password $Password
         
         #>
         [CmdletBinding()]
@@ -227,6 +230,7 @@ function New-AzsKeyVaultSecret {
         )
         return New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($PfxFilePath, $Password)
     }
+
 
     function Publish-SecretToKeyVault {
         <#
@@ -247,6 +251,13 @@ function New-AzsKeyVaultSecret {
         
         .PARAMETER KeyVaultSecretName
             The name of the key vault secret to set.
+        
+        .EXAMPLE
+            [SecureString]$Password = "SomeSecretPassword" | ConvertTo-SecureString -AsPlainText -Force
+            Publish-SecretToKeyVault -PfxFilePath "C:\Temp\TestVM.frn00006.cloudapp.azure.com.pfx" -Password $Password -VaultName "TestVault" -KeyVaultSecretName "Secret01" -Verbose
+        
+        .EXAMPLE
+            Publish-SecretToKeyVault -PfxFilePath "C:\Temp\TestVM.frn00006.cloudapp.azure.com.pfx" -VaultName "TestVault" -KeyVaultSecretName "Secret01" -Verbose
         
         #>
         [CmdletBinding()]
@@ -577,12 +588,7 @@ function Publish-ServiceFabricAppWithVisualStudio {
         Specifies the version to use. Defaults to: "Microsoft.VisualStudio.Azure.Fabric.MSBuild.1.6.7".
 
     .EXAMPLE
-        BuildVS -FilePath "C:\temp\Test13\Voting.sln"
-
-        Connect-ServiceFabricCluster -ConnectionEndpoint "sfclusterrewq6r4r3qw7e.frn00006.cloudapp.azure.ukcloud.com:19000" -X509Credential -ServerCertThumbprint "174B275734E6819C618AD92B6F326DA4569FF610" -FindType FindByThumbprint -FindValue "174B275734E6819C618AD92B6F326DA4569FF610" -StoreLocation CurrentUser -StoreName My -Verbose
-
-    .EXAMPLE
-        & "C:\temp\test14\Voting\Scripts\Deploy-FabricApplication.ps1" -ApplicationPackagePath "C:\temp\test14\Voting\pkg\Debug" -PublishProfileFile "C:\temp\test14\Voting\PublishProfiles\Cloud.xml" -DeployOnly:$false -ApplicationParameter:@{} -UnregisterUnusedApplicationVersionsAfterUpgrade $false -OverrideUpgradeBehavior 'None' -OverwriteBehavior 'SameAppTypeAndVersion' -SkipPackageValidation:$false -ErrorAction Stop
+        Publish-ServiceFabricAppWithVisualStudio -FilePath "C:\temp\Test10" -SolutionPath "C:\temp\Test10\Voting.sln"
 
     .LINK 
         https://github.com/Azure-Samples/service-fabric-dotnet-quickstart
@@ -638,6 +644,7 @@ function Publish-ServiceFabricAppWithVisualStudio {
     }
 }
 
+
 function Set-XML {
     <#
     .SYNOPSIS
@@ -647,7 +654,7 @@ function Set-XML {
         Set the XML content of Cloud.xml.
     
     .PARAMETER ServiceFabricClusterUrl
-        The URL of the service fabric cluster.
+        The URL of the Service Fabric Cluster.
     
     .PARAMETER CertThumbprint
         The certificate thumbprint.
