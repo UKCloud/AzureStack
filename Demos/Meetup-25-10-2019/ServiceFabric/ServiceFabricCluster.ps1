@@ -70,7 +70,7 @@ do {
         $Deployed = $true
     }
     catch {
-        Write-Output -InputObject "Sleeping until web App is ready..."
+        Write-Output -InputObject "Sleeping until web app is ready..."
         Start-Sleep -Seconds 5
     }
 }
