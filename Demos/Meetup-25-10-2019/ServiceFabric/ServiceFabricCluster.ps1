@@ -30,7 +30,7 @@ $AdminUserName = "testadmin"
 $AdminPassword = "Password1234!"
 $FilePath = "C:\temp\Test$($UniqueId)"
 
-
+# Create new keyvault to store Certificate in
 $NewKeyVault = New-AzsKeyVault -ResourceGroupName $ResourceGroupNameKV -VaultName $VaultName
 $NewCert = New-Certificate -CertPath $FilePath -AppName $ResourceGroupName
 # Supply cmdlet default value.
@@ -40,18 +40,21 @@ $CertThumbprint = $($NewKeyVaultSecret.Thumbprint)
 $SourceVaultValue = $($NewKeyVaultSecret.KeyVaultId)
 $CertUrl = $($NewKeyVaultSecret.SecretId)
 
+# Pre-check all variables required for SFC creation
 if ($CertThumbprint -and $SourceVaultValue -and $CertUrl) {
-    Write-Output -InputObject "Ready to deploy Service Farbric cluster!"
+    Write-Output -InputObject "Ready to deploy Service Fabric cluster!"
 }
 else {
     Write-Error -Message "Abandon all hope!"
 }
 
+# Create storage fabric cluster and time how long it took to deploy, expect over 15 minutes
 $StopWatch = [Diagnostics.StopWatch]::StartNew()
 $NewServiceFabricClusterEndpoint = New-AzsSFCluster -ResourceGroupName $ResourceGroupName -AdminUserName $AdminUserName -AdminPassword $AdminPassword -SourceVaultValue $SourceVaultValue -ClusterCertificateUrlValue $CertUrl -ClusterCertficateThumbprint $CertThumbprint -ServerCertficateUrlValue $CertUrl -ServerCertficateThumbprint $CertThumbprint -AdminClientCertificateThumbprint $CertThumbprint
 $StopWatch.Stop()
 Write-Output -InputObject "New-AzsSFCluster deployment cmdlet took $($StopWatch.Elapsed) to execute."
 
+## Publish example voting application to newly deployed service fabric
 Publish-ServiceFabricAppWithVisualStudio -FilePath $FilePath -SolutionPath "$FilePath\Voting.sln"
 Set-XML -ServiceFabricClusterUrl $NewServiceFabricClusterEndpoint -CertThumbprint $CertThumbprint -FilePath $FilePath
 Connect-ServiceFabricCluster -ConnectionEndpoint $NewServiceFabricClusterEndpoint -X509Credential -ServerCertThumbprint $CertThumbprint -FindType FindByThumbprint -FindValue $CertThumbprint -StoreLocation "CurrentUser" -StoreName "My" -Verbose
@@ -61,8 +64,9 @@ $ServiceFabricDashboardEndpoint = $NewServiceFabricClusterEndpoint -replace "190
 [System.Diagnostics.Process]::Start("chrome.exe", "https://$ServiceFabricDashboardEndpoint") | Out-Null
 # Deploy the web app to the Service Fabric.
 & "$FilePath\Voting\Scripts\Deploy-FabricApplication.ps1" -ApplicationPackagePath "$FilePath\Voting\pkg\Debug" -PublishProfileFile "$FilePath\Voting\PublishProfiles\Cloud.xml" -DeployOnly:$false -ApplicationParameter:@{ } -UnregisterUnusedApplicationVersionsAfterUpgrade $false -OverrideUpgradeBehavior "None" -OverwriteBehavior "SameAppTypeAndVersion" -SkipPackageValidation:$false -ErrorAction "Stop"
-# Open the web app.
 $WebAppEndpointOnServiceFabric = $NewServiceFabricClusterEndpoint -replace "19000", "8080"
+
+# Loop to check when web app has sucessfully deployed and open when it has
 $Deployed = $false
 do {
     try {
@@ -78,7 +82,7 @@ while (-not $Deployed)
 
 Write-Output -InputObject "Voting web App is now ready!"
 
-# Populate voting inside the web app.
+# Populate voting inside the web app using selenium.
 Import-Module -Name "Selenium"
 $Firefox_Options = New-Object -TypeName "OpenQA.Selenium.Firefox.FirefoxOptions"
 $Firefox_Options.LogLevel = 6
