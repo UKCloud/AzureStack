@@ -7,7 +7,7 @@ $StackArmEndpoint = "https://management.frn00006.azure.ukcloud.com"
 # Add environment
 Add-AzureRmEnvironment -Name "AzureStackUser" -ArmEndpoint $StackArmEndpoint
 
-# Create your Credentials
+# Create your credentials
 $AzsUsername = "admin@meetuponboardingdemo01.onmicrosoft.com"
 $AzsPassword = 'meetupdemo123!!'
 $AzsUserPassword = ConvertTo-SecureString -String $AzsPassword -AsPlainText -Force
@@ -24,13 +24,13 @@ $ResourceGroupNameKV = "TestSFCKV$($UniqueId)"
 $VaultName = "TestVault$($UniqueId)"
 $KeyVaultSecretName = "Secret$($UniqueId)"
 
-# Service Fabric variables
+# Service fabric variables
 $ResourceGroupName = "TestSFC01$($UniqueId)"
 $AdminUserName = "testadmin"
 $AdminPassword = "Password1234!"
 $FilePath = "C:\temp\Test$($UniqueId)"
 
-# Create new keyvault to store Certificate in
+# Create new key vault to store certificate in
 $NewKeyVault = New-AzsKeyVault -ResourceGroupName $ResourceGroupNameKV -VaultName $VaultName
 $NewCert = New-Certificate -CertPath $FilePath -AppName $ResourceGroupName
 # Supply cmdlet default value.
@@ -62,7 +62,7 @@ Connect-ServiceFabricCluster -ConnectionEndpoint $NewServiceFabricClusterEndpoin
 $ServiceFabricDashboardEndpoint = $NewServiceFabricClusterEndpoint -replace "19000", "19080"
 # Open Service Fabric Cluster dashboard.
 [System.Diagnostics.Process]::Start("chrome.exe", "https://$ServiceFabricDashboardEndpoint") | Out-Null
-# Deploy the web app to the Service Fabric.
+# Deploy the web app to the service fabric.
 & "$FilePath\Voting\Scripts\Deploy-FabricApplication.ps1" -ApplicationPackagePath "$FilePath\Voting\pkg\Debug" -PublishProfileFile "$FilePath\Voting\PublishProfiles\Cloud.xml" -DeployOnly:$false -ApplicationParameter:@{ } -UnregisterUnusedApplicationVersionsAfterUpgrade $false -OverrideUpgradeBehavior "None" -OverwriteBehavior "SameAppTypeAndVersion" -SkipPackageValidation:$false -ErrorAction "Stop"
 $WebAppEndpointOnServiceFabric = $NewServiceFabricClusterEndpoint -replace "19000", "8080"
 
