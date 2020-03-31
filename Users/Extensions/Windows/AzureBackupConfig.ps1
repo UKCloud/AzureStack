@@ -68,7 +68,7 @@
     .EXAMPLE
         AzureBackupConfig.ps1 -ClientID "00000000-0000-0000-0000-000000000000" -ClientSecret "3Hj2y5pI5ctu73ffmHdcwr4M8dQ6PlLj2tgLhs9cjj4=" -TenantID "31537af4-6d77-4bb9-a681-d2394888ea26" `
             -AzureResourceGroup "AzureStackBackupRG" -VaultName "AzureStackVault" -AzureLocation "UK West" -ExistingRG -ExistingVault -TempFilesPath "C:\temp" -EncryptionKey "Password123!Password123!" `
-            -BackupDays "Saturday", "Sunday" -BackupTimes "16:00", "20:00" -RetentionLength 7 -FoldersToBackup "C:\Users", "C:\Important" -BackupNow
+            -BackupDays "Monday,Friday" -BackupTimes "16:00, 20:00" -RetentionLength 7 -FoldersToBackup "C:\Users, C:\Users\TestUser\Documents" -BackupNow
 
     .LINK
         https://docs.microsoft.com/en-us/azure/backup/backup-client-automation
@@ -137,8 +137,7 @@ param (
     $BackupDays,
 
     [Parameter(Mandatory = $true, ParameterSetName = "Configure")]
-    [ValidateCount(1, 3)]
-    [TimeSpan[]]
+    [String[]]
     $BackupTimes,
 
     [Parameter(Mandatory = $false, ParameterSetName = "Configure")]
@@ -146,7 +145,7 @@ param (
     $RetentionLength = 7,
 
     [Parameter(Mandatory = $false, ParameterSetName = "Configure")]
-    [ValidateScript( { Test-Path -Path $_ })]
+    [ValidateScript( { $_ -split "," | ForEach-Object { Test-Path -Path $_ } })]
     [String[]]
     $FoldersToBackup,
 
@@ -158,6 +157,11 @@ param (
     [Switch]
     $NoSchedule
 )
+
+begin {
+    # Change the object type to Array
+    $TimesOfDay = $BackupTimes -split ","
+}
 
 process {
     # Initialise TempFilesPath folder
@@ -246,7 +250,7 @@ while (!`$VaultCredPath -and `$Retry -lt 20) {
         ## Create blank backup policy
         $BackupPolicy = New-OBPolicy
         ## Set backup schedule
-        $BackupSchedule = New-OBSchedule -DaysOfWeek $BackupDays -TimesOfDay $BackupTimes
+        $BackupSchedule = New-OBSchedule -DaysOfWeek $BackupDays -TimesOfDay $TimesOfDay
         Set-OBSchedule -Policy $BackupPolicy -Schedule $BackupSchedule
         ## Set retention policy
         $RetentionPolicy = New-OBRetentionPolicy -RetentionDays $RetentionLength
