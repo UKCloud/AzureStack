@@ -162,7 +162,7 @@ begin {
     # Change the object type to Array
     $BackupTimes = $BackupTimes -split ","
     $BackupDays = $BackupDays -split ","
-    $FoldersToBackup = $FoldersToBackup -split ","
+    $FoldersToBackupArray = $FoldersToBackup -split ","
 }
 
 process {
@@ -259,12 +259,12 @@ while (!`$VaultCredPath -and `$Retry -lt 20) {
         Set-OBRetentionPolicy -Policy $BackupPolicy -RetentionPolicy $RetentionPolicy
 
         ## Set drives to be backed up, excluding the temporary storage
-        if (-not $FoldersToBackup) {
+        if (-not $FoldersToBackupArray) {
             $Drives = Get-PSDrive -PSProvider "Microsoft.PowerShell.Core\FileSystem" | Where-Object -FilterScript { $_.Used -gt 0 -and $_.Description -notlike "Temporary Storage" } | Select-Object -ExpandProperty Root
             $FileInclusions = New-OBFileSpec -FileSpec @($Drives)
         }
         else {
-            $FileInclusions = New-OBFileSpec -FileSpec @($FoldersToBackup)
+            $FileInclusions = New-OBFileSpec -FileSpec @($FoldersToBackupArray)
         }
 
         $FileExclusions = New-OBFileSpec -FileSpec @($TempFilesPath) -Exclude
