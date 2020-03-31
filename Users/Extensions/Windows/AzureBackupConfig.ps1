@@ -68,7 +68,7 @@
     .EXAMPLE
         AzureBackupConfig.ps1 -ClientID "00000000-0000-0000-0000-000000000000" -ClientSecret "3Hj2y5pI5ctu73ffmHdcwr4M8dQ6PlLj2tgLhs9cjj4=" -TenantID "31537af4-6d77-4bb9-a681-d2394888ea26" `
             -AzureResourceGroup "AzureStackBackupRG" -VaultName "AzureStackVault" -AzureLocation "UK West" -ExistingRG -ExistingVault -TempFilesPath "C:\temp" -EncryptionKey "Password123!Password123!" `
-            -BackupDays "Monday,Friday" -BackupTimes "16:00, 20:00" -RetentionLength 7 -FoldersToBackup "C:\Users, C:\Users\TestUser\Documents" -BackupNow
+            -BackupDays "Monday, Friday" -BackupTimes "16:00, 20:00" -RetentionLength 7 -FoldersToBackup "C:\Users, C:\Users\TestUser\Documents" -BackupNow
 
     .LINK
         https://docs.microsoft.com/en-us/azure/backup/backup-client-automation
@@ -133,7 +133,7 @@ param (
     # Backup schedule config parameters
     [Parameter(Mandatory = $true, ParameterSetName = "Configure")]
     [ValidateCount(1, 7)]
-    [DayOfWeek[]]
+    [String[]]
     $BackupDays,
 
     [Parameter(Mandatory = $true, ParameterSetName = "Configure")]
@@ -160,7 +160,8 @@ param (
 
 begin {
     # Change the object type to Array
-    $TimesOfDay = $BackupTimes -split ","
+    $BackupTimes = $BackupTimes -split ","
+    $BackupDays = $BackupDays -split ","
 }
 
 process {
@@ -250,7 +251,7 @@ while (!`$VaultCredPath -and `$Retry -lt 20) {
         ## Create blank backup policy
         $BackupPolicy = New-OBPolicy
         ## Set backup schedule
-        $BackupSchedule = New-OBSchedule -DaysOfWeek $BackupDays -TimesOfDay $TimesOfDay
+        $BackupSchedule = New-OBSchedule -DaysOfWeek $BackupDays -TimesOfDay $BackupTimes
         Set-OBSchedule -Policy $BackupPolicy -Schedule $BackupSchedule
         ## Set retention policy
         $RetentionPolicy = New-OBRetentionPolicy -RetentionDays $RetentionLength

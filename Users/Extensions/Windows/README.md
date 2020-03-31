@@ -95,10 +95,10 @@ This extension configures the Microsoft Azure Recovery Services agent on a windo
 | ExistingVault | Switch used to specify that the vault already exists in public Azure. | |
 | TempFilesPath | Location on the server where setup files will be stored. | C:\temp |
 | EncryptionKey | The encryption key for the MySQL database on the configuration server. | ExampleEncryptionKey |
-| BackupDays | A comma separated list of the days to backup on. | 'Monday,Friday' |
-| BackupTimes | A comma separated list of the times to backup at on the backup days. | '16:00, 20:00' |
+| BackupDays | A comma separated list of the days to backup on. | "Monday, Friday" |
+| BackupTimes | A comma separated list of the times to backup at on the backup days. | "16:00, 20:00" |
 | RetentionLength | The number of days to keep each backup for. | 7 |
-| FoldersToBackup | A comma separated list of folders to backup. By default backs up all drives excluding temporary storage. | 'C:\Users, C:\Users\TestUser\Documents' |
+| FoldersToBackup | A comma separated list of folders to backup. By default backs up all drives excluding temporary storage. | "C:\Users, C:\Users\TestUser\Documents" |
 | BackupNow | Switch used to specify that the server should backup once the MARS agent is installed. | |
 | NoSchedule | Switch used to specify that the schedule configuration step can be skipped. | |
 
