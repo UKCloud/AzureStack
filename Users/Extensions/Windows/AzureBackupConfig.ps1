@@ -162,6 +162,7 @@ begin {
     # Change the object type to Array
     $BackupTimes = $BackupTimes -split ","
     $BackupDays = $BackupDays -split ","
+    $FoldersToBackup = $FoldersToBackup -split ","
 }
 
 process {
