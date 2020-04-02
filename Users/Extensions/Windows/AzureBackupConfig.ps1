@@ -36,16 +36,16 @@
         The encryption key to encrypt the backups with. Example: "ExampleEncryptionKey"
 
     .PARAMETER BackupDays
-        A comma separated list of the days to backup on. Example: "Wednesday", "Sunday"
+        A comma separated list of the days to backup on. Example: "Wednesday, Sunday"
 
     .PARAMETER BackupTimes
-        A comma separated list of the times to backup at on the backup days. Example: "16:00", "20:00"
+        A comma separated list of the times to backup at on the backup days. Example: "16:00, 20:00"
 
     .PARAMETER RetentionLength
         The number of days to keep each backup for. Defaults to: 7
 
     .PARAMETER FoldersToBackup
-        A comma separated list of folders to backup. By default backs up all drives excluding temporary storage. Example: "C:\Users", "C:\Important"
+        A comma separated list of folders to backup. By default backs up all drives excluding temporary storage. Example: "C:\Users, C:\Important"
 
     .PARAMETER BackupNow
         Switch used to specify that the server should backup once the MARS agent is installed.
@@ -159,10 +159,16 @@ param (
 )
 
 begin {
-    # Change the object type to Array
-    $BackupTimes = $BackupTimes -split ","
-    $BackupDays = $BackupDays -split ","
+    # Change the object type to Array and remove spaces
+    $BackupTimes = ($BackupTimes -split ",") -replace " ", ""
+    $BackupDays = ($BackupDays -split ",") -replace " ", ""
     $FoldersToBackupArray = ($FoldersToBackup -split ",") -replace " ", ""
+
+    # You can schedule only three daily backups per day so we want to make sure users will NOT run the whole script and then fail, hence we are checking it here
+    if ($BackupTimes.Length -gt 3) {
+        Write-Error -Message "You can schedule up to three daily backups per day!`nMake sure you only put three objects into the array." -ErrorAction "Stop"
+        break
+    }
 }
 
 process {
