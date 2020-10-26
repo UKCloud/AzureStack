@@ -20,4 +20,4 @@ jobs:
       with:
         azPSVersion: '3.1.0'
         inlineScript: |
-          Get-AzResourceGroup
+          Get-AzResourceGroup -ApiVersion "2018-09-01"
