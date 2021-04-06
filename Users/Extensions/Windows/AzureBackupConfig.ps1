@@ -36,16 +36,16 @@
         The encryption key to encrypt the backups with. Example: "ExampleEncryptionKey"
 
     .PARAMETER BackupDays
-        A comma separated list of the days to backup on. Example: "Wednesday", "Sunday"
+        A comma separated list of the days to backup on. Example: "Wednesday, Sunday"
 
     .PARAMETER BackupTimes
-        A comma separated list of the times to backup at on the backup days. Example: "16:00", "20:00"
+        A comma separated list of the times to backup at on the backup days. Example: "16:00, 20:00"
 
     .PARAMETER RetentionLength
         The number of days to keep each backup for. Defaults to: 7
 
     .PARAMETER FoldersToBackup
-        A comma separated list of folders to backup. By default backs up all drives excluding temporary storage. Example: "C:\Users", "C:\Important"
+        A comma separated list of folders to backup. By default backs up all drives excluding temporary storage. Example: "C:\Users, C:\Important"
 
     .PARAMETER BackupNow
         Switch used to specify that the server should backup once the MARS agent is installed.
@@ -68,7 +68,7 @@
     .EXAMPLE
         AzureBackupConfig.ps1 -ClientID "00000000-0000-0000-0000-000000000000" -ClientSecret "3Hj2y5pI5ctu73ffmHdcwr4M8dQ6PlLj2tgLhs9cjj4=" -TenantID "31537af4-6d77-4bb9-a681-d2394888ea26" `
             -AzureResourceGroup "AzureStackBackupRG" -VaultName "AzureStackVault" -AzureLocation "UK West" -ExistingRG -ExistingVault -TempFilesPath "C:\temp" -EncryptionKey "Password123!Password123!" `
-            -BackupDays "Saturday", "Sunday" -BackupTimes "16:00", "20:00" -RetentionLength 7 -FoldersToBackup "C:\Users", "C:\Important" -BackupNow
+            -BackupDays "Monday, Friday" -BackupTimes "16:00, 20:00" -RetentionLength 7 -FoldersToBackup "C:\Users, C:\Users\TestUser\Documents" -BackupNow
 
     .LINK
         https://docs.microsoft.com/en-us/azure/backup/backup-client-automation
@@ -133,12 +133,11 @@ param (
     # Backup schedule config parameters
     [Parameter(Mandatory = $true, ParameterSetName = "Configure")]
     [ValidateCount(1, 7)]
-    [DayOfWeek[]]
+    [String[]]
     $BackupDays,
 
     [Parameter(Mandatory = $true, ParameterSetName = "Configure")]
-    [ValidateCount(1, 3)]
-    [TimeSpan[]]
+    [String[]]
     $BackupTimes,
 
     [Parameter(Mandatory = $false, ParameterSetName = "Configure")]
@@ -146,7 +145,7 @@ param (
     $RetentionLength = 7,
 
     [Parameter(Mandatory = $false, ParameterSetName = "Configure")]
-    [ValidateScript( { Test-Path -Path $_ })]
+    [ValidateScript( { $_ -split "," | ForEach-Object { Test-Path -Path $_ } })]
     [String[]]
     $FoldersToBackup,
 
@@ -158,6 +157,19 @@ param (
     [Switch]
     $NoSchedule
 )
+
+begin {
+    # Change the object type to Array and remove spaces
+    $BackupTimes = ($BackupTimes -split ",") -replace " ", ""
+    $BackupDays = ($BackupDays -split ",") -replace " ", ""
+    $FoldersToBackupArray = ($FoldersToBackup -split ",") -replace " ", ""
+
+    # You can schedule only three daily backups per day so we want to make sure users will NOT run the whole script and then fail, hence we are checking it here
+    if ($BackupTimes.Length -gt 3) {
+        Write-Error -Message "You can schedule up to three daily backups per day!`nMake sure you only put three objects into the array." -ErrorAction "Stop"
+        break
+    }
+}
 
 process {
     # Initialise TempFilesPath folder
@@ -253,12 +265,12 @@ while (!`$VaultCredPath -and `$Retry -lt 20) {
         Set-OBRetentionPolicy -Policy $BackupPolicy -RetentionPolicy $RetentionPolicy
 
         ## Set drives to be backed up, excluding the temporary storage
-        if (-not $FoldersToBackup) {
+        if (-not $FoldersToBackupArray) {
             $Drives = Get-PSDrive -PSProvider "Microsoft.PowerShell.Core\FileSystem" | Where-Object -FilterScript { $_.Used -gt 0 -and $_.Description -notlike "Temporary Storage" } | Select-Object -ExpandProperty Root
             $FileInclusions = New-OBFileSpec -FileSpec @($Drives)
         }
         else {
-            $FileInclusions = New-OBFileSpec -FileSpec @($FoldersToBackup)
+            $FileInclusions = New-OBFileSpec -FileSpec @($FoldersToBackupArray)
         }
 
         $FileExclusions = New-OBFileSpec -FileSpec @($TempFilesPath) -Exclude
