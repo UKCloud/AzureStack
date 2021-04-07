@@ -9,19 +9,19 @@
         The application ID of a service principal with contributor permissions on Azure. Example: "00000000-0000-0000-0000-000000000000"
 
     .PARAMETER ClientSecret
-        A password of the service principal specified in the ClientId parameter. Example: "ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]="
+        A password of the service principal specified in the ClientId parameter. Example: 'ftE2u]iVLs_J4+i-:q^Ltf4!&{!w3-%=3%4+}F2jk|]='
 
     .PARAMETER TenantId
         The Tenant/Directory ID of your AAD domain. Example: "31537af4-6d77-4bb9-a681-d2394888ea26"
 
     .PARAMETER AzureResourceGroup
-        The name of the resource group to be created on public Azure. Defaults to: "AzureStackBackupRG"
+        The name of the resource group to be created in public Azure. Defaults to: "AzureStackBackupRG"
 
     .PARAMETER VaultName
-        The name of the recovery services vault to be created on public Azure. Example: "AzureStackVault"
+        The name of the Recovery Services vault to be created in public Azure. Example: "AzureStackVault"
 
     .PARAMETER AzureLocation
-        The location of the recovery services vault on public Azure. Defaults to: "UK West"
+        The location of the Recovery Services vault in public Azure. Defaults to: "UK West"
 
     .PARAMETER ExistingRG
         Switch used to specify that the resource group already exists in public Azure.
@@ -179,14 +179,14 @@ process {
     }
 
     # Install Modules
-    Write-Output -InputObject "Installing Nuget and AzureRM PowerShell modules"
-    Install-PackageProvider -Name NuGet -Confirm:$false -Force | Out-Null
-    Install-Module -Name AzureRM -RequiredVersion 2.4.0 -Confirm:$false -Force
-    Install-Module -Name AzureRM.RecoveryServices -Confirm:$false -Force
-    Install-Module -Name AzureRM.RecoveryServices.SiteRecovery -Confirm:$false -Force
+    Write-Output -InputObject "Installing Nuget and AzureRM PowerShell modules."
+    Install-PackageProvider -Name "NuGet" -Confirm:$false -Force | Out-Null
+    Install-Module -Name "AzureRM" -RequiredVersion 2.4.0 -Confirm:$false -Force
+    Install-Module -Name "AzureRM.RecoveryServices" -Confirm:$false -Force
+    Install-Module -Name "AzureRM.RecoveryServices.SiteRecovery" -Confirm:$false -Force
 
     # Download the MARS agent
-    Write-Output -InputObject "Downloading MARS agent"
+    Write-Output -InputObject "Downloading MARS agent."
     $OutPath = Join-Path -Path $TempFilesPath -ChildPath "MARSAgentInstaller.exe"
     $WebClient = New-Object System.Net.WebClient
     $WebClient.DownloadFile("https://aka.ms/azurebackup_agent", $OutPath)
@@ -205,12 +205,12 @@ process {
 
         if (-not $ExistingRG) {
             # Create resource group
-            Write-Output -InputObject "Creating resource group: $AzureResourceGroup in public Azure"
+            Write-Output -InputObject "Creating resource group: $AzureResourceGroup in public Azure."
             New-AzureRmResourceGroup -Name $AzureResourceGroup -Location $AzureLocation | Out-Null
         }
 
         # Create the vault
-        Write-Output -InputObject "Creating backup vault: $BackupVault in resource group: $AzureResourceGroup in public Azure"
+        Write-Output -InputObject "Creating backup vault: $BackupVault in resource group: $AzureResourceGroup in public Azure."
         $BackupVault = New-AzureRmRecoveryServicesVault -Name $VaultName -ResourceGroupName $AzureResourceGroup -Location $AzureLocation
         Set-AzureRmRecoveryServicesBackupProperties -Vault $BackupVault -BackupStorageRedundancy LocallyRedundant
     }
@@ -222,7 +222,7 @@ process {
 `$Cred = New-Object System.Management.Automation.PSCredential (`$args[0], `$CredPass)
 Connect-AzureRmAccount -Credential `$Cred -ServicePrincipal -Tenant $TenantId
 # Download Vault Settings
-Write-Output -InputObject "Downloading vault settings"
+Write-Output -InputObject "Downloading vault settings."
 `$Retry = 0
 while (!`$VaultCredPath -and `$Retry -lt 20) {
     # Get Vault
@@ -242,10 +242,10 @@ while (!`$VaultCredPath -and `$Retry -lt 20) {
     $VaultCredPath = Get-Content -Path (Join-Path -Path $TempFilesPath -ChildPath "VaultCredential.txt")
 
     # Import MS Online Backup module
-    Import-Module "C:\Program Files\Microsoft Azure Recovery Services Agent\bin\Modules\MSOnlineBackup"
+    Import-Module -Name "C:\Program Files\Microsoft Azure Recovery Services Agent\bin\Modules\MSOnlineBackup"
 
-    # Register MARS agent to recovery services vault
-    Write-Output -InputObject "Registering MARS agent to recovery services vault"
+    # Register MARS agent to Recovery Services vault
+    Write-Output -InputObject "Registering MARS agent to Recovery Services vault."
     Start-OBRegistration -VaultCredentials $VaultCredPath -Confirm:$false
 
     # Set encryption key for MARS agent
@@ -282,7 +282,7 @@ while (!`$VaultCredPath -and `$Retry -lt 20) {
             Get-OBPolicy | Remove-OBPolicy -Confirm:$false -ErrorAction Stop
         }
         catch {
-            Write-Output -InputObject "No existing policy to remove"
+            Write-Output -InputObject "No existing policy to remove."
         }
 
         # Apply the new policy
